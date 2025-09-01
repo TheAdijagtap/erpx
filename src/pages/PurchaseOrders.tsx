@@ -153,12 +153,13 @@ function CreatePODialog() {
   const [open, setOpen] = useState(false);
   const [supplierId, setSupplierId] = useState<string | null>(suppliers[0]?.id || null);
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [paymentTerms, setPaymentTerms] = useState<string>("30 days from invoice date");
   const [applyGST, setApplyGST] = useState<boolean>(gstSettings.enabled);
-  const [rows, setRows] = useState<Array<{ itemId: string; quantity: number; unitPrice: number }>>([
-    { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0 },
+  const [rows, setRows] = useState<Array<{ itemId: string; quantity: number; unitPrice: number; unit: string }>>([
+    { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0, unit: items[0]?.unit || "PCS" },
   ]);
 
-  const onAddRow = () => setRows([...rows, { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0 }]);
+  const onAddRow = () => setRows([...rows, { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0, unit: items[0]?.unit || "PCS" }]);
   const onSubmit = () => {
     if (!supplierId || rows.some(r => !r.itemId || r.quantity <= 0)) return;
     const poNumber = `PO-${new Date().getFullYear()}-${Math.floor(Math.random()*900+100)}`;
@@ -179,6 +180,7 @@ function CreatePODialog() {
       date: new Date(date),
       notes: "",
       expectedDelivery: undefined,
+      paymentTerms,
       applyGST,
     });
     setOpen(false);
@@ -196,7 +198,7 @@ function CreatePODialog() {
           <DialogTitle>Create Purchase Order</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 text-sm">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <div className="mb-1">Supplier</div>
               <Select value={supplierId || undefined} onValueChange={setSupplierId}>
@@ -212,6 +214,10 @@ function CreatePODialog() {
               <div className="mb-1">Date</div>
               <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
             </div>
+            <div>
+              <div className="mb-1">Payment Terms</div>
+              <Input value={paymentTerms} onChange={(e) => setPaymentTerms(e.target.value)} placeholder="e.g., 30 days from invoice date" />
+            </div>
             <div className="flex items-end gap-2">
               <input id="applyGST" type="checkbox" checked={applyGST} onChange={(e) => setApplyGST(e.target.checked)} />
               <label htmlFor="applyGST">Apply GST (SGST/CGST)</label>
@@ -224,6 +230,7 @@ function CreatePODialog() {
                 <TableRow>
                   <TableHead>Item</TableHead>
                   <TableHead>Qty</TableHead>
+                  <TableHead>Unit</TableHead>
                   <TableHead>Unit Price</TableHead>
                   <TableHead>Total</TableHead>
                 </TableRow>
@@ -231,11 +238,11 @@ function CreatePODialog() {
               <TableBody>
                 {rows.map((row, idx) => (
                   <TableRow key={idx}>
-                    <TableCell className="min-w-[220px]">
+                    <TableCell className="min-w-[180px]">
                       <Select value={row.itemId} onValueChange={(v) => {
                         const it = items.find(i => i.id === v)!;
                         const next = [...rows];
-                        next[idx] = { ...row, itemId: v, unitPrice: it.unitPrice };
+                        next[idx] = { ...row, itemId: v, unitPrice: it.unitPrice, unit: it.unit };
                         setRows(next);
                       }}>
                         <SelectTrigger className="w-full"><SelectValue placeholder="Select item" /></SelectTrigger>
@@ -250,6 +257,13 @@ function CreatePODialog() {
                       <Input type="number" min={1} value={row.quantity} onChange={(e) => {
                         const next = [...rows];
                         next[idx] = { ...row, quantity: parseInt(e.target.value) || 0 };
+                        setRows(next);
+                      }} />
+                    </TableCell>
+                    <TableCell>
+                      <Input value={row.unit} onChange={(e) => {
+                        const next = [...rows];
+                        next[idx] = { ...row, unit: e.target.value };
                         setRows(next);
                       }} />
                     </TableCell>
@@ -316,10 +330,11 @@ function ViewPODialog({ id }: { id: string }) {
                 <div className="muted">{order.supplier.email} · {order.supplier.phone}</div>
                 {order.supplier.gstNumber && <div className="muted">GST: {order.supplier.gstNumber}</div>}
               </div>
-              <div>
+                <div>
                 <strong>Order Details</strong>
                 <div>Date: {formatDateIN(order.date)}</div>
                 <div>Status: {order.status}</div>
+                <div>Payment Terms: {order.paymentTerms || "30 days from invoice date"}</div>
                 <div>GST: {order.sgst + order.cgst > 0 ? `${gstSettings.sgstRate + gstSettings.cgstRate}%` : 'Not Applied'}</div>
               </div>
             </div>
@@ -362,7 +377,7 @@ function ViewPODialog({ id }: { id: string }) {
           <div className="section terms">
             <strong>Terms & Conditions:</strong>
             <div className="muted" style={{ marginTop: '8px', lineHeight: '1.4' }}>
-              1. Payment terms: 30 days from invoice date<br />
+              1. Payment terms: {order.paymentTerms || "30 days from invoice date"}<br />
               2. All disputes subject to local jurisdiction<br />
               3. Goods once sold will not be taken back<br />
               4. Late payment may attract penalty charges<br />

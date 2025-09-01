@@ -9,27 +9,31 @@ export function printElementById(id: string, title = "Document") {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
       * { box-sizing: border-box; }
-      body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; margin: 24px; color: #0f172a; }
-      .doc { max-width: 900px; margin: 0 auto; }
-      .header { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
-      .brand { font-size: 20px; font-weight: 700; }
-      .muted { color: #64748b; }
-      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 12px 0; }
-      table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-      th, td { border: 1px solid #e2e8f0; padding: 8px; text-align: left; font-size: 12px; }
-      th { background: #f8fafc; }
-      .totals { margin-top: 12px; width: 100%; }
-      .totals td { border: none; }
+      body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; margin: 12px; color: #0f172a; font-size: 12px; line-height: 1.3; }
+      .doc { max-width: 780px; margin: 0 auto; }
+      .header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+      .brand { font-size: 16px; font-weight: 700; }
+      .muted { color: #64748b; font-size: 11px; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 8px 0; }
+      table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+      th, td { border: 1px solid #e2e8f0; padding: 4px 6px; text-align: left; font-size: 11px; }
+      th { background: #f8fafc; font-weight: 600; }
+      .totals { margin-top: 8px; width: 100%; }
+      .totals td { border: none; padding: 2px 6px; }
       .totals .label { color: #64748b; }
       .totals .value { text-align: right; font-weight: 600; }
-      .footer { margin-top: 24px; font-size: 12px; color: #64748b; }
-      .section { border: 1px solid #e2e8f0; margin: 8px 0; padding: 12px; border-radius: 6px; }
-      .amount-words { font-style: italic; color: #64748b; margin-top: 4px; }
-      .terms { margin-top: 16px; }
-      .signature-section { margin-top: 16px; text-align: right; }
-      .signature-image { max-width: 120px; max-height: 60px; }
-      img { max-height: 48px; }
-      @media print { @page { margin: 12mm; } }
+      .footer { margin-top: 16px; font-size: 10px; color: #64748b; }
+      .section { border: 1px solid #e2e8f0; margin: 4px 0; padding: 8px; border-radius: 4px; }
+      .amount-words { font-style: italic; color: #64748b; margin-top: 3px; font-size: 10px; }
+      .terms { margin-top: 8px; }
+      .signature-section { margin-top: 12px; text-align: right; }
+      .signature-image { max-width: 100px; max-height: 50px; }
+      img { max-height: 36px; }
+      @media print { 
+        @page { margin: 8mm; size: A4; } 
+        body { margin: 0; font-size: 11px; }
+        .section { margin: 2px 0; padding: 6px; }
+      }
     </style>
   </head><body><div class="doc">${content}</div></body></html>`);
   win.document.close();

@@ -67,6 +67,7 @@ export interface PurchaseOrder {
   status: 'DRAFT' | 'SENT' | 'RECEIVED' | 'PARTIAL' | 'CANCELLED';
   date: Date;
   expectedDelivery?: Date;
+  paymentTerms?: string;
   notes?: string;
 }
 
