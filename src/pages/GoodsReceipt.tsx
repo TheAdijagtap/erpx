@@ -1,133 +1,27 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Search, Package, Eye, Edit, Printer, CheckCircle, XCircle } from "lucide-react";
-import { GoodsReceipt } from "@/types/inventory";
+import { useApp } from "@/store/AppContext";
+import { formatDateIN, formatINR } from "@/lib/format";
+import { printElementById } from "@/lib/print";
 
 const GoodsReceiptPage = () => {
+  const { goodsReceipts } = useApp();
   const [searchTerm, setSearchTerm] = useState("");
-  
-  // Mock data - in real app this would come from API
-  const [goodsReceipts] = useState<GoodsReceipt[]>([
-    {
-      id: "1",
-      grNumber: "GR-2024-001",
-      poId: "1",
-      supplierId: "1",
-      supplier: {
-        id: "1",
-        name: "ABC Stationery Supplies",
-        contactPerson: "Rajesh Kumar",
-        email: "rajesh@abcstationery.com",
-        phone: "+91 98765 43210",
-        address: "123 Business Park, Mumbai, Maharashtra 400001",
-        gstNumber: "27ABCDE1234F1Z5",
-        createdAt: new Date("2024-01-01"),
-      },
-      items: [
-        {
-          id: "1",
-          itemId: "1",
-          item: {
-            id: "1",
-            name: "Office Paper A4",
-            sku: "PPR-A4-001",
-            category: "Office Supplies",
-            currentStock: 150,
-            minStock: 50,
-            maxStock: 500,
-            unitPrice: 250,
-            unit: "pack",
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-          orderedQuantity: 100,
-          receivedQuantity: 100,
-          unitPrice: 250,
-          total: 25000,
-        },
-      ],
-      subtotal: 25000,
-      sgst: 2250,
-      cgst: 2250,
-      total: 29500,
-      status: "ACCEPTED",
-      date: new Date("2024-01-16"),
-      notes: "All items received in good condition",
-    },
-    {
-      id: "2",
-      grNumber: "GR-2024-002",
-      poId: "2",
-      supplierId: "2",
-      supplier: {
-        id: "2",
-        name: "Tech Solutions India",
-        contactPerson: "Priya Sharma",
-        email: "priya@techsolutions.in",
-        phone: "+91 87654 32109",
-        address: "456 Tech Hub, Bangalore, Karnataka 560001",
-        gstNumber: "29XYZAB5678G2H3",
-        createdAt: new Date("2024-01-02"),
-      },
-      items: [
-        {
-          id: "2",
-          itemId: "2",
-          item: {
-            id: "2",
-            name: "Wireless Mouse",
-            sku: "TECH-MS-002",
-            category: "Technology",
-            currentStock: 25,
-            minStock: 15,
-            maxStock: 100,
-            unitPrice: 1200,
-            unit: "piece",
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-          orderedQuantity: 50,
-          receivedQuantity: 30,
-          unitPrice: 1200,
-          total: 36000,
-        },
-      ],
-      subtotal: 36000,
-      sgst: 3240,
-      cgst: 3240,
-      total: 42480,
-      status: "QUALITY_CHECK",
-      date: new Date("2024-01-12"),
-      notes: "Partial delivery - remaining 20 items expected next week",
-    },
-  ]);
 
-  const filteredReceipts = goodsReceipts.filter(receipt =>
+  const filteredReceipts = useMemo(() => goodsReceipts.filter(receipt =>
     receipt.grNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
     receipt.supplier.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "RECEIVED":
-        return <Badge className="bg-warning text-warning-foreground">Received</Badge>;
-      case "QUALITY_CHECK":
-        return <Badge className="bg-accent text-accent-foreground">Quality Check</Badge>;
-      case "ACCEPTED":
-        return <Badge className="bg-success text-success-foreground">Accepted</Badge>;
-      case "REJECTED":
-        return <Badge variant="destructive">Rejected</Badge>;
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
-    }
-  };
+  ), [goodsReceipts, searchTerm]);
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Goods Receipt</h1>
@@ -135,13 +29,9 @@ const GoodsReceiptPage = () => {
             Track and manage incoming goods from suppliers.
           </p>
         </div>
-        <Button className="gap-2">
-          <Plus className="w-4 h-4" />
-          Create New GR
-        </Button>
+        <CreateGRDialog />
       </div>
 
-      {/* Search and Filters */}
       <Card className="p-6">
         <div className="flex items-center gap-4">
           <div className="relative flex-1">
@@ -153,64 +43,13 @@ const GoodsReceiptPage = () => {
               className="pl-10"
             />
           </div>
-          <Button variant="outline">Filter by Status</Button>
         </div>
       </Card>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <Package className="w-8 h-8 text-primary" />
-            <div>
-              <p className="text-xl font-bold">{goodsReceipts.length}</p>
-              <p className="text-sm text-muted-foreground">Total GRs</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <CheckCircle className="w-8 h-8 text-success" />
-            <div>
-              <p className="text-xl font-bold">
-                {goodsReceipts.filter(gr => gr.status === "ACCEPTED").length}
-              </p>
-              <p className="text-sm text-muted-foreground">Accepted</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-accent-light flex items-center justify-center">
-              <span className="text-accent font-bold text-sm">QC</span>
-            </div>
-            <div>
-              <p className="text-xl font-bold">
-                {goodsReceipts.filter(gr => gr.status === "QUALITY_CHECK").length}
-              </p>
-              <p className="text-sm text-muted-foreground">Quality Check</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <XCircle className="w-8 h-8 text-destructive" />
-            <div>
-              <p className="text-xl font-bold">
-                {goodsReceipts.filter(gr => gr.status === "REJECTED").length}
-              </p>
-              <p className="text-sm text-muted-foreground">Rejected</p>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Goods Receipts List */}
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {filteredReceipts.map((receipt) => (
           <Card key={receipt.id} className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
             <div className="space-y-4">
-              {/* Header */}
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-3">
@@ -221,112 +60,66 @@ const GoodsReceiptPage = () => {
                     Supplier: {receipt.supplier.name}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Date: {receipt.date.toLocaleDateString('en-IN')}
+                    Date: {formatDateIN(receipt.date)}
                   </p>
-                  {receipt.poId && (
-                    <p className="text-sm text-muted-foreground">
-                      Related PO: PO-2024-{receipt.poId.padStart(3, '0')}
-                    </p>
-                  )}
                 </div>
                 <div className="p-2 bg-primary-light rounded-lg">
                   <Package className="w-5 h-5 text-primary" />
                 </div>
               </div>
 
-              {/* Items Summary */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Items</p>
                   <p className="text-lg font-semibold">{receipt.items.length}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Received Quantity</p>
+                  <p className="text-sm font-medium text-muted-foreground">Received Qty</p>
                   <p className="text-lg font-semibold">
                     {receipt.items.reduce((sum, item) => sum + item.receivedQuantity, 0)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">
-                    {receipt.items[0]?.orderedQuantity ? "Expected Quantity" : "Ordered Quantity"}
-                  </p>
+                  <p className="text-sm font-medium text-muted-foreground">Ordered Qty</p>
                   <p className="text-lg font-semibold">
-                    {receipt.items[0]?.orderedQuantity || "N/A"}
+                    {receipt.items.reduce((sum, item) => sum + (item.orderedQuantity || 0), 0)}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Total Amount</p>
-                  <p className="text-lg font-semibold">₹{receipt.total.toLocaleString()}</p>
+                  <p className="text-lg font-semibold">{formatINR(receipt.total)}</p>
                 </div>
               </div>
 
-              {/* Variance Alert */}
-              {receipt.items.some(item => item.orderedQuantity && item.receivedQuantity !== item.orderedQuantity) && (
-                <div className="bg-warning/10 border border-warning/20 rounded-lg p-3">
-                  <p className="text-sm text-warning font-medium">
-                    ⚠️ Quantity variance detected
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Some items have different received vs ordered quantities
-                  </p>
-                </div>
-              )}
-
-              {/* Tax Breakdown */}
               <div className="bg-muted p-4 rounded-lg">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
                     <span className="text-muted-foreground">Subtotal:</span>
-                    <span className="float-right font-medium">₹{receipt.subtotal.toLocaleString()}</span>
+                    <span className="float-right font-medium">{formatINR(receipt.subtotal)}</span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">SGST (9%):</span>
-                    <span className="float-right font-medium">₹{receipt.sgst.toLocaleString()}</span>
+                    <span className="text-muted-foreground">SGST:</span>
+                    <span className="float-right font-medium">{formatINR(receipt.sgst)}</span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">CGST (9%):</span>
-                    <span className="float-right font-medium">₹{receipt.cgst.toLocaleString()}</span>
+                    <span className="text-muted-foreground">CGST:</span>
+                    <span className="float-right font-medium">{formatINR(receipt.cgst)}</span>
                   </div>
                   <div className="font-semibold">
                     <span className="text-foreground">Total:</span>
-                    <span className="float-right">₹{receipt.total.toLocaleString()}</span>
+                    <span className="float-right">{formatINR(receipt.total)}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Notes */}
-              {receipt.notes && (
-                <div className="bg-primary-light/30 p-3 rounded-lg">
-                  <p className="text-sm text-foreground">
-                    <strong>Notes:</strong> {receipt.notes}
-                  </p>
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="gap-1">
-                  <Eye className="w-4 h-4" />
-                  View Details
-                </Button>
-                <Button variant="outline" size="sm" className="gap-1">
-                  <Edit className="w-4 h-4" />
-                  Edit
-                </Button>
-                <Button variant="outline" size="sm" className="gap-1">
-                  <Printer className="w-4 h-4" />
-                  Print/PDF
-                </Button>
-                {receipt.status === "QUALITY_CHECK" && (
+              <div className="flex gap-2 flex-wrap">
+                <ViewGRDialog id={receipt.id} />
+                <EditGRDialog id={receipt.id} />
+                <PrintGRButton id={receipt.id} />
+                {receipt.status === 'QUALITY_CHECK' && (
                   <>
-                    <Button variant="success" size="sm" className="gap-1">
-                      <CheckCircle className="w-4 h-4" />
-                      Accept
-                    </Button>
-                    <Button variant="destructive" size="sm" className="gap-1">
-                      <XCircle className="w-4 h-4" />
-                      Reject
-                    </Button>
+                    <UpdateStatusButton id={receipt.id} status="ACCEPTED" label="Accept" />
+                    <UpdateStatusButton id={receipt.id} status="REJECTED" label="Reject" destructive />
                   </>
                 )}
               </div>
@@ -342,14 +135,300 @@ const GoodsReceiptPage = () => {
           <p className="text-muted-foreground mb-4">
             {searchTerm ? "Try adjusting your search terms" : "Create your first goods receipt to get started"}
           </p>
-          <Button className="gap-2">
-            <Plus className="w-4 h-4" />
-            Create New GR
-          </Button>
+          <CreateGRDialog />
         </Card>
       )}
     </div>
   );
 };
+
+function getStatusBadge(status: string) {
+  switch (status) {
+    case "RECEIVED":
+      return <Badge className="bg-warning text-warning-foreground">Received</Badge>;
+    case "QUALITY_CHECK":
+      return <Badge className="bg-accent text-accent-foreground">Quality Check</Badge>;
+    case "ACCEPTED":
+      return <Badge className="bg-success text-success-foreground">Accepted</Badge>;
+    case "REJECTED":
+      return <Badge variant="destructive">Rejected</Badge>;
+    default:
+      return <Badge variant="secondary">{status}</Badge>;
+  }
+}
+
+function CreateGRDialog() {
+  const { suppliers, items, addGoodsReceipt, gstSettings } = useApp();
+  const [open, setOpen] = useState(false);
+  const [supplierId, setSupplierId] = useState<string | null>(suppliers[0]?.id || null);
+  const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [applyGST, setApplyGST] = useState<boolean>(gstSettings.enabled);
+  const [rows, setRows] = useState<Array<{ itemId: string; receivedQuantity: number; unitPrice: number; orderedQuantity?: number }>>([
+    { itemId: items[0]?.id || "", receivedQuantity: 1, unitPrice: items[0]?.unitPrice || 0 },
+  ]);
+
+  const onAddRow = () => setRows([...rows, { itemId: items[0]?.id || "", receivedQuantity: 1, unitPrice: items[0]?.unitPrice || 0 }]);
+  const onSubmit = () => {
+    if (!supplierId || rows.some(r => !r.itemId || r.receivedQuantity <= 0)) return;
+    const grNumber = `GR-${new Date().getFullYear()}-${Math.floor(Math.random()*900+100)}`;
+    const grItems = rows.map((r) => ({
+      id: crypto.randomUUID(),
+      itemId: r.itemId,
+      item: items.find(i => i.id === r.itemId)!,
+      orderedQuantity: r.orderedQuantity,
+      receivedQuantity: r.receivedQuantity,
+      unitPrice: r.unitPrice,
+      total: r.receivedQuantity * r.unitPrice,
+    }));
+    addGoodsReceipt({
+      grNumber,
+      supplierId,
+      supplier: suppliers.find(s => s.id === supplierId)!,
+      items: grItems,
+      status: "QUALITY_CHECK",
+      date: new Date(date),
+      notes: "",
+      poId: undefined,
+      applyGST,
+    });
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="gap-2">
+          <Plus className="w-4 h-4" /> Create New GR
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>Create Goods Receipt</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <div className="mb-1">Supplier</div>
+              <Select value={supplierId || undefined} onValueChange={setSupplierId}>
+                <SelectTrigger><SelectValue placeholder="Select supplier" /></SelectTrigger>
+                <SelectContent className="z-50">
+                  {suppliers.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <div className="mb-1">Date</div>
+              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            </div>
+            <div className="flex items-end gap-2">
+              <input id="applyGSTgr" type="checkbox" checked={applyGST} onChange={(e) => setApplyGST(e.target.checked)} />
+              <label htmlFor="applyGSTgr">Apply GST (SGST/CGST)</label>
+            </div>
+          </div>
+
+          <div className="rounded-md border overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Item</TableHead>
+                  <TableHead>Ordered Qty</TableHead>
+                  <TableHead>Received Qty</TableHead>
+                  <TableHead>Unit Price</TableHead>
+                  <TableHead>Total</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {rows.map((row, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell className="min-w-[220px]">
+                      <Select value={row.itemId} onValueChange={(v) => {
+                        const it = items.find(i => i.id === v)!;
+                        const next = [...rows];
+                        next[idx] = { ...row, itemId: v, unitPrice: it.unitPrice };
+                        setRows(next);
+                      }}>
+                        <SelectTrigger className="w-full"><SelectValue placeholder="Select item" /></SelectTrigger>
+                        <SelectContent className="z-50 max-h-64">
+                          {items.map((i) => (
+                            <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      <Input type="number" min={0} value={row.orderedQuantity || 0} onChange={(e) => {
+                        const next = [...rows];
+                        next[idx] = { ...row, orderedQuantity: parseInt(e.target.value) || 0 };
+                        setRows(next);
+                      }} />
+                    </TableCell>
+                    <TableCell>
+                      <Input type="number" min={1} value={row.receivedQuantity} onChange={(e) => {
+                        const next = [...rows];
+                        next[idx] = { ...row, receivedQuantity: parseInt(e.target.value) || 0 };
+                        setRows(next);
+                      }} />
+                    </TableCell>
+                    <TableCell>
+                      <Input type="number" min={0} value={row.unitPrice} onChange={(e) => {
+                        const next = [...rows];
+                        next[idx] = { ...row, unitPrice: parseInt(e.target.value) || 0 };
+                        setRows(next);
+                      }} />
+                    </TableCell>
+                    <TableCell className="font-medium">{formatINR((row.receivedQuantity) * row.unitPrice)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          <Button variant="outline" className="gap-2" onClick={onAddRow}><Plus className="w-4 h-4" /> Add Item</Button>
+        </div>
+        <DialogFooter>
+          <Button onClick={onSubmit}>Create</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ViewGRDialog({ id }: { id: string }) {
+  const { goodsReceipts, businessInfo, gstSettings } = useApp();
+  const receipt = goodsReceipts.find(g => g.id === id)!;
+  const elId = `gr-print-${id}`;
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-1"><Eye className="w-4 h-4" /> View</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-4xl">
+        <DialogHeader>
+          <DialogTitle>Goods Receipt</DialogTitle>
+        </DialogHeader>
+        <div id={elId}>
+          <div className="header">
+            {businessInfo.logo && <img src={businessInfo.logo} alt="Logo" />}
+            <div>
+              <div className="brand">{businessInfo.name}</div>
+              <div className="muted">{businessInfo.address}</div>
+              <div className="muted">{businessInfo.email} · {businessInfo.phone}</div>
+              {businessInfo.gstNumber && <div className="muted">GST: {businessInfo.gstNumber}</div>}
+            </div>
+          </div>
+          <h2>Goods Receipt {receipt.grNumber}</h2>
+          <div className="grid">
+            <div>
+              <strong>Supplier</strong>
+              <div>{receipt.supplier.name}</div>
+              <div className="muted">{receipt.supplier.address}</div>
+              <div className="muted">{receipt.supplier.email} · {receipt.supplier.phone}</div>
+              {receipt.supplier.gstNumber && <div className="muted">GST: {receipt.supplier.gstNumber}</div>}
+            </div>
+            <div>
+              <strong>Details</strong>
+              <div>Date: {formatDateIN(receipt.date)}</div>
+              <div>Status: {receipt.status}</div>
+              <div>GST: {receipt.sgst + receipt.cgst > 0 ? `${gstSettings.sgstRate + gstSettings.cgstRate}%` : 'Not Applied'}</div>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr><th>#</th><th>Item</th><th>Ordered</th><th>Received</th><th>Unit</th><th>Rate</th><th>Total</th></tr>
+            </thead>
+            <tbody>
+              {receipt.items.map((it, idx) => (
+                <tr key={it.id}>
+                  <td>{idx + 1}</td>
+                  <td>{it.item.name}</td>
+                  <td>{it.orderedQuantity || '-'}</td>
+                  <td>{it.receivedQuantity}</td>
+                  <td>{it.item.unit}</td>
+                  <td>{formatINR(it.unitPrice)}</td>
+                  <td>{formatINR(it.total)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <table className="totals">
+            <tbody>
+              <tr><td className="label">Subtotal</td><td className="value">{formatINR(receipt.subtotal)}</td></tr>
+              <tr><td className="label">SGST</td><td className="value">{formatINR(receipt.sgst)}</td></tr>
+              <tr><td className="label">CGST</td><td className="value">{formatINR(receipt.cgst)}</td></tr>
+              <tr><td className="label"><strong>Total</strong></td><td className="value"><strong>{formatINR(receipt.total)}</strong></td></tr>
+            </tbody>
+          </table>
+          {receipt.notes && <div className="footer">Notes: {receipt.notes}</div>}
+        </div>
+        <DialogFooter>
+          <Button onClick={() => printElementById(elId, `GR ${receipt.grNumber}`)} className="gap-1"><Printer className="w-4 h-4" /> Print</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function EditGRDialog({ id }: { id: string }) {
+  const { goodsReceipts, updateGoodsReceipt } = useApp();
+  const receipt = goodsReceipts.find(g => g.id === id)!;
+  const [open, setOpen] = useState(false);
+  const [status, setStatus] = useState(receipt.status);
+  const [notes, setNotes] = useState(receipt.notes || "");
+
+  const onSave = () => { updateGoodsReceipt(id, { status, notes }); setOpen(false); };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-1"><Edit className="w-4 h-4" /> Edit</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Edit GR</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3 text-sm">
+          <div>
+            <div className="mb-1">Status</div>
+            <Select value={status} onValueChange={(v) => setStatus(v as any)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent className="z-50">
+                {['RECEIVED','QUALITY_CHECK','ACCEPTED','REJECTED'].map(s => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <div className="mb-1">Notes</div>
+            <Input value={notes} onChange={(e) => setNotes(e.target.value)} />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button onClick={onSave}>Save</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function UpdateStatusButton({ id, status, label, destructive }: { id: string; status: any; label: string; destructive?: boolean }) {
+  const { updateGoodsReceipt } = useApp();
+  return (
+    <Button variant={destructive ? 'destructive' : 'success'} size="sm" onClick={() => updateGoodsReceipt(id, { status })}>
+      {label}
+    </Button>
+  );
+}
+
+function PrintGRButton({ id }: { id: string }) {
+  const elId = `gr-print-${id}`;
+  return (
+    <Button variant="outline" size="sm" className="gap-1" onClick={() => printElementById(elId)}>
+      <Printer className="w-4 h-4" /> Print/PDF
+    </Button>
+  );
+}
 
 export default GoodsReceiptPage;

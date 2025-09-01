@@ -1,132 +1,27 @@
-import { useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, FileText, Eye, Edit, Printer } from "lucide-react";
-import { PurchaseOrder } from "@/types/inventory";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Plus, Search, FileText, Eye, Edit, Printer, Trash2 } from "lucide-react";
+import { useApp } from "@/store/AppContext";
+import { formatDateIN, formatINR } from "@/lib/format";
+import { printElementById } from "@/lib/print";
 
 const PurchaseOrders = () => {
+  const { purchaseOrders } = useApp();
   const [searchTerm, setSearchTerm] = useState("");
-  
-  // Mock data - in real app this would come from API
-  const [purchaseOrders] = useState<PurchaseOrder[]>([
-    {
-      id: "1",
-      poNumber: "PO-2024-001",
-      supplierId: "1",
-      supplier: {
-        id: "1",
-        name: "ABC Stationery Supplies",
-        contactPerson: "Rajesh Kumar",
-        email: "rajesh@abcstationery.com",
-        phone: "+91 98765 43210",
-        address: "123 Business Park, Mumbai, Maharashtra 400001",
-        gstNumber: "27ABCDE1234F1Z5",
-        createdAt: new Date("2024-01-01"),
-      },
-      items: [
-        {
-          id: "1",
-          itemId: "1",
-          item: {
-            id: "1",
-            name: "Office Paper A4",
-            sku: "PPR-A4-001",
-            category: "Office Supplies",
-            currentStock: 150,
-            minStock: 50,
-            maxStock: 500,
-            unitPrice: 250,
-            unit: "pack",
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-          quantity: 100,
-          unitPrice: 250,
-          total: 25000,
-        },
-      ],
-      subtotal: 25000,
-      sgst: 2250,
-      cgst: 2250,
-      total: 29500,
-      status: "SENT",
-      date: new Date("2024-01-15"),
-      expectedDelivery: new Date("2024-01-22"),
-      notes: "Urgent delivery required for office setup",
-    },
-    {
-      id: "2",
-      poNumber: "PO-2024-002",
-      supplierId: "2",
-      supplier: {
-        id: "2",
-        name: "Tech Solutions India",
-        contactPerson: "Priya Sharma",
-        email: "priya@techsolutions.in",
-        phone: "+91 87654 32109",
-        address: "456 Tech Hub, Bangalore, Karnataka 560001",
-        gstNumber: "29XYZAB5678G2H3",
-        createdAt: new Date("2024-01-02"),
-      },
-      items: [
-        {
-          id: "2",
-          itemId: "2",
-          item: {
-            id: "2",
-            name: "Wireless Mouse",
-            sku: "TECH-MS-002",
-            category: "Technology",
-            currentStock: 25,
-            minStock: 15,
-            maxStock: 100,
-            unitPrice: 1200,
-            unit: "piece",
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          },
-          quantity: 50,
-          unitPrice: 1200,
-          total: 60000,
-        },
-      ],
-      subtotal: 60000,
-      sgst: 5400,
-      cgst: 5400,
-      total: 70800,
-      status: "PARTIAL",
-      date: new Date("2024-01-10"),
-      expectedDelivery: new Date("2024-01-18"),
-    },
-  ]);
 
-  const filteredOrders = purchaseOrders.filter(order =>
+  const filteredOrders = useMemo(() => purchaseOrders.filter(order =>
     order.poNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
     order.supplier.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "DRAFT":
-        return <Badge variant="secondary">Draft</Badge>;
-      case "SENT":
-        return <Badge className="bg-warning text-warning-foreground">Sent</Badge>;
-      case "RECEIVED":
-        return <Badge className="bg-success text-success-foreground">Received</Badge>;
-      case "PARTIAL":
-        return <Badge className="bg-accent text-accent-foreground">Partial</Badge>;
-      case "CANCELLED":
-        return <Badge variant="destructive">Cancelled</Badge>;
-      default:
-        return <Badge variant="secondary">{status}</Badge>;
-    }
-  };
+  ), [purchaseOrders, searchTerm]);
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Purchase Orders</h1>
@@ -134,13 +29,9 @@ const PurchaseOrders = () => {
             Create and manage purchase orders for your suppliers.
           </p>
         </div>
-        <Button className="gap-2">
-          <Plus className="w-4 h-4" />
-          Create New PO
-        </Button>
+        <CreatePODialog />
       </div>
 
-      {/* Search and Filters */}
       <Card className="p-6">
         <div className="flex items-center gap-4">
           <div className="relative flex-1">
@@ -152,16 +43,13 @@ const PurchaseOrders = () => {
               className="pl-10"
             />
           </div>
-          <Button variant="outline">Filter by Status</Button>
         </div>
       </Card>
 
-      {/* Purchase Orders List */}
       <div className="space-y-4">
         {filteredOrders.map((order) => (
           <Card key={order.id} className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
             <div className="space-y-4">
-              {/* Header */}
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-3">
@@ -172,7 +60,7 @@ const PurchaseOrders = () => {
                     Supplier: {order.supplier.name}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Date: {order.date.toLocaleDateString('en-IN')}
+                    Date: {formatDateIN(order.date)}
                   </p>
                 </div>
                 <div className="p-2 bg-primary-light rounded-lg">
@@ -180,7 +68,6 @@ const PurchaseOrders = () => {
                 </div>
               </div>
 
-              {/* Items Summary */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Items</p>
@@ -194,59 +81,35 @@ const PurchaseOrders = () => {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Total Amount</p>
-                  <p className="text-lg font-semibold">₹{order.total.toLocaleString()}</p>
+                  <p className="text-lg font-semibold">{formatINR(order.total)}</p>
                 </div>
               </div>
 
-              {/* Tax Breakdown */}
               <div className="bg-muted p-4 rounded-lg">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
                     <span className="text-muted-foreground">Subtotal:</span>
-                    <span className="float-right font-medium">₹{order.subtotal.toLocaleString()}</span>
+                    <span className="float-right font-medium">{formatINR(order.subtotal)}</span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">SGST (9%):</span>
-                    <span className="float-right font-medium">₹{order.sgst.toLocaleString()}</span>
+                    <span className="text-muted-foreground">SGST:</span>
+                    <span className="float-right font-medium">{formatINR(order.sgst)}</span>
                   </div>
                   <div>
-                    <span className="text-muted-foreground">CGST (9%):</span>
-                    <span className="float-right font-medium">₹{order.cgst.toLocaleString()}</span>
+                    <span className="text-muted-foreground">CGST:</span>
+                    <span className="float-right font-medium">{formatINR(order.cgst)}</span>
                   </div>
                   <div className="font-semibold">
                     <span className="text-foreground">Total:</span>
-                    <span className="float-right">₹{order.total.toLocaleString()}</span>
+                    <span className="float-right">{formatINR(order.total)}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Expected Delivery */}
-              {order.expectedDelivery && (
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Expected Delivery:</span>
-                  <span className="font-medium">{order.expectedDelivery.toLocaleDateString('en-IN')}</span>
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="gap-1">
-                  <Eye className="w-4 h-4" />
-                  View Details
-                </Button>
-                <Button variant="outline" size="sm" className="gap-1">
-                  <Edit className="w-4 h-4" />
-                  Edit
-                </Button>
-                <Button variant="outline" size="sm" className="gap-1">
-                  <Printer className="w-4 h-4" />
-                  Print/PDF
-                </Button>
-                {order.status === "SENT" && (
-                  <Button variant="success" size="sm">
-                    Create GR
-                  </Button>
-                )}
+              <div className="flex gap-2 flex-wrap">
+                <ViewPODialog id={order.id} />
+                <EditPODialog id={order.id} />
+                <PrintPOButton id={order.id} />
               </div>
             </div>
           </Card>
@@ -260,14 +123,283 @@ const PurchaseOrders = () => {
           <p className="text-muted-foreground mb-4">
             {searchTerm ? "Try adjusting your search terms" : "Create your first purchase order to get started"}
           </p>
-          <Button className="gap-2">
-            <Plus className="w-4 h-4" />
-            Create New PO
-          </Button>
+          <CreatePODialog />
         </Card>
       )}
     </div>
   );
 };
+
+function getStatusBadge(status: string) {
+  switch (status) {
+    case "DRAFT":
+      return <Badge variant="secondary">Draft</Badge>;
+    case "SENT":
+      return <Badge className="bg-warning text-warning-foreground">Sent</Badge>;
+    case "RECEIVED":
+      return <Badge className="bg-success text-success-foreground">Received</Badge>;
+    case "PARTIAL":
+      return <Badge className="bg-accent text-accent-foreground">Partial</Badge>;
+    case "CANCELLED":
+      return <Badge variant="destructive">Cancelled</Badge>;
+    default:
+      return <Badge variant="secondary">{status}</Badge>;
+  }
+}
+
+function CreatePODialog() {
+  const { suppliers, items, addPurchaseOrder, gstSettings } = useApp();
+  const [open, setOpen] = useState(false);
+  const [supplierId, setSupplierId] = useState<string | null>(suppliers[0]?.id || null);
+  const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [applyGST, setApplyGST] = useState<boolean>(gstSettings.enabled);
+  const [rows, setRows] = useState<Array<{ itemId: string; quantity: number; unitPrice: number }>>([
+    { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0 },
+  ]);
+
+  const onAddRow = () => setRows([...rows, { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0 }]);
+  const onSubmit = () => {
+    if (!supplierId || rows.some(r => !r.itemId || r.quantity <= 0)) return;
+    const poNumber = `PO-${new Date().getFullYear()}-${Math.floor(Math.random()*900+100)}`;
+    const poItems = rows.map((r) => ({
+      id: crypto.randomUUID(),
+      itemId: r.itemId,
+      item: items.find(i => i.id === r.itemId)!,
+      quantity: r.quantity,
+      unitPrice: r.unitPrice,
+      total: r.quantity * r.unitPrice,
+    }));
+    addPurchaseOrder({
+      poNumber,
+      supplierId,
+      supplier: suppliers.find(s => s.id === supplierId)!,
+      items: poItems,
+      status: "SENT",
+      date: new Date(date),
+      notes: "",
+      expectedDelivery: undefined,
+      applyGST,
+    });
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="gap-2">
+          <Plus className="w-4 h-4" /> Create New PO
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>Create Purchase Order</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <div className="mb-1">Supplier</div>
+              <Select value={supplierId || undefined} onValueChange={setSupplierId}>
+                <SelectTrigger><SelectValue placeholder="Select supplier" /></SelectTrigger>
+                <SelectContent className="z-50">
+                  {suppliers.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <div className="mb-1">Date</div>
+              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            </div>
+            <div className="flex items-end gap-2">
+              <input id="applyGST" type="checkbox" checked={applyGST} onChange={(e) => setApplyGST(e.target.checked)} />
+              <label htmlFor="applyGST">Apply GST (SGST/CGST)</label>
+            </div>
+          </div>
+
+          <div className="rounded-md border overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Item</TableHead>
+                  <TableHead>Qty</TableHead>
+                  <TableHead>Unit Price</TableHead>
+                  <TableHead>Total</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {rows.map((row, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell className="min-w-[220px]">
+                      <Select value={row.itemId} onValueChange={(v) => {
+                        const it = items.find(i => i.id === v)!;
+                        const next = [...rows];
+                        next[idx] = { ...row, itemId: v, unitPrice: it.unitPrice };
+                        setRows(next);
+                      }}>
+                        <SelectTrigger className="w-full"><SelectValue placeholder="Select item" /></SelectTrigger>
+                        <SelectContent className="z-50 max-h-64">
+                          {items.map((i) => (
+                            <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      <Input type="number" min={1} value={row.quantity} onChange={(e) => {
+                        const next = [...rows];
+                        next[idx] = { ...row, quantity: parseInt(e.target.value) || 0 };
+                        setRows(next);
+                      }} />
+                    </TableCell>
+                    <TableCell>
+                      <Input type="number" min={0} value={row.unitPrice} onChange={(e) => {
+                        const next = [...rows];
+                        next[idx] = { ...row, unitPrice: parseInt(e.target.value) || 0 };
+                        setRows(next);
+                      }} />
+                    </TableCell>
+                    <TableCell className="font-medium">{formatINR(row.quantity * row.unitPrice)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          <Button variant="outline" className="gap-2" onClick={onAddRow}><Plus className="w-4 h-4" /> Add Item</Button>
+        </div>
+        <DialogFooter>
+          <Button onClick={onSubmit}>Create</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ViewPODialog({ id }: { id: string }) {
+  const { purchaseOrders, businessInfo, gstSettings } = useApp();
+  const order = purchaseOrders.find(p => p.id === id)!;
+  const elId = `po-print-${id}`;
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-1"><Eye className="w-4 h-4" /> View</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-4xl">
+        <DialogHeader>
+          <DialogTitle>Purchase Order</DialogTitle>
+        </DialogHeader>
+        <div id={elId}>
+          <div className="header">
+            {businessInfo.logo && <img src={businessInfo.logo} alt="Logo" />}
+            <div>
+              <div className="brand">{businessInfo.name}</div>
+              <div className="muted">{businessInfo.address}</div>
+              <div className="muted">{businessInfo.email} · {businessInfo.phone}</div>
+              {businessInfo.gstNumber && <div className="muted">GST: {businessInfo.gstNumber}</div>}
+            </div>
+          </div>
+          <h2>Purchase Order {order.poNumber}</h2>
+          <div className="grid">
+            <div>
+              <strong>Supplier</strong>
+              <div>{order.supplier.name}</div>
+              <div className="muted">{order.supplier.address}</div>
+              <div className="muted">{order.supplier.email} · {order.supplier.phone}</div>
+              {order.supplier.gstNumber && <div className="muted">GST: {order.supplier.gstNumber}</div>}
+            </div>
+            <div>
+              <strong>Details</strong>
+              <div>Date: {formatDateIN(order.date)}</div>
+              <div>Status: {order.status}</div>
+              <div>GST: {order.sgst + order.cgst > 0 ? `${gstSettings.sgstRate + gstSettings.cgstRate}%` : 'Not Applied'}</div>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr><th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th>Rate</th><th>Total</th></tr>
+            </thead>
+            <tbody>
+              {order.items.map((it, idx) => (
+                <tr key={it.id}>
+                  <td>{idx + 1}</td>
+                  <td>{it.item.name}</td>
+                  <td>{it.quantity}</td>
+                  <td>{it.item.unit}</td>
+                  <td>{formatINR(it.unitPrice)}</td>
+                  <td>{formatINR(it.total)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <table className="totals">
+            <tbody>
+              <tr><td className="label">Subtotal</td><td className="value">{formatINR(order.subtotal)}</td></tr>
+              <tr><td className="label">SGST</td><td className="value">{formatINR(order.sgst)}</td></tr>
+              <tr><td className="label">CGST</td><td className="value">{formatINR(order.cgst)}</td></tr>
+              <tr><td className="label"><strong>Total</strong></td><td className="value"><strong>{formatINR(order.total)}</strong></td></tr>
+            </tbody>
+          </table>
+          {order.notes && <div className="footer">Notes: {order.notes}</div>}
+        </div>
+        <DialogFooter>
+          <Button onClick={() => printElementById(elId, `PO ${order.poNumber}`)} className="gap-1"><Printer className="w-4 h-4" /> Print</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function EditPODialog({ id }: { id: string }) {
+  const { purchaseOrders, updatePurchaseOrder } = useApp();
+  const order = purchaseOrders.find(p => p.id === id)!;
+  const [open, setOpen] = useState(false);
+  const [status, setStatus] = useState(order.status);
+  const [notes, setNotes] = useState(order.notes || "");
+
+  const onSave = () => { updatePurchaseOrder(id, { status, notes }); setOpen(false); };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-1"><Edit className="w-4 h-4" /> Edit</Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Edit PO</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3 text-sm">
+          <div>
+            <div className="mb-1">Status</div>
+            <Select value={status} onValueChange={(v) => setStatus(v as any)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent className="z-50">
+                {['DRAFT','SENT','RECEIVED','PARTIAL','CANCELLED'].map(s => (
+                  <SelectItem key={s} value={s}>{s}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <div className="mb-1">Notes</div>
+            <Input value={notes} onChange={(e) => setNotes(e.target.value)} />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button onClick={onSave}>Save</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function PrintPOButton({ id }: { id: string }) {
+  const elId = `po-print-${id}`;
+  return (
+    <Button variant="outline" size="sm" className="gap-1" onClick={() => printElementById(elId)}>
+      <Printer className="w-4 h-4" /> Print/PDF
+    </Button>
+  );
+}
 
 export default PurchaseOrders;
