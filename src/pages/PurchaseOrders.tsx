@@ -341,6 +341,7 @@ function ViewPODialog({ id }: { id: string }) {
           </div>
           
           <div className="section">
+            <p style={{marginBottom: '8px', fontStyle: 'italic'}}>Please supply following goods in accordance with terms and conditions prescribed hereunder :</p>
             <table>
               <thead>
                 <tr><th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th>Rate</th><th>Total</th></tr>
@@ -395,8 +396,9 @@ function ViewPODialog({ id }: { id: string }) {
           
           {order.notes && <div className="footer">Notes: {order.notes}</div>}
         </div>
-        <DialogFooter>
-          <Button onClick={() => printElementById(elId, `PO ${order.poNumber}`)} className="gap-1"><Printer className="w-4 h-4" /> Print</Button>
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={() => printElementById(elId, `PO ${order.poNumber}`)} className="gap-1"><Printer className="w-4 h-4" /> Print</Button>
+          <DeletePODialog id={id} />
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -451,6 +453,23 @@ function PrintPOButton({ id }: { id: string }) {
   return (
     <Button variant="outline" size="sm" className="gap-1" onClick={() => printElementById(elId)}>
       <Printer className="w-4 h-4" /> Print/PDF
+    </Button>
+  );
+}
+
+function DeletePODialog({ id }: { id: string }) {
+  const { purchaseOrders, updatePurchaseOrder } = useApp();
+  const order = purchaseOrders.find(p => p.id === id)!;
+  
+  const handleDelete = () => {
+    if (confirm(`Are you sure you want to delete PO ${order.poNumber}?`)) {
+      updatePurchaseOrder(id, { ...order, status: 'CANCELLED' });
+    }
+  };
+
+  return (
+    <Button variant="destructive" onClick={handleDelete} className="gap-1">
+      <Trash2 className="w-4 h-4" /> Delete
     </Button>
   );
 }

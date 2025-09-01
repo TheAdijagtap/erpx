@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Package, Eye, Edit, Printer, CheckCircle, XCircle } from "lucide-react";
+import { Plus, Search, Package, Eye, Edit, Printer, CheckCircle, XCircle, Trash2 } from "lucide-react";
 import { useApp } from "@/store/AppContext";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
@@ -116,6 +116,7 @@ const GoodsReceiptPage = () => {
                 <ViewGRDialog id={receipt.id} />
                 <EditGRDialog id={receipt.id} />
                 <PrintGRButton id={receipt.id} />
+                <DeleteGRDialog id={receipt.id} />
                 {receipt.status === 'QUALITY_CHECK' && (
                   <>
                     <UpdateStatusButton id={receipt.id} status="ACCEPTED" label="Accept" />
@@ -427,6 +428,23 @@ function PrintGRButton({ id }: { id: string }) {
   return (
     <Button variant="outline" size="sm" className="gap-1" onClick={() => printElementById(elId)}>
       <Printer className="w-4 h-4" /> Print/PDF
+    </Button>
+  );
+}
+
+function DeleteGRDialog({ id }: { id: string }) {
+  const { goodsReceipts, updateGoodsReceipt } = useApp();
+  const receipt = goodsReceipts.find(g => g.id === id)!;
+  
+  const handleDelete = () => {
+    if (confirm(`Are you sure you want to delete GR ${receipt.grNumber}?`)) {
+      updateGoodsReceipt(id, { ...receipt, status: 'REJECTED' });
+    }
+  };
+
+  return (
+    <Button variant="destructive" size="sm" onClick={handleDelete} className="gap-1">
+      <Trash2 className="w-4 h-4" /> Delete
     </Button>
   );
 }

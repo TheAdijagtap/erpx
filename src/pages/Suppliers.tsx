@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Users, Mail, Phone, MapPin, Edit, Eye } from "lucide-react";
+import { Plus, Search, Users, Mail, Phone, MapPin, Edit, Eye, Trash2 } from "lucide-react";
 import { Supplier } from "@/types/inventory";
 
 const Suppliers = () => {
@@ -188,8 +188,14 @@ const Suppliers = () => {
                   <Edit className="w-4 h-4" />
                   Edit
                 </Button>
-                <Button variant="default" size="sm" className="flex-1">
-                  Create PO
+                <Button variant="destructive" size="sm" className="gap-1" onClick={() => {
+                  if (confirm(`Are you sure you want to delete supplier ${supplier.name}?`)) {
+                    // In a real app, this would call API to delete
+                    console.log('Delete supplier:', supplier.id);
+                  }
+                }}>
+                  <Trash2 className="w-4 h-4" />
+                  Delete
                 </Button>
               </div>
             </div>
