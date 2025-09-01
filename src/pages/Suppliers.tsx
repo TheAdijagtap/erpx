@@ -131,7 +131,7 @@ const Suppliers = () => {
               {/* Metadata */}
               <div className="pt-3 border-t border-border">
                 <p className="text-xs text-muted-foreground">
-                  Added on {supplier.createdAt.toLocaleDateString('en-IN')}
+                  Added on {new Date((supplier as any).createdAt).toLocaleDateString('en-IN')}
                 </p>
               </div>
 

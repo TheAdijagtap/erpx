@@ -156,7 +156,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           return obj;
         };
         parsed.items = parsed.items?.map((i: any) => reviveDates(i)) ?? [];
-        parsed.suppliers = parsed.suppliers ?? [];
+        parsed.suppliers = parsed.suppliers?.map((s: any) => reviveDates(s)) ?? [];
         parsed.purchaseOrders = parsed.purchaseOrders?.map((p: any) => {
           reviveDates(p);
           p.items = p.items?.map((it: any) => reviveDates(it)) ?? [];
