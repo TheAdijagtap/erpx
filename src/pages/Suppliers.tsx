@@ -4,54 +4,11 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Users, Mail, Phone, MapPin, Edit, Eye, Trash2 } from "lucide-react";
-import { Supplier } from "@/types/inventory";
+import { useApp } from "@/store/AppContext";
 
 const Suppliers = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  
-  // Mock data - in real app this would come from API
-  const [suppliers] = useState<Supplier[]>([
-    {
-      id: "1",
-      name: "ABC Stationery Supplies",
-      contactPerson: "Rajesh Kumar",
-      email: "rajesh@abcstationery.com",
-      phone: "+91 98765 43210",
-      address: "123 Business Park, Andheri East, Mumbai, Maharashtra 400069",
-      gstNumber: "27ABCDE1234F1Z5",
-      createdAt: new Date("2024-01-01"),
-    },
-    {
-      id: "2",
-      name: "Tech Solutions India",
-      contactPerson: "Priya Sharma",
-      email: "priya@techsolutions.in",
-      phone: "+91 87654 32109",
-      address: "456 Tech Hub, Electronic City, Bangalore, Karnataka 560100",
-      gstNumber: "29XYZAB5678G2H3",
-      createdAt: new Date("2024-01-02"),
-    },
-    {
-      id: "3",
-      name: "Print Solutions Ltd",
-      contactPerson: "Amit Patel",
-      email: "amit@printsolutions.com",
-      phone: "+91 76543 21098",
-      address: "789 Industrial Area, Sector 18, Gurgaon, Haryana 122015",
-      gstNumber: "06PQRST9876K3L4",
-      createdAt: new Date("2024-01-03"),
-    },
-    {
-      id: "4",
-      name: "Green Office Supplies",
-      contactPerson: "Sunita Reddy",
-      email: "sunita@greenoffice.co.in",
-      phone: "+91 65432 10987",
-      address: "321 Eco Plaza, Banjara Hills, Hyderabad, Telangana 500034",
-      gstNumber: "36MNOPQ4321D5E6",
-      createdAt: new Date("2024-01-04"),
-    },
-  ]);
+  const { suppliers, removeSupplier } = useApp();
 
   const filteredSuppliers = suppliers.filter(supplier =>
     supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -190,8 +147,7 @@ const Suppliers = () => {
                 </Button>
                 <Button variant="destructive" size="sm" className="gap-1" onClick={() => {
                   if (confirm(`Are you sure you want to delete supplier ${supplier.name}?`)) {
-                    // In a real app, this would call API to delete
-                    console.log('Delete supplier:', supplier.id);
+                    removeSupplier(supplier.id);
                   }
                 }}>
                   <Trash2 className="w-4 h-4" />

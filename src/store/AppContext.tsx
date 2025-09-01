@@ -35,22 +35,26 @@ interface AppContextValue extends AppState {
     reference?: string,
     unitPriceOverride?: number
   ) => void;
+  removeItem: (id: string) => void;
 
   // Suppliers
   addSupplier: (supplier: Omit<Supplier, "id" | "createdAt">) => string;
   updateSupplier: (id: string, patch: Partial<Supplier>) => void;
+  removeSupplier: (id: string) => void;
 
   // Purchase Orders
   addPurchaseOrder: (
     po: Omit<PurchaseOrder, "id" | "subtotal" | "sgst" | "cgst" | "total"> & { applyGST?: boolean }
   ) => string;
   updatePurchaseOrder: (id: string, patch: Partial<PurchaseOrder>) => void;
+  removePurchaseOrder: (id: string) => void;
 
   // Goods Receipts
   addGoodsReceipt: (
     gr: Omit<GoodsReceipt, "id" | "subtotal" | "sgst" | "cgst" | "total"> & { applyGST?: boolean }
   ) => string;
   updateGoodsReceipt: (id: string, patch: Partial<GoodsReceipt>) => void;
+  removeGoodsReceipt: (id: string) => void;
 
   // Business
   setBusinessInfo: (info: BusinessInfo) => void;
@@ -228,6 +232,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         };
       });
     },
+    removeItem: (id) => {
+      setState((s) => ({
+        ...s,
+        items: s.items.filter((it) => it.id !== id),
+        transactions: s.transactions.filter((t) => t.itemId !== id),
+      }));
+    },
 
     // Suppliers
     addSupplier: (supplier) => {
@@ -242,6 +253,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setState((s) => ({
         ...s,
         suppliers: s.suppliers.map((sp) => (sp.id === id ? { ...sp, ...patch } : sp)),
+      }));
+    },
+    removeSupplier: (id) => {
+      setState((s) => ({
+        ...s,
+        suppliers: s.suppliers.filter((sp) => sp.id !== id),
       }));
     },
 
@@ -273,6 +290,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         purchaseOrders: s.purchaseOrders.map((p) => (p.id === id ? { ...p, ...patch } : p)),
       }));
     },
+    removePurchaseOrder: (id) => {
+      setState((s) => ({
+        ...s,
+        purchaseOrders: s.purchaseOrders.filter((p) => p.id !== id),
+      }));
+    },
 
     // GRs
     addGoodsReceipt: (gr) => {
@@ -300,6 +323,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setState((s) => ({
         ...s,
         goodsReceipts: s.goodsReceipts.map((g) => (g.id === id ? { ...g, ...patch } : g)),
+      }));
+    },
+    removeGoodsReceipt: (id) => {
+      setState((s) => ({
+        ...s,
+        goodsReceipts: s.goodsReceipts.filter((g) => g.id !== id),
       }));
     },
 

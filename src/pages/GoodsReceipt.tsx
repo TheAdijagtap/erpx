@@ -433,12 +433,12 @@ function PrintGRButton({ id }: { id: string }) {
 }
 
 function DeleteGRDialog({ id }: { id: string }) {
-  const { goodsReceipts, updateGoodsReceipt } = useApp();
+  const { goodsReceipts, removeGoodsReceipt } = useApp();
   const receipt = goodsReceipts.find(g => g.id === id)!;
   
   const handleDelete = () => {
     if (confirm(`Are you sure you want to delete GR ${receipt.grNumber}?`)) {
-      updateGoodsReceipt(id, { ...receipt, status: 'REJECTED' });
+      removeGoodsReceipt(id);
     }
   };
 

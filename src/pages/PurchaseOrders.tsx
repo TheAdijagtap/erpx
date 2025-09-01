@@ -111,6 +111,7 @@ const PurchaseOrders = () => {
                 <ViewPODialog id={order.id} />
                 <EditPODialog id={order.id} />
                 <PrintPOButton id={order.id} />
+                <DeletePODialog id={order.id} />
               </div>
             </div>
           </Card>
@@ -458,12 +459,12 @@ function PrintPOButton({ id }: { id: string }) {
 }
 
 function DeletePODialog({ id }: { id: string }) {
-  const { purchaseOrders, updatePurchaseOrder } = useApp();
+  const { purchaseOrders, removePurchaseOrder } = useApp();
   const order = purchaseOrders.find(p => p.id === id)!;
   
   const handleDelete = () => {
     if (confirm(`Are you sure you want to delete PO ${order.poNumber}?`)) {
-      updatePurchaseOrder(id, { ...order, status: 'CANCELLED' });
+      removePurchaseOrder(id);
     }
   };
 
