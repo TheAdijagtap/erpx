@@ -171,7 +171,7 @@ function CreateGRDialog() {
   const onAddRow = () => setRows([...rows, { itemId: items[0]?.id || "", receivedQuantity: 1, unitPrice: items[0]?.unitPrice || 0 }]);
   const onSubmit = () => {
     if (!supplierId || rows.some(r => !r.itemId || r.receivedQuantity <= 0)) return;
-    const grNumber = `GR-${new Date().getFullYear()}-${Math.floor(Math.random()*900+100)}`;
+    const grNumber = `GR-${new Date().getFullYear()}-${String(Math.floor(Math.random()*999)+1).padStart(3, '0')}`;
     const grItems = rows.map((r) => ({
       id: crypto.randomUUID(),
       itemId: r.itemId,

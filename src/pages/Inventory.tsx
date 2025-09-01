@@ -12,7 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import { formatINR } from "@/lib/format";
 
 const Inventory = () => {
-  const { items, transactions, transactItem } = useApp();
+  const { items, transactions, transactItem, removeItem } = useApp();
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredItems = useMemo(() =>
@@ -121,6 +121,13 @@ const Inventory = () => {
                       <Minus className="w-4 h-4" /> Use
                     </Button>
                   </ItemTransactDialog>
+                  <Button variant="destructive" size="sm" className="gap-1" onClick={() => {
+                    if (confirm(`Are you sure you want to delete item ${item.name}?`)) {
+                      removeItem(item.id);
+                    }
+                  }}>
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
                 </div>
 
                 {itemTransactions.length > 0 && (

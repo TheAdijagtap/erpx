@@ -163,7 +163,7 @@ function CreatePODialog() {
   const onAddRow = () => setRows([...rows, { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0, unit: items[0]?.unit || "PCS" }]);
   const onSubmit = () => {
     if (!supplierId || rows.some(r => !r.itemId || r.quantity <= 0)) return;
-    const poNumber = `PO-${new Date().getFullYear()}-${Math.floor(Math.random()*900+100)}`;
+    const poNumber = `PO-${new Date().getFullYear()}-${String(Math.floor(Math.random()*999)+1).padStart(3, '0')}`;
     const poItems = rows.map((r) => ({
       id: crypto.randomUUID(),
       itemId: r.itemId,

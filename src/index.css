@@ -7,7 +7,7 @@
 @layer base {
   :root {
     /* Core Brand Colors */
-    --background: 248 252 255;
+    --background: 0 0% 100%;
     --foreground: 215 25% 12%;
 
     /* Card & Surface Colors */
@@ -42,8 +42,10 @@
     /* Status Colors */
     --success: 142 76% 36%;
     --success-foreground: 0 0% 98%;
+    --success-light: 142 76% 95%;
     --warning: 45 93% 47%;
     --warning-foreground: 0 0% 98%;
+    --warning-light: 45 93% 95%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
@@ -115,7 +117,9 @@
     --muted-foreground: 215 15% 65%;
 
     --success: 142 76% 45%;
+    --success-light: 142 76% 15%;
     --warning: 45 93% 55%;
+    --warning-light: 45 93% 15%;
     --destructive: 0 84% 65%;
 
     --border: 215 25% 20%;
