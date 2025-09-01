@@ -23,6 +23,11 @@ export function printElementById(id: string, title = "Document") {
       .totals .label { color: #64748b; }
       .totals .value { text-align: right; font-weight: 600; }
       .footer { margin-top: 24px; font-size: 12px; color: #64748b; }
+      .section { border: 1px solid #e2e8f0; margin: 8px 0; padding: 12px; border-radius: 6px; }
+      .amount-words { font-style: italic; color: #64748b; margin-top: 4px; }
+      .terms { margin-top: 16px; }
+      .signature-section { margin-top: 16px; text-align: right; }
+      .signature-image { max-width: 120px; max-height: 60px; }
       img { max-height: 48px; }
       @media print { @page { margin: 12mm; } }
     </style>

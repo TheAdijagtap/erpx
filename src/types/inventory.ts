@@ -46,6 +46,7 @@ export interface BusinessInfo {
   email: string;
   gstNumber?: string;
   logo?: string;
+  signature?: string;
   bankDetails?: {
     accountNumber: string;
     ifscCode: string;

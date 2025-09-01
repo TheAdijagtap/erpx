@@ -124,6 +124,41 @@ const BusinessSetup = () => {
                 placeholder="22AAAAA0000A1Z5"
               />
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="signature">Authorized Signature</Label>
+              <div className="flex items-center gap-4">
+                <div className="w-20 h-12 bg-muted rounded-lg flex items-center justify-center overflow-hidden">
+                  {businessInfo.signature ? (
+                    <img src={businessInfo.signature} alt="Signature" className="w-full h-full object-contain" />
+                  ) : (
+                    <div className="text-xs text-muted-foreground">No signature</div>
+                  )}
+                </div>
+                <div>
+                  <input 
+                    id="signature" 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = () => {
+                        setBusinessInfo({ ...businessInfo, signature: reader.result as string });
+                      };
+                      reader.readAsDataURL(file);
+                    }} 
+                    className="hidden" 
+                  />
+                  <Button asChild variant="outline" size="sm" className="gap-2">
+                    <label htmlFor="signature" className="cursor-pointer">
+                      <Upload className="w-4 h-4 inline mr-1" /> Upload Signature
+                    </label>
+                  </Button>
+                </div>
+              </div>
+            </div>
           </div>
         </Card>
 

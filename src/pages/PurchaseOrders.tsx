@@ -10,6 +10,7 @@ import { Plus, Search, FileText, Eye, Edit, Printer, Trash2 } from "lucide-react
 import { useApp } from "@/store/AppContext";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
+import { numberToWords } from "@/lib/numberToWords";
 
 const PurchaseOrders = () => {
   const { purchaseOrders } = useApp();
@@ -290,56 +291,93 @@ function ViewPODialog({ id }: { id: string }) {
           <DialogTitle>Purchase Order</DialogTitle>
         </DialogHeader>
         <div id={elId}>
-          <div className="header">
-            {businessInfo.logo && <img src={businessInfo.logo} alt="Logo" />}
-            <div>
-              <div className="brand">{businessInfo.name}</div>
-              <div className="muted">{businessInfo.address}</div>
-              <div className="muted">{businessInfo.email} · {businessInfo.phone}</div>
-              {businessInfo.gstNumber && <div className="muted">GST: {businessInfo.gstNumber}</div>}
+          <div className="section">
+            <div className="header">
+              {businessInfo.logo && <img src={businessInfo.logo} alt="Logo" />}
+              <div>
+                <div className="brand">{businessInfo.name}</div>
+                <div className="muted">{businessInfo.address}</div>
+                <div className="muted">{businessInfo.email} · {businessInfo.phone}</div>
+                {businessInfo.gstNumber && <div className="muted">GST: {businessInfo.gstNumber}</div>}
+              </div>
             </div>
           </div>
-          <h2>Purchase Order {order.poNumber}</h2>
-          <div className="grid">
-            <div>
-              <strong>Supplier</strong>
-              <div>{order.supplier.name}</div>
-              <div className="muted">{order.supplier.address}</div>
-              <div className="muted">{order.supplier.email} · {order.supplier.phone}</div>
-              {order.supplier.gstNumber && <div className="muted">GST: {order.supplier.gstNumber}</div>}
-            </div>
-            <div>
-              <strong>Details</strong>
-              <div>Date: {formatDateIN(order.date)}</div>
-              <div>Status: {order.status}</div>
-              <div>GST: {order.sgst + order.cgst > 0 ? `${gstSettings.sgstRate + gstSettings.cgstRate}%` : 'Not Applied'}</div>
+          
+          <div className="section">
+            <h2>Purchase Order {order.poNumber}</h2>
+          </div>
+          
+          <div className="section">
+            <div className="grid">
+              <div>
+                <strong>Supplier Details</strong>
+                <div>{order.supplier.name}</div>
+                <div className="muted">{order.supplier.address}</div>
+                <div className="muted">{order.supplier.email} · {order.supplier.phone}</div>
+                {order.supplier.gstNumber && <div className="muted">GST: {order.supplier.gstNumber}</div>}
+              </div>
+              <div>
+                <strong>Order Details</strong>
+                <div>Date: {formatDateIN(order.date)}</div>
+                <div>Status: {order.status}</div>
+                <div>GST: {order.sgst + order.cgst > 0 ? `${gstSettings.sgstRate + gstSettings.cgstRate}%` : 'Not Applied'}</div>
+              </div>
             </div>
           </div>
-          <table>
-            <thead>
-              <tr><th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th>Rate</th><th>Total</th></tr>
-            </thead>
-            <tbody>
-              {order.items.map((it, idx) => (
-                <tr key={it.id}>
-                  <td>{idx + 1}</td>
-                  <td>{it.item.name}</td>
-                  <td>{it.quantity}</td>
-                  <td>{it.item.unit}</td>
-                  <td>{formatINR(it.unitPrice)}</td>
-                  <td>{formatINR(it.total)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <table className="totals">
-            <tbody>
-              <tr><td className="label">Subtotal</td><td className="value">{formatINR(order.subtotal)}</td></tr>
-              <tr><td className="label">SGST</td><td className="value">{formatINR(order.sgst)}</td></tr>
-              <tr><td className="label">CGST</td><td className="value">{formatINR(order.cgst)}</td></tr>
-              <tr><td className="label"><strong>Total</strong></td><td className="value"><strong>{formatINR(order.total)}</strong></td></tr>
-            </tbody>
-          </table>
+          
+          <div className="section">
+            <table>
+              <thead>
+                <tr><th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th>Rate</th><th>Total</th></tr>
+              </thead>
+              <tbody>
+                {order.items.map((it, idx) => (
+                  <tr key={it.id}>
+                    <td>{idx + 1}</td>
+                    <td>{it.item.name}</td>
+                    <td>{it.quantity}</td>
+                    <td>{it.item.unit}</td>
+                    <td>{formatINR(it.unitPrice)}</td>
+                    <td>{formatINR(it.total)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          <div className="section">
+            <table className="totals">
+              <tbody>
+                <tr><td className="label">Subtotal</td><td className="value">{formatINR(order.subtotal)}</td></tr>
+                <tr><td className="label">SGST</td><td className="value">{formatINR(order.sgst)}</td></tr>
+                <tr><td className="label">CGST</td><td className="value">{formatINR(order.cgst)}</td></tr>
+                <tr><td className="label"><strong>Total Amount</strong></td><td className="value"><strong>{formatINR(order.total)}</strong></td></tr>
+              </tbody>
+            </table>
+            <div className="amount-words">
+              Amount in Words: {numberToWords(order.total)}
+            </div>
+          </div>
+          
+          <div className="section terms">
+            <strong>Terms & Conditions:</strong>
+            <div className="muted" style={{ marginTop: '8px', lineHeight: '1.4' }}>
+              1. Payment terms: 30 days from invoice date<br />
+              2. All disputes subject to local jurisdiction<br />
+              3. Goods once sold will not be taken back<br />
+              4. Late payment may attract penalty charges<br />
+              5. All rates are inclusive of applicable taxes
+            </div>
+          </div>
+          
+          {businessInfo.signature && (
+            <div className="signature-section">
+              <div>Authorized Signatory</div>
+              <img src={businessInfo.signature} alt="Authorized Signature" className="signature-image" style={{ marginTop: '8px' }} />
+              <div className="muted">{businessInfo.name}</div>
+            </div>
+          )}
+          
           {order.notes && <div className="footer">Notes: {order.notes}</div>}
         </div>
         <DialogFooter>
