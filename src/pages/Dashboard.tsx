@@ -1,51 +1,98 @@
+import { useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Package, TrendingUp, TrendingDown, AlertTriangle, ShoppingCart, FileText } from "lucide-react";
+import { useApp } from "@/store/AppContext";
+import { formatINR } from "@/lib/format";
 
 const Dashboard = () => {
-  // Mock data - in real app this would come from API
+  const { items, transactions, purchaseOrders, goodsReceipts } = useApp();
+
+  // Calculate real analytics from actual data
+  const analytics = useMemo(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    // Low stock items (current stock <= min stock)
+    const lowStockItems = items.filter(item => item.currentStock <= item.minStock);
+    
+    // Pending purchase orders (DRAFT and SENT are considered pending)
+    const pendingPOs = purchaseOrders.filter(po => po.status === 'DRAFT' || po.status === 'SENT');
+    
+    // This month's goods receipts
+    const thisMonthGRs = goodsReceipts.filter(gr => {
+      const grDate = new Date(gr.date);
+      return grDate.getMonth() === currentMonth && grDate.getFullYear() === currentYear;
+    });
+    
+    // Previous month for comparison
+    const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+    const lastMonthGRs = goodsReceipts.filter(gr => {
+      const grDate = new Date(gr.date);
+      return grDate.getMonth() === lastMonth && grDate.getFullYear() === lastMonthYear;
+    });
+    
+    // Calculate changes
+    const grChange = lastMonthGRs.length > 0 
+      ? Math.round(((thisMonthGRs.length - lastMonthGRs.length) / lastMonthGRs.length) * 100)
+      : thisMonthGRs.length > 0 ? 100 : 0;
+    
+    return {
+      totalItems: items.length,
+      lowStockCount: lowStockItems.length,
+      pendingPOsCount: pendingPOs.length,
+      thisMonthGRsCount: thisMonthGRs.length,
+      grChange,
+      lowStockItems,
+      totalInventoryValue: items.reduce((sum, item) => sum + (item.currentStock * item.unitPrice), 0)
+    };
+  }, [items, purchaseOrders, goodsReceipts]);
+
+  // Recent transactions (last 10)
+  const recentTransactions = useMemo(() => {
+    return transactions
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 10)
+      .map(transaction => {
+        const item = items.find(i => i.id === transaction.itemId);
+        return {
+          ...transaction,
+          itemName: item?.name || 'Unknown Item'
+        };
+      });
+  }, [transactions, items]);
+
   const stats = [
     {
       title: "Total Items",
-      value: "1,234",
-      change: "+12%",
+      value: analytics.totalItems.toString(),
+      change: `Value: ${formatINR(analytics.totalInventoryValue)}`,
       changeType: "positive" as const,
       icon: Package,
     },
     {
       title: "Low Stock Items",
-      value: "23",
-      change: "+5",
-      changeType: "negative" as const,
+      value: analytics.lowStockCount.toString(),
+      change: analytics.lowStockCount > 0 ? "Needs attention" : "All good",
+      changeType: analytics.lowStockCount > 0 ? "negative" as const : "positive" as const,
       icon: AlertTriangle,
     },
     {
       title: "Pending POs",
-      value: "8",
-      change: "-2",
+      value: analytics.pendingPOsCount.toString(),
+      change: analytics.pendingPOsCount > 0 ? "Awaiting delivery" : "No pending orders",
       changeType: "positive" as const,
       icon: ShoppingCart,
     },
     {
       title: "This Month GR",
-      value: "45",
-      change: "+18%",
-      changeType: "positive" as const,
+      value: analytics.thisMonthGRsCount.toString(),
+      change: analytics.grChange > 0 ? `+${analytics.grChange}%` : analytics.grChange < 0 ? `${analytics.grChange}%` : "No change",
+      changeType: analytics.grChange >= 0 ? "positive" as const : "negative" as const,
       icon: FileText,
     },
-  ];
-
-  const recentTransactions = [
-    { id: "1", item: "Office Paper A4", type: "IN", quantity: 100, date: "2024-01-15" },
-    { id: "2", item: "Wireless Mouse", type: "OUT", quantity: 5, date: "2024-01-14" },
-    { id: "3", item: "Printer Ink Cartridge", type: "IN", quantity: 20, date: "2024-01-13" },
-    { id: "4", item: "USB Flash Drive", type: "OUT", quantity: 3, date: "2024-01-12" },
-  ];
-
-  const lowStockItems = [
-    { id: "1", name: "Office Paper A4", currentStock: 15, minStock: 50, unit: "packs" },
-    { id: "2", name: "Printer Ink Cartridge", currentStock: 2, minStock: 10, unit: "pieces" },
-    { id: "3", name: "Wireless Mouse", currentStock: 3, minStock: 15, unit: "pieces" },
   ];
 
   return (
@@ -100,11 +147,14 @@ const Dashboard = () => {
             <Button variant="outline" size="sm">View All</Button>
           </div>
           <div className="space-y-3">
-            {recentTransactions.map((transaction) => (
+            {recentTransactions.length > 0 ? recentTransactions.map((transaction) => (
               <div key={transaction.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                 <div>
-                  <p className="font-medium text-foreground">{transaction.item}</p>
-                  <p className="text-sm text-muted-foreground">{transaction.date}</p>
+                  <p className="font-medium text-foreground">{transaction.itemName}</p>
+                  <p className="text-sm text-muted-foreground">{new Date(transaction.date).toLocaleDateString('en-IN')}</p>
+                  {transaction.reason && (
+                    <p className="text-xs text-muted-foreground">{transaction.reason}</p>
+                  )}
                 </div>
                 <div className="text-right">
                   <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
@@ -114,9 +164,17 @@ const Dashboard = () => {
                   }`}>
                     {transaction.type === "IN" ? "+" : "-"}{transaction.quantity}
                   </span>
+                  {transaction.totalValue && (
+                    <p className="text-xs text-muted-foreground mt-1">{formatINR(transaction.totalValue)}</p>
+                  )}
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="text-center text-muted-foreground py-4">
+                <p>No transactions yet</p>
+                <p className="text-xs">Start by creating goods receipts or inventory transactions</p>
+              </div>
+            )}
           </div>
         </Card>
 
@@ -127,22 +185,31 @@ const Dashboard = () => {
             <Button variant="outline" size="sm">Manage Stock</Button>
           </div>
           <div className="space-y-3">
-            {lowStockItems.map((item) => (
+            {analytics.lowStockItems.length > 0 ? analytics.lowStockItems.map((item) => (
               <div key={item.id} className="flex items-center justify-between p-3 bg-destructive/5 rounded-lg border border-destructive/20">
                 <div>
                   <p className="font-medium text-foreground">{item.name}</p>
                   <p className="text-sm text-muted-foreground">
                     Min: {item.minStock} {item.unit}
                   </p>
+                  <p className="text-xs text-muted-foreground">SKU: {item.sku}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-medium text-destructive">
                     {item.currentStock} {item.unit}
                   </p>
                   <p className="text-xs text-muted-foreground">Current stock</p>
+                  <p className="text-xs text-muted-foreground">
+                    Value: {formatINR(item.currentStock * item.unitPrice)}
+                  </p>
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="text-center text-muted-foreground py-4">
+                <p>No low stock items</p>
+                <p className="text-xs">All items are above minimum stock levels</p>
+              </div>
+            )}
           </div>
         </Card>
       </div>
