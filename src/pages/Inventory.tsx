@@ -6,13 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { Plus, Search, Package, Eye, Edit, Minus, PlusCircle, Trash2 } from "lucide-react";
 import { useApp } from "@/store/AppContext";
 import { toast } from "@/hooks/use-toast";
 import { formatINR } from "@/lib/format";
 
 const Inventory = () => {
-  const { items, transactions, transactItem, removeItem } = useApp();
+  const { items, transactions, transactItem, removeItem, addItem } = useApp();
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredItems = useMemo(() =>
@@ -49,6 +50,12 @@ const Inventory = () => {
             Manage your stock levels and track inventory movements.
           </p>
         </div>
+        <CreateItemDialog>
+          <Button className="gap-2">
+            <Plus className="w-4 h-4" />
+            Add New Item
+          </Button>
+        </CreateItemDialog>
       </div>
 
       <Card className="p-6">
@@ -155,10 +162,12 @@ const Inventory = () => {
           <p className="text-muted-foreground mb-4">
             {searchTerm ? "Try adjusting your search terms" : "Get started by adding your first inventory item"}
           </p>
-          <Button className="gap-2">
-            <Plus className="w-4 h-4" />
-            Add New Item
-          </Button>
+          <CreateItemDialog>
+            <Button className="gap-2">
+              <Plus className="w-4 h-4" />
+              Add New Item
+            </Button>
+          </CreateItemDialog>
         </Card>
       )}
     </div>
@@ -300,6 +309,152 @@ function ItemTransactDialog({ itemId, type, children }: { itemId: string; type: 
         <DialogFooter>
           <Button onClick={onSubmit}>{type === 'IN' ? <><PlusCircle className="w-4 h-4 mr-1" /> Add</> : <> <Minus className="w-4 h-4 mr-1" /> Use</>}</Button>
         </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function CreateItemDialog({ children }: { children: React.ReactNode }) {
+  const { addItem } = useApp();
+  const [open, setOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    sku: "",
+    category: "",
+    currentStock: 0,
+    minStock: 0,
+    maxStock: 0,
+    unitPrice: 0,
+    unit: "pcs"
+  });
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || !formData.sku || !formData.category) {
+      toast({ title: "Error", description: "Please fill in all required fields.", variant: "destructive" as any });
+      return;
+    }
+
+    const item = {
+      id: Date.now().toString(),
+      ...formData,
+      createdAt: new Date()
+    };
+
+    addItem(item);
+    toast({ title: "Success", description: "Item added successfully!" });
+    setFormData({ name: "", sku: "", category: "", currentStock: 0, minStock: 0, maxStock: 0, unitPrice: 0, unit: "pcs" });
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Add New Item</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={onSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="name">Item Name *</Label>
+            <Input 
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="Enter item name"
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="sku">SKU *</Label>
+            <Input 
+              id="sku"
+              value={formData.sku}
+              onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+              placeholder="Enter SKU"
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="category">Category *</Label>
+            <Input 
+              id="category"
+              value={formData.category}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              placeholder="Enter category"
+              required
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="currentStock">Current Stock</Label>
+              <Input 
+                id="currentStock"
+                type="number"
+                value={formData.currentStock}
+                onChange={(e) => setFormData({ ...formData, currentStock: parseInt(e.target.value) || 0 })}
+                placeholder="0"
+                min="0"
+              />
+            </div>
+            <div>
+              <Label htmlFor="unit">Unit</Label>
+              <Select value={formData.unit} onValueChange={(value) => setFormData({ ...formData, unit: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pcs">Pieces</SelectItem>
+                  <SelectItem value="kg">Kilograms</SelectItem>
+                  <SelectItem value="ltr">Liters</SelectItem>
+                  <SelectItem value="box">Box</SelectItem>
+                  <SelectItem value="pack">Pack</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="minStock">Min Stock</Label>
+              <Input 
+                id="minStock"
+                type="number"
+                value={formData.minStock}
+                onChange={(e) => setFormData({ ...formData, minStock: parseInt(e.target.value) || 0 })}
+                placeholder="0"
+                min="0"
+              />
+            </div>
+            <div>
+              <Label htmlFor="maxStock">Max Stock</Label>
+              <Input 
+                id="maxStock"
+                type="number"
+                value={formData.maxStock}
+                onChange={(e) => setFormData({ ...formData, maxStock: parseInt(e.target.value) || 0 })}
+                placeholder="0"
+                min="0"
+              />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="unitPrice">Unit Price</Label>
+            <Input 
+              id="unitPrice"
+              type="number"
+              value={formData.unitPrice}
+              onChange={(e) => setFormData({ ...formData, unitPrice: parseInt(e.target.value) || 0 })}
+              placeholder="0"
+              min="0"
+            />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit">Add Item</Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

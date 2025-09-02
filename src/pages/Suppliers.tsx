@@ -3,12 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Plus, Search, Users, Mail, Phone, MapPin, Edit, Eye, Trash2 } from "lucide-react";
 import { useApp } from "@/store/AppContext";
+import { toast } from "@/hooks/use-toast";
 
 const Suppliers = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const { suppliers, removeSupplier } = useApp();
+  const { suppliers, removeSupplier, addSupplier } = useApp();
 
   const filteredSuppliers = suppliers.filter(supplier =>
     supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -26,10 +30,12 @@ const Suppliers = () => {
             Manage your supplier relationships and contact information.
           </p>
         </div>
-        <Button className="gap-2">
-          <Plus className="w-4 h-4" />
-          Add New Supplier
-        </Button>
+        <CreateSupplierDialog>
+          <Button className="gap-2">
+            <Plus className="w-4 h-4" />
+            Add New Supplier
+          </Button>
+        </CreateSupplierDialog>
       </div>
 
       {/* Search and Filters */}
@@ -166,14 +172,127 @@ const Suppliers = () => {
           <p className="text-muted-foreground mb-4">
             {searchTerm ? "Try adjusting your search terms" : "Add your first supplier to start managing relationships"}
           </p>
-          <Button className="gap-2">
-            <Plus className="w-4 h-4" />
-            Add New Supplier
-          </Button>
+          <CreateSupplierDialog>
+            <Button className="gap-2">
+              <Plus className="w-4 h-4" />
+              Add New Supplier
+            </Button>
+          </CreateSupplierDialog>
         </Card>
       )}
     </div>
   );
 };
+
+function CreateSupplierDialog({ children }: { children: React.ReactNode }) {
+  const { addSupplier } = useApp();
+  const [open, setOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    contactPerson: "",
+    email: "",
+    phone: "",
+    address: "",
+    gstNumber: ""
+  });
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || !formData.contactPerson || !formData.email || !formData.phone) {
+      toast({ title: "Error", description: "Please fill in all required fields.", variant: "destructive" as any });
+      return;
+    }
+
+    const supplier = {
+      id: Date.now().toString(),
+      ...formData,
+      createdAt: new Date()
+    };
+
+    addSupplier(supplier);
+    toast({ title: "Success", description: "Supplier added successfully!" });
+    setFormData({ name: "", contactPerson: "", email: "", phone: "", address: "", gstNumber: "" });
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Add New Supplier</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={onSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="name">Company Name *</Label>
+            <Input 
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="Enter company name"
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="contactPerson">Contact Person *</Label>
+            <Input 
+              id="contactPerson"
+              value={formData.contactPerson}
+              onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
+              placeholder="Enter contact person name"
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="email">Email *</Label>
+            <Input 
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              placeholder="Enter email address"
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="phone">Phone *</Label>
+            <Input 
+              id="phone"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              placeholder="Enter phone number"
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="address">Address</Label>
+            <Textarea 
+              id="address"
+              value={formData.address}
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              placeholder="Enter address"
+              rows={3}
+            />
+          </div>
+          <div>
+            <Label htmlFor="gstNumber">GST Number</Label>
+            <Input 
+              id="gstNumber"
+              value={formData.gstNumber}
+              onChange={(e) => setFormData({ ...formData, gstNumber: e.target.value })}
+              placeholder="Enter GST number (optional)"
+            />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit">Add Supplier</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 export default Suppliers;
