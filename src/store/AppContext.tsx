@@ -302,21 +302,52 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const id = crypto.randomUUID();
       const supplier = state.suppliers.find((s) => s.id === gr.supplierId)!;
       const totals = calcTotals(gr.items.map((i) => ({ quantity: i.receivedQuantity, unitPrice: i.unitPrice })), gr.applyGST ?? true);
-      setState((s) => ({
-        ...s,
-        goodsReceipts: [
-          {
-            ...gr,
-            id,
-            supplier,
-            subtotal: totals.subtotal,
-            sgst: totals.sgst,
-            cgst: totals.cgst,
-            total: totals.total,
-          },
-          ...s.goodsReceipts,
-        ],
-      }));
+      
+      setState((s) => {
+        // Update inventory items with received quantities
+        const updatedItems = s.items.map(item => {
+          const grItem = gr.items.find(gi => gi.itemId === item.id);
+          if (grItem) {
+            return {
+              ...item,
+              currentStock: item.currentStock + grItem.receivedQuantity,
+              updatedAt: new Date()
+            };
+          }
+          return item;
+        });
+
+        // Create transaction records for received items
+        const newTransactions = gr.items.map(grItem => ({
+          id: crypto.randomUUID(),
+          itemId: grItem.itemId,
+          type: 'IN' as const,
+          quantity: grItem.receivedQuantity,
+          unitPrice: grItem.unitPrice,
+          totalValue: grItem.receivedQuantity * grItem.unitPrice,
+          reason: `Goods Receipt: ${gr.grNumber}`,
+          reference: gr.grNumber,
+          date: gr.date
+        }));
+
+        return {
+          ...s,
+          items: updatedItems,
+          transactions: [...newTransactions, ...s.transactions],
+          goodsReceipts: [
+            {
+              ...gr,
+              id,
+              supplier,
+              subtotal: totals.subtotal,
+              sgst: totals.sgst,
+              cgst: totals.cgst,
+              total: totals.total,
+            },
+            ...s.goodsReceipts,
+          ],
+        };
+      });
       return id;
     },
     updateGoodsReceipt: (id, patch) => {
