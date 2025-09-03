@@ -310,57 +310,91 @@ function ViewGRDialog({ id }: { id: string }) {
           <DialogTitle>Goods Receipt</DialogTitle>
         </DialogHeader>
         <div id={elId}>
-          <div className="header">
-            {businessInfo.logo && <img src={businessInfo.logo} alt="Logo" />}
-            <div>
-              <div className="brand">{businessInfo.name}</div>
-              <div className="muted">{businessInfo.address}</div>
-              <div className="muted">{businessInfo.email} · {businessInfo.phone}</div>
-              {businessInfo.gstNumber && <div className="muted">GST: {businessInfo.gstNumber}</div>}
+          <div className="section">
+            <div className="header">
+              {businessInfo.logo && <img src={businessInfo.logo} alt="Logo" />}
+              <div>
+                <div className="brand">{businessInfo.name}</div>
+                <div className="muted">{businessInfo.address}</div>
+                <div className="muted">{businessInfo.email} · {businessInfo.phone}</div>
+                {businessInfo.gstNumber && <div className="muted">GST: {businessInfo.gstNumber}</div>}
+              </div>
             </div>
           </div>
-          <h2>Goods Receipt {receipt.grNumber}</h2>
-          <div className="grid">
-            <div>
-              <strong>Supplier</strong>
-              <div>{receipt.supplier.name}</div>
-              <div className="muted">{receipt.supplier.address}</div>
-              <div className="muted">{receipt.supplier.email} · {receipt.supplier.phone}</div>
-              {receipt.supplier.gstNumber && <div className="muted">GST: {receipt.supplier.gstNumber}</div>}
-            </div>
-            <div>
-              <strong>Details</strong>
-              <div>Date: {formatDateIN(receipt.date)}</div>
-              <div>Status: {receipt.status}</div>
-              <div>GST: {receipt.sgst + receipt.cgst > 0 ? `${gstSettings.sgstRate + gstSettings.cgstRate}%` : 'Not Applied'}</div>
+          
+          <div className="section">
+            <h2>Goods Receipt {receipt.grNumber}</h2>
+          </div>
+          
+          <div className="section">
+            <div className="grid">
+              <div>
+                <strong>Supplier Details</strong>
+                <div>{receipt.supplier.name}</div>
+                <div className="muted">{receipt.supplier.address}</div>
+                <div className="muted">{receipt.supplier.email} · {receipt.supplier.phone}</div>
+                {receipt.supplier.gstNumber && <div className="muted">GST: {receipt.supplier.gstNumber}</div>}
+              </div>
+              <div>
+                <strong>Receipt Details</strong>
+                <div>Date: {formatDateIN(receipt.date)}</div>
+                <div>Status: {receipt.status}</div>
+                <div>GST: {receipt.sgst + receipt.cgst > 0 ? `${gstSettings.sgstRate + gstSettings.cgstRate}%` : 'Not Applied'}</div>
+              </div>
             </div>
           </div>
-          <table>
-            <thead>
-              <tr><th>#</th><th>Item</th><th>Ordered</th><th>Received</th><th>Unit</th><th>Rate</th><th>Total</th></tr>
-            </thead>
-            <tbody>
-              {receipt.items.map((it, idx) => (
-                <tr key={it.id}>
-                  <td>{idx + 1}</td>
-                  <td>{it.item.name}</td>
-                  <td>{it.orderedQuantity || '-'}</td>
-                  <td>{it.receivedQuantity}</td>
-                  <td>{it.item.unit}</td>
-                  <td>{formatINR(it.unitPrice)}</td>
-                  <td>{formatINR(it.total)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <table className="totals">
-            <tbody>
-              <tr><td className="label">Subtotal</td><td className="value">{formatINR(receipt.subtotal)}</td></tr>
-              <tr><td className="label">SGST</td><td className="value">{formatINR(receipt.sgst)}</td></tr>
-              <tr><td className="label">CGST</td><td className="value">{formatINR(receipt.cgst)}</td></tr>
-              <tr><td className="label"><strong>Total</strong></td><td className="value"><strong>{formatINR(receipt.total)}</strong></td></tr>
-            </tbody>
-          </table>
+          
+          <div className="section">
+            <p style={{marginBottom: '8px', fontStyle: 'italic'}}>Following goods have been received and verified :</p>
+            <table>
+              <thead>
+                <tr><th>#</th><th>Item</th><th>Ordered</th><th>Received</th><th>Unit</th><th>Rate</th><th>Total</th></tr>
+              </thead>
+              <tbody>
+                {receipt.items.map((it, idx) => (
+                  <tr key={it.id}>
+                    <td>{idx + 1}</td>
+                    <td>{it.item.name}</td>
+                    <td>{it.orderedQuantity || '-'}</td>
+                    <td>{it.receivedQuantity}</td>
+                    <td>{it.item.unit}</td>
+                    <td>{formatINR(it.unitPrice)}</td>
+                    <td>{formatINR(it.total)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          <div className="section">
+            <table className="totals">
+              <tbody>
+                <tr><td className="label">Subtotal</td><td className="value">{formatINR(receipt.subtotal)}</td></tr>
+                <tr><td className="label">SGST</td><td className="value">{formatINR(receipt.sgst)}</td></tr>
+                <tr><td className="label">CGST</td><td className="value">{formatINR(receipt.cgst)}</td></tr>
+                <tr><td className="label"><strong>Total Amount</strong></td><td className="value"><strong>{formatINR(receipt.total)}</strong></td></tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <div className="section terms">
+            <strong>Receipt Confirmation:</strong>
+            <div className="muted" style={{ marginTop: '8px', lineHeight: '1.4' }}>
+              1. All goods have been inspected upon receipt<br />
+              2. Quality check completed as per standards<br />
+              3. Quantities verified and confirmed<br />
+              4. Any discrepancies noted in remarks section<br />
+              5. Goods accepted in good condition
+            </div>
+          </div>
+          
+          <div className="signature-section">
+            <div>Authorized Signatory</div>
+            <div style={{ marginTop: '40px', borderTop: '1px solid #000', width: '200px', textAlign: 'center', paddingTop: '8px' }}>
+              {businessInfo.name}
+            </div>
+          </div>
+          
           {receipt.notes && <div className="footer">Notes: {receipt.notes}</div>}
         </div>
         <DialogFooter>

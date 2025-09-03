@@ -507,134 +507,98 @@ const ViewProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
           <DialogTitle>Proforma Invoice Details</DialogTitle>
         </DialogHeader>
         
-        <div id={`proforma-print-${invoice.id}`} ref={printRef} className="space-y-6 p-6 bg-white text-black">
-          {/* Header */}
-          <div className="text-center border-b pb-4">
-            <h1 className="text-2xl font-bold">PROFORMA INVOICE</h1>
-            <p className="text-lg mt-2">{invoice.proformaNumber}</p>
-          </div>
-
-          {/* Company & Buyer Details */}
-          <div className="grid grid-cols-2 gap-8">
-            <div>
-              <h3 className="font-semibold text-lg mb-2">From:</h3>
-              <div className="space-y-1">
-                <p className="font-semibold">{businessInfo.name}</p>
-                <p>{businessInfo.address}</p>
-                <p>Phone: {businessInfo.phone}</p>
-                <p>Email: {businessInfo.email}</p>
-                {businessInfo.gstNumber && <p>GST: {businessInfo.gstNumber}</p>}
-              </div>
-            </div>
-            <div>
-              <h3 className="font-semibold text-lg mb-2">To:</h3>
-              <div className="space-y-1">
-                <p className="font-semibold">{invoice.buyerInfo.name}</p>
-                {invoice.buyerInfo.contactPerson && <p>Contact: {invoice.buyerInfo.contactPerson}</p>}
-                <p>{invoice.buyerInfo.address}</p>
-                <p>Phone: {invoice.buyerInfo.phone}</p>
-                <p>Email: {invoice.buyerInfo.email}</p>
-                {invoice.buyerInfo.gstNumber && <p>GST: {invoice.buyerInfo.gstNumber}</p>}
+        <div id={`proforma-print-${invoice.id}`} ref={printRef}>
+          <div className="section">
+            <div className="header">
+              {businessInfo.logo && <img src={businessInfo.logo} alt="Logo" />}
+              <div>
+                <div className="brand">{businessInfo.name}</div>
+                <div className="muted">{businessInfo.address}</div>
+                <div className="muted">{businessInfo.email} · {businessInfo.phone}</div>
+                {businessInfo.gstNumber && <div className="muted">GST: {businessInfo.gstNumber}</div>}
               </div>
             </div>
           </div>
-
-          {/* Invoice Details */}
-          <div className="grid grid-cols-2 gap-8 border-t pt-4">
-            <div>
-              <p><strong>Date:</strong> {formatDateIN(invoice.date)}</p>
-              {invoice.validUntil && <p><strong>Valid Until:</strong> {formatDateIN(invoice.validUntil)}</p>}
-              {invoice.paymentTerms && <p><strong>Payment Terms:</strong> {invoice.paymentTerms}</p>}
-            </div>
-            <div>
-              <p><strong>Status:</strong> <span className={`px-2 py-1 rounded text-sm ${
-                invoice.status === 'DRAFT' ? 'bg-gray-200' :
-                invoice.status === 'SENT' ? 'bg-blue-200' :
-                invoice.status === 'ACCEPTED' ? 'bg-green-200' :
-                'bg-red-200'
-              }`}>{invoice.status}</span></p>
+          
+          <div className="section">
+            <h2>Proforma Invoice {invoice.proformaNumber}</h2>
+          </div>
+          
+          <div className="section">
+            <div className="grid">
+              <div>
+                <strong>Buyer Details</strong>
+                <div>{invoice.buyerInfo.name}</div>
+                {invoice.buyerInfo.contactPerson && <div>{invoice.buyerInfo.contactPerson}</div>}
+                <div className="muted">{invoice.buyerInfo.address}</div>
+                <div className="muted">{invoice.buyerInfo.email} · {invoice.buyerInfo.phone}</div>
+                {invoice.buyerInfo.gstNumber && <div className="muted">GST: {invoice.buyerInfo.gstNumber}</div>}
+              </div>
+              <div>
+                <strong>Invoice Details</strong>
+                <div>Date: {formatDateIN(invoice.date)}</div>
+                {invoice.validUntil && <div>Valid Until: {formatDateIN(invoice.validUntil)}</div>}
+                <div>Status: {invoice.status}</div>
+                {invoice.paymentTerms && <div>Payment Terms: {invoice.paymentTerms}</div>}
+              </div>
             </div>
           </div>
-
-          {/* Items Table */}
-          <div className="border-t pt-4">
-            <table className="w-full border-collapse">
+          
+          <div className="section">
+            <p style={{marginBottom: '8px', fontStyle: 'italic'}}>We are pleased to submit our quotation for the following items :</p>
+            <table>
               <thead>
-                <tr className="border-b">
-                  <th className="text-left p-2">Item</th>
-                  <th className="text-right p-2">Qty</th>
-                  <th className="text-right p-2">Unit Price</th>
-                  <th className="text-right p-2">Total</th>
-                </tr>
+                <tr><th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th>Rate</th><th>Total</th></tr>
               </thead>
               <tbody>
-                {invoice.items.map((item) => (
-                  <tr key={item.id} className="border-b">
-                    <td className="p-2">
-                      <div>
-                        <p className="font-medium">{item.item.name}</p>
-                        <p className="text-sm text-gray-600">SKU: {item.item.sku}</p>
-                        {item.item.description && <p className="text-sm text-gray-600">{item.item.description}</p>}
-                      </div>
-                    </td>
-                    <td className="text-right p-2">{item.quantity} {item.item.unit}</td>
-                    <td className="text-right p-2">{formatINR(item.unitPrice)}</td>
-                    <td className="text-right p-2">{formatINR(item.total)}</td>
+                {invoice.items.map((it, idx) => (
+                  <tr key={it.id}>
+                    <td>{idx + 1}</td>
+                    <td>{it.item.name}</td>
+                    <td>{it.quantity}</td>
+                    <td>{it.item.unit}</td>
+                    <td>{formatINR(it.unitPrice)}</td>
+                    <td>{formatINR(it.total)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-
-          {/* Totals */}
-          <div className="border-t pt-4">
-            <div className="flex flex-col items-end space-y-2">
-              <div className="w-64">
-                <div className="flex justify-between">
-                  <span>Subtotal:</span>
-                  <span>{formatINR(invoice.subtotal)}</span>
-                </div>
-                {invoice.sgst > 0 && (
-                  <div className="flex justify-between">
-                    <span>SGST:</span>
-                    <span>{formatINR(invoice.sgst)}</span>
-                  </div>
-                )}
-                {invoice.cgst > 0 && (
-                  <div className="flex justify-between">
-                    <span>CGST:</span>
-                    <span>{formatINR(invoice.cgst)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between font-bold text-lg border-t pt-2">
-                  <span>Total:</span>
-                  <span>{formatINR(invoice.total)}</span>
-                </div>
-                <p className="text-sm mt-2 capitalize">
-                  Amount in words: {numberToWords(invoice.total)}
-                </p>
-              </div>
+          
+          <div className="section">
+            <table className="totals">
+              <tbody>
+                <tr><td className="label">Subtotal</td><td className="value">{formatINR(invoice.subtotal)}</td></tr>
+                <tr><td className="label">SGST</td><td className="value">{formatINR(invoice.sgst)}</td></tr>
+                <tr><td className="label">CGST</td><td className="value">{formatINR(invoice.cgst)}</td></tr>
+                <tr><td className="label"><strong>Total Amount</strong></td><td className="value"><strong>{formatINR(invoice.total)}</strong></td></tr>
+              </tbody>
+            </table>
+            <div className="amount-words">
+              Amount in Words: {numberToWords(invoice.total)}
             </div>
           </div>
-
-          {/* Notes */}
-          {invoice.notes && (
-            <div className="border-t pt-4">
-              <h4 className="font-semibold mb-2">Notes:</h4>
-              <p>{invoice.notes}</p>
+          
+          <div className="section terms">
+            <strong>Terms & Conditions:</strong>
+            <div className="muted" style={{ marginTop: '8px', lineHeight: '1.4' }}>
+              1. Payment terms: {invoice.paymentTerms || "As agreed"}<br />
+              2. Prices are valid until: {invoice.validUntil ? formatDateIN(invoice.validUntil) : "Further notice"}<br />
+              3. All prices are subject to change without prior notice<br />
+              4. This is a proforma invoice and not a tax invoice<br />
+              5. All rates are inclusive of applicable taxes
+            </div>
+          </div>
+          
+          {businessInfo.signature && (
+            <div className="signature-section">
+              <div>Authorized Signatory</div>
+              <img src={businessInfo.signature} alt="Authorized Signature" className="signature-image" style={{ marginTop: '8px' }} />
+              <div className="muted">{businessInfo.name}</div>
             </div>
           )}
-
-          {/* Terms & Conditions */}
-          <div className="border-t pt-4 text-sm">
-            <h4 className="font-semibold mb-2">Terms & Conditions:</h4>
-            <ul className="space-y-1">
-              <li>• This is a proforma invoice and not a bill.</li>
-              <li>• Prices are subject to change without prior notice.</li>
-              <li>• Payment terms as agreed upon.</li>
-              <li>• All disputes subject to local jurisdiction.</li>
-            </ul>
-          </div>
+          
+          {invoice.notes && <div className="footer">Notes: {invoice.notes}</div>}
         </div>
 
         <DialogFooter>
