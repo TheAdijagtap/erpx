@@ -9,6 +9,7 @@ import type {
   GSTSettings,
   PurchaseOrderItem,
   GoodsReceiptItem,
+  ProformaInvoice,
 } from "@/types/inventory";
 
 const STORAGE_KEY = "stockflow_app_state_v1";
@@ -18,6 +19,7 @@ interface AppState {
   suppliers: Supplier[];
   purchaseOrders: PurchaseOrder[];
   goodsReceipts: GoodsReceipt[];
+  proformaInvoices: ProformaInvoice[];
   transactions: Transaction[];
   businessInfo: BusinessInfo;
   gstSettings: GSTSettings;
@@ -25,6 +27,7 @@ interface AppState {
 
 interface AppContextValue extends AppState {
   // Inventory
+  inventoryItems: InventoryItem[];
   addItem: (item: Omit<InventoryItem, "id" | "createdAt" | "updatedAt">) => string;
   updateItem: (id: string, patch: Partial<InventoryItem>) => void;
   transactItem: (
@@ -55,6 +58,13 @@ interface AppContextValue extends AppState {
   ) => string;
   updateGoodsReceipt: (id: string, patch: Partial<GoodsReceipt>) => void;
   removeGoodsReceipt: (id: string) => void;
+
+  // Proforma Invoices
+  addProformaInvoice: (
+    pi: Omit<ProformaInvoice, "id" | "subtotal" | "sgst" | "cgst" | "total"> & { applyGST?: boolean }
+  ) => string;
+  updateProformaInvoice: (id: string, patch: Partial<ProformaInvoice>) => void;
+  removeProformaInvoice: (id: string) => void;
 
   // Business
   setBusinessInfo: (info: BusinessInfo) => void;
@@ -136,8 +146,9 @@ const initialState = (): AppState => {
 
   const purchaseOrders: PurchaseOrder[] = [];
   const goodsReceipts: GoodsReceipt[] = [];
+  const proformaInvoices: ProformaInvoice[] = [];
 
-  return { items, suppliers, purchaseOrders, goodsReceipts, transactions, businessInfo, gstSettings };
+  return { items, suppliers, purchaseOrders, goodsReceipts, proformaInvoices, transactions, businessInfo, gstSettings };
 };
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
@@ -167,6 +178,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           g.items = g.items?.map((it: any) => reviveDates(it)) ?? [];
           return g;
         }) ?? [];
+        parsed.proformaInvoices = parsed.proformaInvoices?.map((p: any) => {
+          reviveDates(p);
+          if (p.validUntil) p.validUntil = new Date(p.validUntil);
+          p.items = p.items?.map((it: any) => reviveDates(it)) ?? [];
+          return p;
+        }) ?? [];
         parsed.transactions = parsed.transactions?.map((t: any) => reviveDates(t)) ?? [];
         return parsed as AppState;
       } catch (e) {
@@ -191,6 +208,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const value: AppContextValue = useMemo(() => ({
     ...state,
+    inventoryItems: state.items,
 
     // Inventory
     addItem: (item) => {
@@ -360,6 +378,39 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setState((s) => ({
         ...s,
         goodsReceipts: s.goodsReceipts.filter((g) => g.id !== id),
+      }));
+    },
+
+    // Proforma Invoices
+    addProformaInvoice: (pi) => {
+      const id = crypto.randomUUID();
+      const totals = calcTotals(pi.items.map((i) => ({ quantity: i.quantity, unitPrice: i.unitPrice })), pi.applyGST ?? true);
+      setState((s) => ({
+        ...s,
+        proformaInvoices: [
+          {
+            ...pi,
+            id,
+            subtotal: totals.subtotal,
+            sgst: totals.sgst,
+            cgst: totals.cgst,
+            total: totals.total,
+          },
+          ...s.proformaInvoices,
+        ],
+      }));
+      return id;
+    },
+    updateProformaInvoice: (id, patch) => {
+      setState((s) => ({
+        ...s,
+        proformaInvoices: s.proformaInvoices.map((p) => (p.id === id ? { ...p, ...patch } : p)),
+      }));
+    },
+    removeProformaInvoice: (id) => {
+      setState((s) => ({
+        ...s,
+        proformaInvoices: s.proformaInvoices.filter((p) => p.id !== id),
       }));
     },
 

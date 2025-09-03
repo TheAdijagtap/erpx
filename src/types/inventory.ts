@@ -111,3 +111,37 @@ export interface GSTSettings {
   sgstRate: number;
   cgstRate: number;
 }
+
+export interface ProformaInvoice {
+  id: string;
+  proformaNumber: string;
+  buyerInfo: BuyerInfo;
+  items: ProformaInvoiceItem[];
+  subtotal: number;
+  sgst: number;
+  cgst: number;
+  total: number;
+  status: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'CANCELLED';
+  date: Date;
+  validUntil?: Date;
+  paymentTerms?: string;
+  notes?: string;
+}
+
+export interface ProformaInvoiceItem {
+  id: string;
+  itemId: string;
+  item: InventoryItem;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+}
+
+export interface BuyerInfo {
+  name: string;
+  contactPerson: string;
+  email: string;
+  phone: string;
+  address: string;
+  gstNumber?: string;
+}
