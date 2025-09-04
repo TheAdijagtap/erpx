@@ -634,7 +634,7 @@ const ViewProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
             <table className="totals">
               <tbody>
                 <tr><td className="label">Subtotal</td><td className="value">{formatINR(invoice.subtotal)}</td></tr>
-                {invoice.additionalCharges.map((charge) => (
+                {(invoice.additionalCharges ?? []).map((charge) => (
                   <tr key={charge.id}><td className="label">{charge.name}</td><td className="value">{formatINR(charge.amount)}</td></tr>
                 ))}
                 <tr><td className="label">SGST</td><td className="value">{formatINR(invoice.sgst)}</td></tr>
