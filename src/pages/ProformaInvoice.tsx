@@ -162,6 +162,7 @@ const CreateProformaDialog = () => {
   const [validUntil, setValidUntil] = useState("");
   const [paymentTerms, setPaymentTerms] = useState("");
   const [items, setItems] = useState<ProformaInvoiceItem[]>([]);
+  const [additionalCharges, setAdditionalCharges] = useState<Array<{ name: string; amount: number }>>([]);
   const [notes, setNotes] = useState("");
 
   const addRow = () => {
@@ -205,9 +206,10 @@ const CreateProformaDialog = () => {
 
   const calcTotals = () => {
     const subtotal = items.reduce((sum, item) => sum + item.total, 0);
-    const sgst = gstSettings.enabled ? (subtotal * gstSettings.sgstRate) / 100 : 0;
-    const cgst = gstSettings.enabled ? (subtotal * gstSettings.cgstRate) / 100 : 0;
-    const total = subtotal + sgst + cgst;
+    const chargesTotal = additionalCharges.reduce((sum, charge) => sum + charge.amount, 0);
+    const sgst = gstSettings.enabled ? ((subtotal + chargesTotal) * gstSettings.sgstRate) / 100 : 0;
+    const cgst = gstSettings.enabled ? ((subtotal + chargesTotal) * gstSettings.cgstRate) / 100 : 0;
+    const total = subtotal + chargesTotal + sgst + cgst;
     return { subtotal, sgst, cgst, total };
   };
 
@@ -221,6 +223,11 @@ const CreateProformaDialog = () => {
       proformaNumber,
       buyerInfo,
       items,
+      additionalCharges: additionalCharges.map(charge => ({
+        id: crypto.randomUUID(),
+        name: charge.name,
+        amount: charge.amount,
+      })),
       status: 'DRAFT',
       date: new Date(date),
       validUntil: validUntil ? new Date(validUntil) : undefined,
@@ -437,6 +444,12 @@ const CreateProformaDialog = () => {
                   <span>Subtotal:</span>
                   <span>{formatINR(subtotal)}</span>
                 </div>
+                {additionalCharges.map((charge, idx) => (
+                  <div key={idx} className="flex justify-between">
+                    <span>{charge.name}:</span>
+                    <span>{formatINR(charge.amount)}</span>
+                  </div>
+                ))}
                 {gstSettings.enabled && (
                   <>
                     <div className="flex justify-between">
@@ -455,6 +468,58 @@ const CreateProformaDialog = () => {
                 </div>
               </div>
             )}
+          </Card>
+
+          {/* Additional Charges */}
+          <Card className="p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold">Additional Charges</h3>
+              <Button
+                onClick={() => setAdditionalCharges([...additionalCharges, { name: "", amount: 0 }])}
+                variant="outline"
+                size="sm"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Charge
+              </Button>
+            </div>
+            
+            <div className="space-y-2">
+              {additionalCharges.map((charge, idx) => (
+                <div key={idx} className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                  <Input
+                    placeholder="Charge name (e.g., Freight)"
+                    value={charge.name}
+                    onChange={(e) => {
+                      const next = [...additionalCharges];
+                      next[idx] = { ...charge, name: e.target.value };
+                      setAdditionalCharges(next);
+                    }}
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Amount"
+                    value={charge.amount}
+                    onChange={(e) => {
+                      const next = [...additionalCharges];
+                      next[idx] = { ...charge, amount: parseFloat(e.target.value) || 0 };
+                      setAdditionalCharges(next);
+                    }}
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const next = additionalCharges.filter((_, i) => i !== idx);
+                      setAdditionalCharges(next);
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Remove
+                  </Button>
+                </div>
+              ))}
+            </div>
           </Card>
 
           {/* Notes */}
@@ -569,6 +634,9 @@ const ViewProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
             <table className="totals">
               <tbody>
                 <tr><td className="label">Subtotal</td><td className="value">{formatINR(invoice.subtotal)}</td></tr>
+                {invoice.additionalCharges.map((charge) => (
+                  <tr key={charge.id}><td className="label">{charge.name}</td><td className="value">{formatINR(charge.amount)}</td></tr>
+                ))}
                 <tr><td className="label">SGST</td><td className="value">{formatINR(invoice.sgst)}</td></tr>
                 <tr><td className="label">CGST</td><td className="value">{formatINR(invoice.cgst)}</td></tr>
                 <tr><td className="label"><strong>Total Amount</strong></td><td className="value"><strong>{formatINR(invoice.total)}</strong></td></tr>

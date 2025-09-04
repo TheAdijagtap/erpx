@@ -198,11 +198,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [state]);
 
   // Helpers
-  const calcTotals = (items: Array<{ quantity: number; unitPrice: number }>, applyGST: boolean) => {
+  const calcTotals = (items: Array<{ quantity: number; unitPrice: number }>, applyGST: boolean, additionalCharges: Array<{ amount: number }> = []) => {
     const subtotal = items.reduce((sum, it) => sum + it.quantity * it.unitPrice, 0);
-    const sgst = applyGST && state.gstSettings.enabled ? Math.round((subtotal * state.gstSettings.sgstRate) / 100) : 0;
-    const cgst = applyGST && state.gstSettings.enabled ? Math.round((subtotal * state.gstSettings.cgstRate) / 100) : 0;
-    const total = subtotal + sgst + cgst;
+    const chargesTotal = additionalCharges.reduce((sum, charge) => sum + charge.amount, 0);
+    const sgst = applyGST && state.gstSettings.enabled ? Math.round(((subtotal + chargesTotal) * state.gstSettings.sgstRate) / 100) : 0;
+    const cgst = applyGST && state.gstSettings.enabled ? Math.round(((subtotal + chargesTotal) * state.gstSettings.cgstRate) / 100) : 0;
+    const total = subtotal + chargesTotal + sgst + cgst;
     return { subtotal, sgst, cgst, total };
   };
 
@@ -284,7 +285,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     addPurchaseOrder: (po) => {
       const id = crypto.randomUUID();
       const supplier = state.suppliers.find((s) => s.id === po.supplierId)!;
-      const totals = calcTotals(po.items.map((i) => ({ quantity: i.quantity, unitPrice: i.unitPrice })), po.applyGST ?? true);
+      const totals = calcTotals(po.items.map((i) => ({ quantity: i.quantity, unitPrice: i.unitPrice })), po.applyGST ?? true, po.additionalCharges);
       setState((s) => ({
         ...s,
         purchaseOrders: [
@@ -319,7 +320,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     addGoodsReceipt: (gr) => {
       const id = crypto.randomUUID();
       const supplier = state.suppliers.find((s) => s.id === gr.supplierId)!;
-      const totals = calcTotals(gr.items.map((i) => ({ quantity: i.receivedQuantity, unitPrice: i.unitPrice })), gr.applyGST ?? true);
+      const totals = calcTotals(gr.items.map((i) => ({ quantity: i.receivedQuantity, unitPrice: i.unitPrice })), gr.applyGST ?? true, gr.additionalCharges);
       
       setState((s) => {
         // Update inventory items with received quantities
@@ -384,7 +385,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // Proforma Invoices
     addProformaInvoice: (pi) => {
       const id = crypto.randomUUID();
-      const totals = calcTotals(pi.items.map((i) => ({ quantity: i.quantity, unitPrice: i.unitPrice })), pi.applyGST ?? true);
+      const totals = calcTotals(pi.items.map((i) => ({ quantity: i.quantity, unitPrice: i.unitPrice })), pi.applyGST ?? true, pi.additionalCharges);
       setState((s) => ({
         ...s,
         proformaInvoices: [

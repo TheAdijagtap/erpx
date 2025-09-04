@@ -159,6 +159,7 @@ function CreatePODialog() {
   const [rows, setRows] = useState<Array<{ itemId: string; quantity: number; unitPrice: number; unit: string }>>([
     { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0, unit: items[0]?.unit || "PCS" },
   ]);
+  const [additionalCharges, setAdditionalCharges] = useState<Array<{ name: string; amount: number }>>([]);
 
   const onAddRow = () => setRows([...rows, { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0, unit: items[0]?.unit || "PCS" }]);
   const onSubmit = () => {
@@ -177,6 +178,11 @@ function CreatePODialog() {
       supplierId,
       supplier: suppliers.find(s => s.id === supplierId)!,
       items: poItems,
+      additionalCharges: additionalCharges.map(charge => ({
+        id: crypto.randomUUID(),
+        name: charge.name,
+        amount: charge.amount,
+      })),
       status: "SENT",
       date: new Date(date),
       notes: "",
@@ -283,6 +289,53 @@ function CreatePODialog() {
           </div>
 
           <Button variant="outline" className="gap-2" onClick={onAddRow}><Plus className="w-4 h-4" /> Add Item</Button>
+
+          <div className="mt-6">
+            <h4 className="font-medium mb-3">Additional Charges</h4>
+            <div className="space-y-2">
+              {additionalCharges.map((charge, idx) => (
+                <div key={idx} className="flex gap-2">
+                  <Input
+                    placeholder="Charge name (e.g., Freight)"
+                    value={charge.name}
+                    onChange={(e) => {
+                      const next = [...additionalCharges];
+                      next[idx] = { ...charge, name: e.target.value };
+                      setAdditionalCharges(next);
+                    }}
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Amount"
+                    value={charge.amount}
+                    onChange={(e) => {
+                      const next = [...additionalCharges];
+                      next[idx] = { ...charge, amount: parseFloat(e.target.value) || 0 };
+                      setAdditionalCharges(next);
+                    }}
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const next = additionalCharges.filter((_, i) => i !== idx);
+                      setAdditionalCharges(next);
+                    }}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              ))}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setAdditionalCharges([...additionalCharges, { name: "", amount: 0 }])}
+                className="gap-2"
+              >
+                <Plus className="w-4 h-4" /> Add Charge
+              </Button>
+            </div>
+          </div>
         </div>
         <DialogFooter>
           <Button onClick={onSubmit}>Create</Button>
@@ -366,6 +419,9 @@ function ViewPODialog({ id }: { id: string }) {
             <table className="totals">
               <tbody>
                 <tr><td className="label">Subtotal</td><td className="value">{formatINR(order.subtotal)}</td></tr>
+                {order.additionalCharges.map((charge) => (
+                  <tr key={charge.id}><td className="label">{charge.name}</td><td className="value">{formatINR(charge.amount)}</td></tr>
+                ))}
                 <tr><td className="label">SGST</td><td className="value">{formatINR(order.sgst)}</td></tr>
                 <tr><td className="label">CGST</td><td className="value">{formatINR(order.cgst)}</td></tr>
                 <tr><td className="label"><strong>Total Amount</strong></td><td className="value"><strong>{formatINR(order.total)}</strong></td></tr>

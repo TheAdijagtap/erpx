@@ -54,12 +54,19 @@ export interface BusinessInfo {
   };
 }
 
+export interface AdditionalCharge {
+  id: string;
+  name: string;
+  amount: number;
+}
+
 export interface PurchaseOrder {
   id: string;
   poNumber: string;
   supplierId: string;
   supplier: Supplier;
   items: PurchaseOrderItem[];
+  additionalCharges: AdditionalCharge[];
   subtotal: number;
   sgst: number;
   cgst: number;
@@ -87,6 +94,7 @@ export interface GoodsReceipt {
   supplierId: string;
   supplier: Supplier;
   items: GoodsReceiptItem[];
+  additionalCharges: AdditionalCharge[];
   subtotal: number;
   sgst: number;
   cgst: number;
@@ -117,6 +125,7 @@ export interface ProformaInvoice {
   proformaNumber: string;
   buyerInfo: BuyerInfo;
   items: ProformaInvoiceItem[];
+  additionalCharges: AdditionalCharge[];
   subtotal: number;
   sgst: number;
   cgst: number;
