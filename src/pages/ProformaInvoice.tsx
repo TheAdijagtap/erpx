@@ -16,6 +16,49 @@ import { numberToWords } from "@/lib/numberToWords";
 import { ProformaInvoice as ProformaInvoiceType, ProformaInvoiceItem, BuyerInfo } from "@/types/inventory";
 
 const ProformaInvoice = () => {
+  const [activeTab, setActiveTab] = useState<"invoices" | "products">("invoices");
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Proforma Invoice</h1>
+          <p className="text-muted-foreground mt-1">
+            Create and manage proforma invoices for your customers.
+          </p>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-4 border-b">
+        <button
+          onClick={() => setActiveTab("invoices")}
+          className={`pb-2 px-1 border-b-2 transition-colors ${
+            activeTab === "invoices"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Proforma Invoices
+        </button>
+        <button
+          onClick={() => setActiveTab("products")}
+          className={`pb-2 px-1 border-b-2 transition-colors ${
+            activeTab === "products"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Products
+        </button>
+      </div>
+
+      {activeTab === "invoices" ? <ProformaInvoicesTab /> : <ProductsTab />}
+    </div>
+  );
+};
+
+const ProformaInvoicesTab = () => {
   const { proformaInvoices } = useApp();
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -26,18 +69,8 @@ const ProformaInvoice = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Proforma Invoices</h1>
-          <p className="text-muted-foreground mt-1">
-            Create and manage proforma invoices for your buyers.
-          </p>
-        </div>
-        <CreateProformaDialog />
-      </div>
-
       <Card className="p-6">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
@@ -47,6 +80,7 @@ const ProformaInvoice = () => {
               className="pl-10"
             />
           </div>
+          <CreateProformaDialog />
         </div>
       </Card>
 
@@ -134,6 +168,302 @@ const ProformaInvoice = () => {
     </div>
   );
 };
+
+const ProductsTab = () => {
+  const [proformaProducts, setProformaProducts] = useState<Array<{
+    id: string;
+    name: string;
+    description: string;
+    unit: string;
+    price: number;
+    createdAt: Date;
+  }>>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredProducts = useMemo(() => 
+    proformaProducts.filter(product =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchTerm.toLowerCase())
+    ), [proformaProducts, searchTerm]
+  );
+
+  return (
+    <div className="space-y-6">
+      <Card className="p-6">
+        <div className="flex items-center justify-between">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              placeholder="Search products..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <CreateProductDialog products={proformaProducts} setProducts={setProformaProducts} />
+        </div>
+      </Card>
+
+      <div className="space-y-4">
+        {filteredProducts.map((product) => (
+          <Card key={product.id} className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <h3 className="text-lg font-semibold text-foreground">{product.name}</h3>
+                  <Badge variant="outline">{product.unit}</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground mb-3">{product.description}</p>
+                <div className="flex items-center gap-4">
+                  <div>
+                    <span className="text-sm text-muted-foreground">Price: </span>
+                    <span className="font-semibold">{formatINR(product.price)}</span>
+                  </div>
+                  <div>
+                    <span className="text-sm text-muted-foreground">Created: </span>
+                    <span className="text-sm">{formatDateIN(product.createdAt)}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <EditProductDialog product={product} products={proformaProducts} setProducts={setProformaProducts} />
+                <DeleteProductDialog productId={product.id} products={proformaProducts} setProducts={setProformaProducts} />
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {filteredProducts.length === 0 && (
+        <Card className="p-12 text-center">
+          <Receipt className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold text-foreground mb-2">No products found</h3>
+          <p className="text-muted-foreground mb-4">
+            {searchTerm ? "Try adjusting your search terms" : "Create your first product for proforma invoices"}
+          </p>
+          <CreateProductDialog products={proformaProducts} setProducts={setProformaProducts} />
+        </Card>
+      )}
+    </div>
+  );
+};
+
+function CreateProductDialog({ products, setProducts }: {
+  products: Array<{ id: string; name: string; description: string; unit: string; price: number; createdAt: Date }>;
+  setProducts: React.Dispatch<React.SetStateAction<Array<{ id: string; name: string; description: string; unit: string; price: number; createdAt: Date }>>>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [unit, setUnit] = useState("PCS");
+  const [price, setPrice] = useState(0);
+
+  const onSubmit = () => {
+    if (!name.trim() || price <= 0) return;
+    
+    const newProduct = {
+      id: crypto.randomUUID(),
+      name: name.trim(),
+      description: description.trim(),
+      unit,
+      price,
+      createdAt: new Date(),
+    };
+    
+    setProducts([...products, newProduct]);
+    setOpen(false);
+    setName("");
+    setDescription("");
+    setUnit("PCS");
+    setPrice(0);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="gap-2">
+          <Plus className="w-4 h-4" /> Add Product
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add New Product</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="name">Product Name</Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter product name"
+            />
+          </div>
+          <div>
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Enter product description"
+              rows={3}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="unit">Unit</Label>
+              <Input
+                id="unit"
+                value={unit}
+                onChange={(e) => setUnit(e.target.value)}
+                placeholder="e.g., PCS, KG, METER"
+              />
+            </div>
+            <div>
+              <Label htmlFor="price">Price</Label>
+              <Input
+                id="price"
+                type="number"
+                min="0"
+                step="0.01"
+                value={price}
+                onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
+                placeholder="Enter price"
+              />
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button onClick={onSubmit} disabled={!name.trim() || price <= 0}>
+            Add Product
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function EditProductDialog({ product, products, setProducts }: {
+  product: { id: string; name: string; description: string; unit: string; price: number; createdAt: Date };
+  products: Array<{ id: string; name: string; description: string; unit: string; price: number; createdAt: Date }>;
+  setProducts: React.Dispatch<React.SetStateAction<Array<{ id: string; name: string; description: string; unit: string; price: number; createdAt: Date }>>>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState(product.name);
+  const [description, setDescription] = useState(product.description);
+  const [unit, setUnit] = useState(product.unit);
+  const [price, setPrice] = useState(product.price);
+
+  const onSubmit = () => {
+    if (!name.trim() || price <= 0) return;
+    
+    setProducts(products.map(p => 
+      p.id === product.id 
+        ? { ...p, name: name.trim(), description: description.trim(), unit, price }
+        : p
+    ));
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-1">
+          <Edit className="w-4 h-4" /> Edit
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edit Product</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="name">Product Name</Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter product name"
+            />
+          </div>
+          <div>
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Enter product description"
+              rows={3}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="unit">Unit</Label>
+              <Input
+                id="unit"
+                value={unit}
+                onChange={(e) => setUnit(e.target.value)}
+                placeholder="e.g., PCS, KG, METER"
+              />
+            </div>
+            <div>
+              <Label htmlFor="price">Price</Label>
+              <Input
+                id="price"
+                type="number"
+                min="0"
+                step="0.01"
+                value={price}
+                onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
+                placeholder="Enter price"
+              />
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button onClick={onSubmit} disabled={!name.trim() || price <= 0}>
+            Save Changes
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function DeleteProductDialog({ productId, products, setProducts }: {
+  productId: string;
+  products: Array<{ id: string; name: string; description: string; unit: string; price: number; createdAt: Date }>;
+  setProducts: React.Dispatch<React.SetStateAction<Array<{ id: string; name: string; description: string; unit: string; price: number; createdAt: Date }>>>;
+}) {
+  const [open, setOpen] = useState(false);
+  
+  const onDelete = () => {
+    setProducts(products.filter(p => p.id !== productId));
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-1">
+          <Trash2 className="w-4 h-4" /> Delete
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete Product</DialogTitle>
+        </DialogHeader>
+        <p className="text-muted-foreground">
+          Are you sure you want to delete this product? This action cannot be undone.
+        </p>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button variant="destructive" onClick={onDelete}>Delete</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 const getStatusBadge = (status: ProformaInvoiceType['status']) => {
   const config = {

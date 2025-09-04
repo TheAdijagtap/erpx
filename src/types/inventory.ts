@@ -146,6 +146,15 @@ export interface ProformaInvoiceItem {
   total: number;
 }
 
+export interface ProformaProduct {
+  id: string;
+  name: string;
+  description: string;
+  unit: string;
+  price: number;
+  createdAt: Date;
+}
+
 export interface BuyerInfo {
   name: string;
   contactPerson: string;
