@@ -267,21 +267,21 @@ function CreateGRDialog() {
                     <TableCell>
                       <Input type="number" min={0} value={row.orderedQuantity || 0} onChange={(e) => {
                         const next = [...rows];
-                        next[idx] = { ...row, orderedQuantity: parseInt(e.target.value) || 0 };
+                        next[idx] = { ...row, orderedQuantity: parseFloat(e.target.value) || 0 };
                         setRows(next);
                       }} />
                     </TableCell>
                     <TableCell>
-                      <Input type="number" min={1} value={row.receivedQuantity} onChange={(e) => {
+                      <Input type="number" min={0} step="0.01" value={row.receivedQuantity} onChange={(e) => {
                         const next = [...rows];
-                        next[idx] = { ...row, receivedQuantity: parseInt(e.target.value) || 0 };
+                        next[idx] = { ...row, receivedQuantity: parseFloat(e.target.value) || 0 };
                         setRows(next);
                       }} />
                     </TableCell>
                     <TableCell>
-                      <Input type="number" min={0} value={row.unitPrice} onChange={(e) => {
+                      <Input type="number" min={0} step="0.01" value={row.unitPrice} onChange={(e) => {
                         const next = [...rows];
-                        next[idx] = { ...row, unitPrice: parseInt(e.target.value) || 0 };
+                        next[idx] = { ...row, unitPrice: parseFloat(e.target.value) || 0 };
                         setRows(next);
                       }} />
                     </TableCell>

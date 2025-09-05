@@ -201,10 +201,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const calcTotals = (items: Array<{ quantity: number; unitPrice: number }>, applyGST: boolean, additionalCharges: Array<{ amount: number }> = []) => {
     const subtotal = items.reduce((sum, it) => sum + it.quantity * it.unitPrice, 0);
     const chargesTotal = additionalCharges.reduce((sum, charge) => sum + charge.amount, 0);
-    const sgst = applyGST && state.gstSettings.enabled ? Math.round(((subtotal + chargesTotal) * state.gstSettings.sgstRate) / 100) : 0;
-    const cgst = applyGST && state.gstSettings.enabled ? Math.round(((subtotal + chargesTotal) * state.gstSettings.cgstRate) / 100) : 0;
+    const sgst = applyGST && state.gstSettings.enabled ? parseFloat((((subtotal + chargesTotal) * state.gstSettings.sgstRate) / 100).toFixed(2)) : 0;
+    const cgst = applyGST && state.gstSettings.enabled ? parseFloat((((subtotal + chargesTotal) * state.gstSettings.cgstRate) / 100).toFixed(2)) : 0;
     const total = subtotal + chargesTotal + sgst + cgst;
-    return { subtotal, sgst, cgst, total };
+    return { 
+      subtotal: parseFloat(subtotal.toFixed(2)), 
+      sgst: parseFloat(sgst.toFixed(2)), 
+      cgst: parseFloat(cgst.toFixed(2)), 
+      total: parseFloat(total.toFixed(2)) 
+    };
   };
 
   const value: AppContextValue = useMemo(() => ({

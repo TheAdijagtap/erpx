@@ -261,9 +261,9 @@ function CreatePODialog() {
                       </Select>
                     </TableCell>
                     <TableCell>
-                      <Input type="number" min={1} value={row.quantity} onChange={(e) => {
+                      <Input type="number" min={0} step="0.01" value={row.quantity} onChange={(e) => {
                         const next = [...rows];
-                        next[idx] = { ...row, quantity: parseInt(e.target.value) || 0 };
+                        next[idx] = { ...row, quantity: parseFloat(e.target.value) || 0 };
                         setRows(next);
                       }} />
                     </TableCell>
@@ -275,9 +275,9 @@ function CreatePODialog() {
                       }} />
                     </TableCell>
                     <TableCell>
-                      <Input type="number" min={0} value={row.unitPrice} onChange={(e) => {
+                      <Input type="number" min={0} step="0.01" value={row.unitPrice} onChange={(e) => {
                         const next = [...rows];
-                        next[idx] = { ...row, unitPrice: parseInt(e.target.value) || 0 };
+                        next[idx] = { ...row, unitPrice: parseFloat(e.target.value) || 0 };
                         setRows(next);
                       }} />
                     </TableCell>
