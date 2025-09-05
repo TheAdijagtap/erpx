@@ -286,12 +286,12 @@ function ItemTransactDialog({ itemId, type, children }: { itemId: string; type: 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <div className="text-sm mb-1">Quantity</div>
-              <Input type="number" value={quantity} min={1} onChange={(e) => setQuantity(parseInt(e.target.value) || 0)} />
+              <Input type="number" step="0.01" value={quantity} min={0} onChange={(e) => setQuantity(parseFloat(e.target.value) || 0)} />
             </div>
             {type === 'IN' && (
               <div>
                 <div className="text-sm mb-1">Unit Price</div>
-                <Input type="number" value={unitPrice} min={0} onChange={(e) => setUnitPrice(parseInt(e.target.value) || 0)} />
+                <Input type="number" step="0.01" value={unitPrice} min={0} onChange={(e) => setUnitPrice(parseFloat(e.target.value) || 0)} />
               </div>
             )}
           </div>
@@ -442,8 +442,9 @@ function CreateItemDialog({ children }: { children: React.ReactNode }) {
             <Input 
               id="unitPrice"
               type="number"
+              step="0.01"
               value={formData.unitPrice}
-              onChange={(e) => setFormData({ ...formData, unitPrice: parseInt(e.target.value) || 0 })}
+              onChange={(e) => setFormData({ ...formData, unitPrice: parseFloat(e.target.value) || 0 })}
               placeholder="0"
               min="0"
             />
