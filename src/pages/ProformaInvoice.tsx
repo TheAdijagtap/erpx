@@ -14,9 +14,43 @@ import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
 import { numberToWords } from "@/lib/numberToWords";
 import { ProformaInvoice as ProformaInvoiceType, ProformaInvoiceItem, BuyerInfo } from "@/types/inventory";
+import React from "react";
+
+// Define ProformaProduct type locally since it's not in the main types
+interface ProformaProduct {
+  id: string;
+  name: string;
+  description: string;
+  unit: string;
+  price: number;
+  createdAt: Date;
+}
+
+// Storage key for proforma products
+const PROFORMA_PRODUCTS_STORAGE_KEY = "stockflow_proforma_products";
 
 const ProformaInvoice = () => {
   const [activeTab, setActiveTab] = useState<"invoices" | "products">("invoices");
+  const [proformaProducts, setProformaProducts] = useState<ProformaProduct[]>(() => {
+    const stored = localStorage.getItem(PROFORMA_PRODUCTS_STORAGE_KEY);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        return parsed.map((p: any) => ({
+          ...p,
+          createdAt: new Date(p.createdAt)
+        }));
+      } catch (e) {
+        console.warn("Failed to parse stored proforma products", e);
+      }
+    }
+    return [];
+  });
+
+  // Save products to localStorage whenever they change
+  React.useEffect(() => {
+    localStorage.setItem(PROFORMA_PRODUCTS_STORAGE_KEY, JSON.stringify(proformaProducts));
+  }, [proformaProducts]);
 
   return (
     <div className="space-y-6">
@@ -53,12 +87,16 @@ const ProformaInvoice = () => {
         </button>
       </div>
 
-      {activeTab === "invoices" ? <ProformaInvoicesTab /> : <ProductsTab />}
+      {activeTab === "invoices" ? (
+        <ProformaInvoicesTab proformaProducts={proformaProducts} />
+      ) : (
+        <ProductsTab proformaProducts={proformaProducts} setProformaProducts={setProformaProducts} />
+      )}
     </div>
   );
 };
 
-const ProformaInvoicesTab = () => {
+const ProformaInvoicesTab = ({ proformaProducts }: { proformaProducts: ProformaProduct[] }) => {
   const { proformaInvoices } = useApp();
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -80,7 +118,7 @@ const ProformaInvoicesTab = () => {
               className="pl-10"
             />
           </div>
-          <CreateProformaDialog />
+          <CreateProformaDialog proformaProducts={proformaProducts} />
         </div>
       </Card>
 
@@ -161,7 +199,7 @@ const ProformaInvoicesTab = () => {
             <p className="text-muted-foreground mb-4">
               {searchTerm ? "No invoices match your search criteria." : "Create your first proforma invoice to get started."}
             </p>
-            {!searchTerm && <CreateProformaDialog />}
+            {!searchTerm && <CreateProformaDialog proformaProducts={proformaProducts} />}
           </Card>
         )}
       </div>
@@ -169,15 +207,13 @@ const ProformaInvoicesTab = () => {
   );
 };
 
-const ProductsTab = () => {
-  const [proformaProducts, setProformaProducts] = useState<Array<{
-    id: string;
-    name: string;
-    description: string;
-    unit: string;
-    price: number;
-    createdAt: Date;
-  }>>([]);
+const ProductsTab = ({ 
+  proformaProducts, 
+  setProformaProducts 
+}: { 
+  proformaProducts: ProformaProduct[];
+  setProformaProducts: React.Dispatch<React.SetStateAction<ProformaProduct[]>>;
+}) => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredProducts = useMemo(() => 
@@ -249,8 +285,8 @@ const ProductsTab = () => {
 };
 
 function CreateProductDialog({ products, setProducts }: {
-  products: Array<{ id: string; name: string; description: string; unit: string; price: number; createdAt: Date }>;
-  setProducts: React.Dispatch<React.SetStateAction<Array<{ id: string; name: string; description: string; unit: string; price: number; createdAt: Date }>>>;
+  products: ProformaProduct[];
+  setProducts: React.Dispatch<React.SetStateAction<ProformaProduct[]>>;
 }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -344,9 +380,9 @@ function CreateProductDialog({ products, setProducts }: {
 }
 
 function EditProductDialog({ product, products, setProducts }: {
-  product: { id: string; name: string; description: string; unit: string; price: number; createdAt: Date };
-  products: Array<{ id: string; name: string; description: string; unit: string; price: number; createdAt: Date }>;
-  setProducts: React.Dispatch<React.SetStateAction<Array<{ id: string; name: string; description: string; unit: string; price: number; createdAt: Date }>>>;
+  product: ProformaProduct;
+  products: ProformaProduct[];
+  setProducts: React.Dispatch<React.SetStateAction<ProformaProduct[]>>;
 }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(product.name);
@@ -432,8 +468,8 @@ function EditProductDialog({ product, products, setProducts }: {
 
 function DeleteProductDialog({ productId, products, setProducts }: {
   productId: string;
-  products: Array<{ id: string; name: string; description: string; unit: string; price: number; createdAt: Date }>;
-  setProducts: React.Dispatch<React.SetStateAction<Array<{ id: string; name: string; description: string; unit: string; price: number; createdAt: Date }>>>;
+  products: ProformaProduct[];
+  setProducts: React.Dispatch<React.SetStateAction<ProformaProduct[]>>;
 }) {
   const [open, setOpen] = useState(false);
   
@@ -477,8 +513,8 @@ const getStatusBadge = (status: ProformaInvoiceType['status']) => {
   return <Badge variant={variant}>{label}</Badge>;
 };
 
-const CreateProformaDialog = () => {
-  const { inventoryItems, addProformaInvoice, businessInfo, gstSettings } = useApp();
+const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: ProformaProduct[] }) => {
+  const { addProformaInvoice, businessInfo, gstSettings } = useApp();
   const [open, setOpen] = useState(false);
   const [buyerInfo, setBuyerInfo] = useState<BuyerInfo>({
     name: "",
@@ -496,29 +532,56 @@ const CreateProformaDialog = () => {
   const [notes, setNotes] = useState("");
 
   const addRow = () => {
-    if (inventoryItems.length === 0) return;
+    if (!proformaProducts || proformaProducts.length === 0) return;
     
     setItems([...items, {
       id: Date.now().toString(),
-      itemId: inventoryItems[0].id,
-      item: inventoryItems[0],
+      itemId: proformaProducts[0].id,
+      item: {
+        id: proformaProducts[0].id,
+        name: proformaProducts[0].name,
+        sku: proformaProducts[0].id, // Use ID as SKU for proforma products
+        description: proformaProducts[0].description,
+        category: "Proforma Product",
+        currentStock: 0,
+        minStock: 0,
+        maxStock: 0,
+        unitPrice: proformaProducts[0].price,
+        unit: proformaProducts[0].unit,
+        createdAt: proformaProducts[0].createdAt,
+        updatedAt: proformaProducts[0].createdAt,
+      },
       quantity: 1,
-      unitPrice: inventoryItems[0].unitPrice,
-      total: inventoryItems[0].unitPrice,
+      unitPrice: proformaProducts[0].price,
+      total: proformaProducts[0].price,
     }]);
   };
 
   const updateItem = (index: number, field: keyof ProformaInvoiceItem, value: any) => {
     const newItems = [...items];
     if (field === 'itemId') {
-      const selectedItem = inventoryItems.find(item => item.id === value);
-      if (selectedItem) {
+      const selectedProduct = proformaProducts?.find(product => product.id === value);
+      if (selectedProduct) {
+        const selectedItem = {
+          id: selectedProduct.id,
+          name: selectedProduct.name,
+          sku: selectedProduct.id,
+          description: selectedProduct.description,
+          category: "Proforma Product",
+          currentStock: 0,
+          minStock: 0,
+          maxStock: 0,
+          unitPrice: selectedProduct.price,
+          unit: selectedProduct.unit,
+          createdAt: selectedProduct.createdAt,
+          updatedAt: selectedProduct.createdAt,
+        };
         newItems[index] = {
           ...newItems[index],
           itemId: value,
           item: selectedItem,
-          unitPrice: selectedItem.unitPrice,
-          total: newItems[index].quantity * selectedItem.unitPrice,
+          unitPrice: selectedProduct.price,
+          total: newItems[index].quantity * selectedProduct.price,
         };
       }
     } else if (field === 'quantity' || field === 'unitPrice') {
@@ -727,9 +790,9 @@ const CreateProformaDialog = () => {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {inventoryItems.map((invItem) => (
-                            <SelectItem key={invItem.id} value={invItem.id}>
-                              {invItem.name} ({invItem.sku})
+                          {proformaProducts?.map((product) => (
+                            <SelectItem key={product.id} value={product.id}>
+                              {product.name} ({product.unit})
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -869,7 +932,7 @@ const CreateProformaDialog = () => {
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={!buyerInfo.name || items.length === 0}>
+          <Button onClick={handleSubmit} disabled={!buyerInfo.name || items.length === 0 || !proformaProducts || proformaProducts.length === 0}>
             Create Proforma
           </Button>
         </DialogFooter>
