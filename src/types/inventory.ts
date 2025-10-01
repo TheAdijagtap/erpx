@@ -1,8 +1,8 @@
 export interface InventoryItem {
   id: string;
   name: string;
-  sku: string;
-  description?: string;
+  sku: string; // Auto-generated or legacy field
+  description: string;
   category: string;
   currentStock: number;
   minStock: number;

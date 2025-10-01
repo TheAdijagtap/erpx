@@ -166,7 +166,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           }
           return obj;
         };
-        parsed.items = parsed.items?.map((i: any) => reviveDates(i)) ?? [];
+        parsed.items = parsed.items?.map((i: any) => {
+          reviveDates(i);
+          // Backward compatibility: ensure description exists
+          if (!i.description) {
+            i.description = i.sku || "No description";
+          }
+          return i;
+        }) ?? [];
         parsed.suppliers = parsed.suppliers?.map((s: any) => reviveDates(s)) ?? [];
         parsed.purchaseOrders = parsed.purchaseOrders?.map((p: any) => {
           reviveDates(p);

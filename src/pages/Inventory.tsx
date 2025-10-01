@@ -19,7 +19,7 @@ const Inventory = () => {
   const filteredItems = useMemo(() =>
     items.filter(item =>
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.category.toLowerCase().includes(searchTerm.toLowerCase())
     ), [items, searchTerm]
   );
@@ -63,7 +63,7 @@ const Inventory = () => {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
-              placeholder="Search items by name, SKU, or category..."
+              placeholder="Search items by name, description, or category..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -82,7 +82,7 @@ const Inventory = () => {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <h3 className="font-semibold text-foreground">{item.name}</h3>
-                    <p className="text-sm text-muted-foreground">{item.sku}</p>
+                    <p className="text-sm text-muted-foreground">{item.description}</p>
                     <p className="text-xs text-muted-foreground mt-1">{item.category}</p>
                   </div>
                   <div className="p-2 bg-primary-light rounded-lg">
@@ -187,22 +187,30 @@ function ItemViewDialog({ itemId, children }: { itemId: string; children: React.
           <DialogTitle>Item Details</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <div className="text-muted-foreground">Name</div>
-              <div className="font-medium">{item.name}</div>
+          <div className="space-y-3 text-sm">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="text-muted-foreground">Name</div>
+                <div className="font-medium">{item.name}</div>
+              </div>
+              <div>
+                <div className="text-muted-foreground">Category</div>
+                <div className="font-medium">{item.category}</div>
+              </div>
             </div>
             <div>
-              <div className="text-muted-foreground">SKU</div>
-              <div className="font-medium">{item.sku}</div>
+              <div className="text-muted-foreground">Description</div>
+              <div className="font-medium">{item.description}</div>
             </div>
-            <div>
-              <div className="text-muted-foreground">Category</div>
-              <div className="font-medium">{item.category}</div>
-            </div>
-            <div>
-              <div className="text-muted-foreground">Unit Price</div>
-              <div className="font-medium">{formatINR(item.unitPrice)}</div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="text-muted-foreground">Unit Price</div>
+                <div className="font-medium">{formatINR(item.unitPrice)}</div>
+              </div>
+              <div>
+                <div className="text-muted-foreground">Unit</div>
+                <div className="font-medium">{item.unit}</div>
+              </div>
             </div>
           </div>
 
@@ -319,7 +327,7 @@ function CreateItemDialog({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
-    sku: "",
+    description: "",
     category: "",
     currentStock: 0,
     minStock: 0,
@@ -330,7 +338,7 @@ function CreateItemDialog({ children }: { children: React.ReactNode }) {
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.sku || !formData.category) {
+    if (!formData.name || !formData.description || !formData.category) {
       toast({ title: "Error", description: "Please fill in all required fields.", variant: "destructive" as any });
       return;
     }
@@ -338,12 +346,14 @@ function CreateItemDialog({ children }: { children: React.ReactNode }) {
     const item = {
       id: Date.now().toString(),
       ...formData,
-      createdAt: new Date()
+      sku: `SKU-${Date.now()}`, // Auto-generate SKU
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
 
     addItem(item);
     toast({ title: "Success", description: "Item added successfully!" });
-    setFormData({ name: "", sku: "", category: "", currentStock: 0, minStock: 0, maxStock: 0, unitPrice: 0, unit: "pcs" });
+    setFormData({ name: "", description: "", category: "", currentStock: 0, minStock: 0, maxStock: 0, unitPrice: 0, unit: "pcs" });
     setOpen(false);
   };
 
@@ -366,12 +376,12 @@ function CreateItemDialog({ children }: { children: React.ReactNode }) {
             />
           </div>
           <div>
-            <Label htmlFor="sku">SKU *</Label>
+            <Label htmlFor="description">Description *</Label>
             <Input 
-              id="sku"
-              value={formData.sku}
-              onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-              placeholder="Enter SKU"
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Enter item description"
               required
             />
           </div>
