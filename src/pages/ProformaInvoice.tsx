@@ -1006,13 +1006,16 @@ const ViewProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
             <p style={{marginBottom: '8px', fontStyle: 'italic'}}>We are pleased to submit our quotation for the following items :</p>
             <table>
               <thead>
-                <tr><th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th>Rate</th><th>Total</th></tr>
+                <tr><th>#</th><th>Description</th><th>Qty</th><th>Unit</th><th>Rate</th><th>Total</th></tr>
               </thead>
               <tbody>
                 {invoice.items.map((it, idx) => (
                   <tr key={it.id}>
                     <td>{idx + 1}</td>
-                    <td>{it.item.name}</td>
+                    <td>
+                      <div style={{fontWeight: '600'}}>{it.item.name}</div>
+                      {it.item.description && <div style={{fontSize: '12px', color: '#64748b', marginTop: '2px'}}>{it.item.description}</div>}
+                    </td>
                     <td>{it.quantity}</td>
                     <td>{it.item.unit}</td>
                     <td>{formatINR(it.unitPrice)}</td>
@@ -1142,8 +1145,89 @@ const EditProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
 };
 
 const PrintProformaButton = ({ id }: { id: string }) => {
+  const { proformaInvoices, businessInfo } = useApp();
+  const invoice = proformaInvoices.find(p => p.id === id)!;
+  const elId = `proforma-print-standalone-${id}`;
+  
   const handlePrint = () => {
-    printElementById(`proforma-print-${id}`, `Proforma Invoice`);
+    const tempDiv = document.createElement('div');
+    tempDiv.id = elId;
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.left = '-9999px';
+    document.body.appendChild(tempDiv);
+    
+    tempDiv.innerHTML = `
+      <div class="section">
+        <div class="header">
+          ${businessInfo.logo ? `<img src="${businessInfo.logo}" alt="Logo" />` : ''}
+          <div>
+            <div class="brand">${businessInfo.name}</div>
+            <div class="muted">${businessInfo.address}</div>
+            <div class="muted">${businessInfo.email} · ${businessInfo.phone}</div>
+            ${businessInfo.gstNumber ? `<div class="muted">GST: ${businessInfo.gstNumber}</div>` : ''}
+          </div>
+        </div>
+      </div>
+      <div class="section"><h2>Proforma Invoice ${invoice.proformaNumber}</h2></div>
+      <div class="section">
+        <div class="grid">
+          <div>
+            <strong>Buyer Details</strong>
+            <div>${invoice.buyerInfo.name}</div>
+            ${invoice.buyerInfo.contactPerson ? `<div>${invoice.buyerInfo.contactPerson}</div>` : ''}
+            <div class="muted">${invoice.buyerInfo.address}</div>
+            <div class="muted">${invoice.buyerInfo.email} · ${invoice.buyerInfo.phone}</div>
+            ${invoice.buyerInfo.gstNumber ? `<div class="muted">GST: ${invoice.buyerInfo.gstNumber}</div>` : ''}
+          </div>
+          <div>
+            <strong>Invoice Details</strong>
+            <div>Date: ${formatDateIN(invoice.date)}</div>
+            ${invoice.validUntil ? `<div>Valid Until: ${formatDateIN(invoice.validUntil)}</div>` : ''}
+            <div>Status: ${invoice.status}</div>
+            ${invoice.paymentTerms ? `<div>Payment Terms: ${invoice.paymentTerms}</div>` : ''}
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <p style="margin-bottom: 8px; font-style: italic">We are pleased to submit our quotation for the following items :</p>
+        <table>
+          <thead>
+            <tr><th>#</th><th>Description</th><th>Qty</th><th>Unit</th><th>Rate</th><th>Total</th></tr>
+          </thead>
+          <tbody>
+            ${invoice.items.map((it, idx) => `
+              <tr>
+                <td>${idx + 1}</td>
+                <td>
+                  <div style="font-weight: 600">${it.item.name}</div>
+                  ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${it.item.description}</div>` : ''}
+                </td>
+                <td>${it.quantity}</td>
+                <td>${it.item.unit}</td>
+                <td>${formatINR(it.unitPrice)}</td>
+                <td>${formatINR(it.total)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="section">
+        <table class="totals">
+          <tbody>
+            <tr><td class="label">Subtotal</td><td class="value">${formatINR(invoice.subtotal)}</td></tr>
+            ${(invoice.additionalCharges ?? []).map(charge => `<tr><td class="label">${charge.name}</td><td class="value">${formatINR(charge.amount)}</td></tr>`).join('')}
+            <tr><td class="label">SGST</td><td class="value">${formatINR(invoice.sgst)}</td></tr>
+            <tr><td class="label">CGST</td><td class="value">${formatINR(invoice.cgst)}</td></tr>
+            <tr><td class="label"><strong>Total Amount</strong></td><td class="value"><strong>${formatINR(invoice.total)}</strong></td></tr>
+          </tbody>
+        </table>
+        <div class="amount-words">Amount in Words: ${numberToWords(invoice.total)}</div>
+      </div>
+      ${invoice.notes ? `<div class="footer">Notes: ${invoice.notes}</div>` : ''}
+    `;
+    
+    printElementById(elId, `Proforma Invoice ${invoice.proformaNumber}`);
+    setTimeout(() => document.body.removeChild(tempDiv), 500);
   };
 
   return (

@@ -401,13 +401,16 @@ function ViewGRDialog({ id }: { id: string }) {
             <p style={{marginBottom: '8px', fontStyle: 'italic'}}>Following goods have been received and verified :</p>
             <table>
               <thead>
-                <tr><th>#</th><th>Item</th><th>Ordered</th><th>Received</th><th>Unit</th><th>Rate</th><th>Total</th></tr>
+                <tr><th>#</th><th>Description</th><th>Ordered</th><th>Received</th><th>Unit</th><th>Rate</th><th>Total</th></tr>
               </thead>
               <tbody>
                 {receipt.items.map((it, idx) => (
                   <tr key={it.id}>
                     <td>{idx + 1}</td>
-                    <td>{it.item.name}</td>
+                    <td>
+                      <div style={{fontWeight: '600'}}>{it.item.name}</div>
+                      {it.item.description && <div style={{fontSize: '12px', color: '#64748b', marginTop: '2px'}}>{it.item.description}</div>}
+                    </td>
                     <td>{it.orderedQuantity || '-'}</td>
                     <td>{it.receivedQuantity}</td>
                     <td>{it.item.unit}</td>
@@ -514,9 +517,92 @@ function UpdateStatusButton({ id, status, label, destructive }: { id: string; st
 }
 
 function PrintGRButton({ id }: { id: string }) {
-  const elId = `gr-print-${id}`;
+  const { goodsReceipts, businessInfo } = useApp();
+  const receipt = goodsReceipts.find(g => g.id === id)!;
+  const elId = `gr-print-standalone-${id}`;
+  
+  const handlePrint = () => {
+    // Create a temporary container with the print content
+    const tempDiv = document.createElement('div');
+    tempDiv.id = elId;
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.left = '-9999px';
+    document.body.appendChild(tempDiv);
+    
+    // Render the same content as ViewGRDialog
+    tempDiv.innerHTML = `
+      <div class="section">
+        <div class="header">
+          ${businessInfo.logo ? `<img src="${businessInfo.logo}" alt="Logo" />` : ''}
+          <div>
+            <div class="brand">${businessInfo.name}</div>
+            <div class="muted">${businessInfo.address}</div>
+            <div class="muted">${businessInfo.email} · ${businessInfo.phone}</div>
+            ${businessInfo.gstNumber ? `<div class="muted">GST: ${businessInfo.gstNumber}</div>` : ''}
+          </div>
+        </div>
+      </div>
+      <div class="section"><h2>Goods Receipt ${receipt.grNumber}</h2></div>
+      <div class="section">
+        <div class="grid">
+          <div>
+            <strong>Supplier Details</strong>
+            <div>${receipt.supplier.name}</div>
+            <div class="muted">${receipt.supplier.address}</div>
+            <div class="muted">${receipt.supplier.email} · ${receipt.supplier.phone}</div>
+            ${receipt.supplier.gstNumber ? `<div class="muted">GST: ${receipt.supplier.gstNumber}</div>` : ''}
+          </div>
+          <div>
+            <strong>Receipt Details</strong>
+            <div>Date: ${formatDateIN(receipt.date)}</div>
+            <div>Status: ${receipt.status}</div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <p style="margin-bottom: 8px; font-style: italic">Following goods have been received and verified :</p>
+        <table>
+          <thead>
+            <tr><th>#</th><th>Description</th><th>Ordered</th><th>Received</th><th>Unit</th><th>Rate</th><th>Total</th></tr>
+          </thead>
+          <tbody>
+            ${receipt.items.map((it, idx) => `
+              <tr>
+                <td>${idx + 1}</td>
+                <td>
+                  <div style="font-weight: 600">${it.item.name}</div>
+                  ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${it.item.description}</div>` : ''}
+                </td>
+                <td>${it.orderedQuantity || '-'}</td>
+                <td>${it.receivedQuantity}</td>
+                <td>${it.item.unit}</td>
+                <td>${formatINR(it.unitPrice)}</td>
+                <td>${formatINR(it.total)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="section">
+        <table class="totals">
+          <tbody>
+            <tr><td class="label">Subtotal</td><td class="value">${formatINR(receipt.subtotal)}</td></tr>
+            ${(receipt.additionalCharges ?? []).map(charge => `<tr><td class="label">${charge.name}</td><td class="value">${formatINR(charge.amount)}</td></tr>`).join('')}
+            <tr><td class="label">SGST</td><td class="value">${formatINR(receipt.sgst)}</td></tr>
+            <tr><td class="label">CGST</td><td class="value">${formatINR(receipt.cgst)}</td></tr>
+            <tr><td class="label"><strong>Total Amount</strong></td><td class="value"><strong>${formatINR(receipt.total)}</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      ${receipt.notes ? `<div class="footer">Notes: ${receipt.notes}</div>` : ''}
+    `;
+    
+    printElementById(elId, `GR ${receipt.grNumber}`);
+    setTimeout(() => document.body.removeChild(tempDiv), 500);
+  };
+  
   return (
-    <Button variant="outline" size="sm" className="gap-1" onClick={() => printElementById(elId)}>
+    <Button variant="outline" size="sm" className="gap-1" onClick={handlePrint}>
       <Printer className="w-4 h-4" /> Print/PDF
     </Button>
   );

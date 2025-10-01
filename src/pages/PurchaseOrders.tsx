@@ -398,13 +398,16 @@ function ViewPODialog({ id }: { id: string }) {
             <p style={{marginBottom: '8px', fontStyle: 'italic'}}>Please supply following goods in accordance with terms and conditions prescribed hereunder :</p>
             <table>
               <thead>
-                <tr><th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th>Rate</th><th>Total</th></tr>
+                <tr><th>#</th><th>Description</th><th>Qty</th><th>Unit</th><th>Rate</th><th>Total</th></tr>
               </thead>
               <tbody>
                 {order.items.map((it, idx) => (
                   <tr key={it.id}>
                     <td>{idx + 1}</td>
-                    <td>{it.item.name}</td>
+                    <td>
+                      <div style={{fontWeight: '600'}}>{it.item.name}</div>
+                      {it.item.description && <div style={{fontSize: '12px', color: '#64748b', marginTop: '2px'}}>{it.item.description}</div>}
+                    </td>
                     <td>{it.quantity}</td>
                     <td>{it.item.unit}</td>
                     <td>{formatINR(it.unitPrice)}</td>
@@ -506,9 +509,91 @@ function EditPODialog({ id }: { id: string }) {
 }
 
 function PrintPOButton({ id }: { id: string }) {
-  const elId = `po-print-${id}`;
+  const { purchaseOrders, businessInfo } = useApp();
+  const order = purchaseOrders.find(p => p.id === id)!;
+  const elId = `po-print-standalone-${id}`;
+  
+  const handlePrint = () => {
+    const tempDiv = document.createElement('div');
+    tempDiv.id = elId;
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.left = '-9999px';
+    document.body.appendChild(tempDiv);
+    
+    tempDiv.innerHTML = `
+      <div class="section">
+        <div class="header">
+          ${businessInfo.logo ? `<img src="${businessInfo.logo}" alt="Logo" />` : ''}
+          <div>
+            <div class="brand">${businessInfo.name}</div>
+            <div class="muted">${businessInfo.address}</div>
+            <div class="muted">${businessInfo.email} · ${businessInfo.phone}</div>
+            ${businessInfo.gstNumber ? `<div class="muted">GST: ${businessInfo.gstNumber}</div>` : ''}
+          </div>
+        </div>
+      </div>
+      <div class="section"><h2>Purchase Order ${order.poNumber}</h2></div>
+      <div class="section">
+        <div class="grid">
+          <div>
+            <strong>Supplier Details</strong>
+            <div>${order.supplier.name}</div>
+            <div class="muted">${order.supplier.address}</div>
+            <div class="muted">${order.supplier.email} · ${order.supplier.phone}</div>
+            ${order.supplier.gstNumber ? `<div class="muted">GST: ${order.supplier.gstNumber}</div>` : ''}
+          </div>
+          <div>
+            <strong>Order Details</strong>
+            <div>Date: ${formatDateIN(order.date)}</div>
+            <div>Status: ${order.status}</div>
+            <div>Payment Terms: ${order.paymentTerms || "30 days from invoice date"}</div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <p style="margin-bottom: 8px; font-style: italic">Please supply following goods in accordance with terms and conditions prescribed hereunder :</p>
+        <table>
+          <thead>
+            <tr><th>#</th><th>Description</th><th>Qty</th><th>Unit</th><th>Rate</th><th>Total</th></tr>
+          </thead>
+          <tbody>
+            ${order.items.map((it, idx) => `
+              <tr>
+                <td>${idx + 1}</td>
+                <td>
+                  <div style="font-weight: 600">${it.item.name}</div>
+                  ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${it.item.description}</div>` : ''}
+                </td>
+                <td>${it.quantity}</td>
+                <td>${it.item.unit}</td>
+                <td>${formatINR(it.unitPrice)}</td>
+                <td>${formatINR(it.total)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div class="section">
+        <table class="totals">
+          <tbody>
+            <tr><td class="label">Subtotal</td><td class="value">${formatINR(order.subtotal)}</td></tr>
+            ${(order.additionalCharges ?? []).map(charge => `<tr><td class="label">${charge.name}</td><td class="value">${formatINR(charge.amount)}</td></tr>`).join('')}
+            <tr><td class="label">SGST</td><td class="value">${formatINR(order.sgst)}</td></tr>
+            <tr><td class="label">CGST</td><td class="value">${formatINR(order.cgst)}</td></tr>
+            <tr><td class="label"><strong>Total Amount</strong></td><td class="value"><strong>${formatINR(order.total)}</strong></td></tr>
+          </tbody>
+        </table>
+        <div class="amount-words">Amount in Words: ${numberToWords(order.total)}</div>
+      </div>
+      ${order.notes ? `<div class="footer">Notes: ${order.notes}</div>` : ''}
+    `;
+    
+    printElementById(elId, `PO ${order.poNumber}`);
+    setTimeout(() => document.body.removeChild(tempDiv), 500);
+  };
+  
   return (
-    <Button variant="outline" size="sm" className="gap-1" onClick={() => printElementById(elId)}>
+    <Button variant="outline" size="sm" className="gap-1" onClick={handlePrint}>
       <Printer className="w-4 h-4" /> Print/PDF
     </Button>
   );

@@ -143,14 +143,8 @@ const Suppliers = () => {
 
               {/* Actions */}
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" className="flex-1 gap-1">
-                  <Eye className="w-4 h-4" />
-                  View
-                </Button>
-                <Button variant="outline" size="sm" className="flex-1 gap-1">
-                  <Edit className="w-4 h-4" />
-                  Edit
-                </Button>
+                <ViewSupplierDialog supplier={supplier} />
+                <EditSupplierDialog supplier={supplier} />
                 <Button variant="destructive" size="sm" className="gap-1" onClick={() => {
                   if (confirm(`Are you sure you want to delete supplier ${supplier.name}?`)) {
                     removeSupplier(supplier.id);
@@ -183,6 +177,165 @@ const Suppliers = () => {
     </div>
   );
 };
+
+function ViewSupplierDialog({ supplier }: { supplier: any }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="flex-1 gap-1">
+          <Eye className="w-4 h-4" />
+          View
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Supplier Details</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <Label className="text-muted-foreground">Company Name</Label>
+            <p className="font-medium">{supplier.name}</p>
+          </div>
+          <div>
+            <Label className="text-muted-foreground">Contact Person</Label>
+            <p className="font-medium">{supplier.contactPerson}</p>
+          </div>
+          <div>
+            <Label className="text-muted-foreground">Email</Label>
+            <p className="font-medium">{supplier.email}</p>
+          </div>
+          <div>
+            <Label className="text-muted-foreground">Phone</Label>
+            <p className="font-medium">{supplier.phone}</p>
+          </div>
+          <div>
+            <Label className="text-muted-foreground">Address</Label>
+            <p className="font-medium">{supplier.address}</p>
+          </div>
+          {supplier.gstNumber && (
+            <div>
+              <Label className="text-muted-foreground">GST Number</Label>
+              <p className="font-medium">{supplier.gstNumber}</p>
+            </div>
+          )}
+        </div>
+        <DialogFooter>
+          <Button onClick={() => setOpen(false)}>Close</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function EditSupplierDialog({ supplier }: { supplier: any }) {
+  const { updateSupplier } = useApp();
+  const [open, setOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: supplier.name,
+    contactPerson: supplier.contactPerson,
+    email: supplier.email,
+    phone: supplier.phone,
+    address: supplier.address,
+    gstNumber: supplier.gstNumber || ""
+  });
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || !formData.contactPerson || !formData.email || !formData.phone) {
+      toast({ title: "Error", description: "Please fill in all required fields.", variant: "destructive" as any });
+      return;
+    }
+
+    updateSupplier(supplier.id, formData);
+    toast({ title: "Success", description: "Supplier updated successfully!" });
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="flex-1 gap-1">
+          <Edit className="w-4 h-4" />
+          Edit
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Edit Supplier</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={onSubmit} className="space-y-4">
+          <div>
+            <Label htmlFor="edit-name">Company Name *</Label>
+            <Input 
+              id="edit-name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="Enter company name"
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="edit-contactPerson">Contact Person *</Label>
+            <Input 
+              id="edit-contactPerson"
+              value={formData.contactPerson}
+              onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
+              placeholder="Enter contact person name"
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="edit-email">Email *</Label>
+            <Input 
+              id="edit-email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              placeholder="Enter email address"
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="edit-phone">Phone *</Label>
+            <Input 
+              id="edit-phone"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              placeholder="Enter phone number"
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="edit-address">Address</Label>
+            <Textarea 
+              id="edit-address"
+              value={formData.address}
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              placeholder="Enter address"
+              rows={3}
+            />
+          </div>
+          <div>
+            <Label htmlFor="edit-gstNumber">GST Number</Label>
+            <Input 
+              id="edit-gstNumber"
+              value={formData.gstNumber}
+              onChange={(e) => setFormData({ ...formData, gstNumber: e.target.value })}
+              placeholder="Enter GST number (optional)"
+            />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit">Save Changes</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 function CreateSupplierDialog({ children }: { children: React.ReactNode }) {
   const { addSupplier } = useApp();
