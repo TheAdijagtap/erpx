@@ -47,67 +47,43 @@ const PurchaseOrders = () => {
         </div>
       </Card>
 
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         {filteredOrders.map((order) => (
-          <Card key={order.id} className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
-            <div className="space-y-4">
+          <Card key={order.id} className="p-4 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
+            <div className="space-y-3">
               <div className="flex items-start justify-between">
-                <div>
-                  <div className="flex items-center gap-3">
-                    <h3 className="text-lg font-semibold text-foreground">{order.poNumber}</h3>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-semibold text-foreground">{order.poNumber}</h3>
                     {getStatusBadge(order.status)}
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Supplier: {order.supplier.name}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Date: {formatDateIN(order.date)}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {order.supplier.name} · {formatDateIN(order.date)}
                   </p>
                 </div>
-                <div className="p-2 bg-primary-light rounded-lg">
-                  <FileText className="w-5 h-5 text-primary" />
+                <div className="p-1.5 bg-primary-light rounded">
+                  <FileText className="w-4 h-4 text-primary" />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Items</p>
-                  <p className="text-lg font-semibold">{order.items.length}</p>
+                  <p className="text-xs font-medium text-muted-foreground">Items</p>
+                  <p className="text-sm font-semibold">{order.items.length}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Quantity</p>
-                  <p className="text-lg font-semibold">
+                  <p className="text-xs font-medium text-muted-foreground">Qty</p>
+                  <p className="text-sm font-semibold">
                     {order.items.reduce((sum, item) => sum + item.quantity, 0)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Amount</p>
-                  <p className="text-lg font-semibold">{formatINR(order.total)}</p>
+                  <p className="text-xs font-medium text-muted-foreground">Total</p>
+                  <p className="text-sm font-semibold">{formatINR(order.total)}</p>
                 </div>
               </div>
 
-              <div className="bg-muted p-4 rounded-lg">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Subtotal:</span>
-                    <span className="float-right font-medium">{formatINR(order.subtotal)}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">SGST:</span>
-                    <span className="float-right font-medium">{formatINR(order.sgst)}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">CGST:</span>
-                    <span className="float-right font-medium">{formatINR(order.cgst)}</span>
-                  </div>
-                  <div className="font-semibold">
-                    <span className="text-foreground">Total:</span>
-                    <span className="float-right">{formatINR(order.total)}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-2 flex-wrap">
+              <div className="flex gap-1.5 flex-wrap">
                 <ViewPODialog id={order.id} />
                 <EditPODialog id={order.id} />
                 <PrintPOButton id={order.id} />

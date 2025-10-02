@@ -46,73 +46,49 @@ const GoodsReceiptPage = () => {
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         {filteredReceipts.map((receipt) => (
-          <Card key={receipt.id} className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
-            <div className="space-y-4">
+          <Card key={receipt.id} className="p-4 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
+            <div className="space-y-3">
               <div className="flex items-start justify-between">
-                <div>
-                  <div className="flex items-center gap-3">
-                    <h3 className="text-lg font-semibold text-foreground">{receipt.grNumber}</h3>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-semibold text-foreground">{receipt.grNumber}</h3>
                     {getStatusBadge(receipt.status)}
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Supplier: {receipt.supplier.name}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Date: {formatDateIN(receipt.date)}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {receipt.supplier.name} · {formatDateIN(receipt.date)}
                   </p>
                 </div>
-                <div className="p-2 bg-primary-light rounded-lg">
-                  <Package className="w-5 h-5 text-primary" />
+                <div className="p-1.5 bg-primary-light rounded">
+                  <Package className="w-4 h-4 text-primary" />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-4 gap-2">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Items</p>
-                  <p className="text-lg font-semibold">{receipt.items.length}</p>
+                  <p className="text-xs font-medium text-muted-foreground">Items</p>
+                  <p className="text-sm font-semibold">{receipt.items.length}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Received Qty</p>
-                  <p className="text-lg font-semibold">
+                  <p className="text-xs font-medium text-muted-foreground">Received</p>
+                  <p className="text-sm font-semibold">
                     {receipt.items.reduce((sum, item) => sum + item.receivedQuantity, 0)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Ordered Qty</p>
-                  <p className="text-lg font-semibold">
+                  <p className="text-xs font-medium text-muted-foreground">Ordered</p>
+                  <p className="text-sm font-semibold">
                     {receipt.items.reduce((sum, item) => sum + (item.orderedQuantity || 0), 0)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Amount</p>
-                  <p className="text-lg font-semibold">{formatINR(receipt.total)}</p>
+                  <p className="text-xs font-medium text-muted-foreground">Total</p>
+                  <p className="text-sm font-semibold">{formatINR(receipt.total)}</p>
                 </div>
               </div>
 
-              <div className="bg-muted p-4 rounded-lg">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Subtotal:</span>
-                    <span className="float-right font-medium">{formatINR(receipt.subtotal)}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">SGST:</span>
-                    <span className="float-right font-medium">{formatINR(receipt.sgst)}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">CGST:</span>
-                    <span className="float-right font-medium">{formatINR(receipt.cgst)}</span>
-                  </div>
-                  <div className="font-semibold">
-                    <span className="text-foreground">Total:</span>
-                    <span className="float-right">{formatINR(receipt.total)}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-2 flex-wrap">
+              <div className="flex gap-1.5 flex-wrap">
                 <ViewGRDialog id={receipt.id} />
                 <EditGRDialog id={receipt.id} />
                 <PrintGRButton id={receipt.id} />

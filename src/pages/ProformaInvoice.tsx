@@ -122,67 +122,43 @@ const ProformaInvoicesTab = ({ proformaProducts }: { proformaProducts: ProformaP
         </div>
       </Card>
 
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         {filteredInvoices.map((invoice) => (
-          <Card key={invoice.id} className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
-            <div className="space-y-4">
+          <Card key={invoice.id} className="p-4 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
+            <div className="space-y-3">
               <div className="flex items-start justify-between">
-                <div>
-                  <div className="flex items-center gap-3">
-                    <h3 className="text-lg font-semibold text-foreground">{invoice.proformaNumber}</h3>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-semibold text-foreground">{invoice.proformaNumber}</h3>
                     {getStatusBadge(invoice.status)}
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Buyer: {invoice.buyerInfo.name}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Date: {formatDateIN(invoice.date)}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {invoice.buyerInfo.name} · {formatDateIN(invoice.date)}
                   </p>
                 </div>
-                <div className="p-2 bg-primary-light rounded-lg">
-                  <Receipt className="w-5 h-5 text-primary" />
+                <div className="p-1.5 bg-primary-light rounded">
+                  <Receipt className="w-4 h-4 text-primary" />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Items</p>
-                  <p className="text-lg font-semibold">{invoice.items.length}</p>
+                  <p className="text-xs font-medium text-muted-foreground">Items</p>
+                  <p className="text-sm font-semibold">{invoice.items.length}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Quantity</p>
-                  <p className="text-lg font-semibold">
+                  <p className="text-xs font-medium text-muted-foreground">Qty</p>
+                  <p className="text-sm font-semibold">
                     {invoice.items.reduce((sum, item) => sum + item.quantity, 0)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Amount</p>
-                  <p className="text-lg font-semibold">{formatINR(invoice.total)}</p>
+                  <p className="text-xs font-medium text-muted-foreground">Total</p>
+                  <p className="text-sm font-semibold">{formatINR(invoice.total)}</p>
                 </div>
               </div>
 
-              <div className="bg-muted p-4 rounded-lg">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Subtotal:</span>
-                    <span className="float-right font-medium">{formatINR(invoice.subtotal)}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">SGST:</span>
-                    <span className="float-right font-medium">{formatINR(invoice.sgst)}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">CGST:</span>
-                    <span className="float-right font-medium">{formatINR(invoice.cgst)}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground font-semibold">Total:</span>
-                    <span className="float-right font-semibold">{formatINR(invoice.total)}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
+              <div className="flex gap-1.5 flex-wrap">
                 <ViewProformaDialog invoice={invoice} />
                 <EditProformaDialog invoice={invoice} />
                 <PrintProformaButton id={invoice.id} />
