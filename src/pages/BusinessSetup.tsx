@@ -164,6 +164,70 @@ const BusinessSetup = () => {
 
         <div className="space-y-6">
           <Card className="p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-primary-light rounded-lg">
+                <Settings className="w-5 h-5 text-primary" />
+              </div>
+              <h2 className="text-xl font-semibold text-foreground">Bank Information</h2>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="bankName">Bank Name</Label>
+                <Input
+                  id="bankName"
+                  value={businessInfo.bankDetails?.bankName || ""}
+                  onChange={(e) => setBusinessInfo({ 
+                    ...businessInfo, 
+                    bankDetails: { 
+                      ...businessInfo.bankDetails,
+                      bankName: e.target.value,
+                      accountNumber: businessInfo.bankDetails?.accountNumber || "",
+                      ifscCode: businessInfo.bankDetails?.ifscCode || ""
+                    }
+                  })}
+                  placeholder="Enter bank name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="accountNumber">Account Number</Label>
+                <Input
+                  id="accountNumber"
+                  value={businessInfo.bankDetails?.accountNumber || ""}
+                  onChange={(e) => setBusinessInfo({ 
+                    ...businessInfo, 
+                    bankDetails: { 
+                      ...businessInfo.bankDetails,
+                      accountNumber: e.target.value,
+                      bankName: businessInfo.bankDetails?.bankName || "",
+                      ifscCode: businessInfo.bankDetails?.ifscCode || ""
+                    }
+                  })}
+                  placeholder="Enter account number"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="ifscCode">IFSC Code</Label>
+                <Input
+                  id="ifscCode"
+                  value={businessInfo.bankDetails?.ifscCode || ""}
+                  onChange={(e) => setBusinessInfo({ 
+                    ...businessInfo, 
+                    bankDetails: { 
+                      ...businessInfo.bankDetails,
+                      ifscCode: e.target.value,
+                      bankName: businessInfo.bankDetails?.bankName || "",
+                      accountNumber: businessInfo.bankDetails?.accountNumber || ""
+                    }
+                  })}
+                  placeholder="Enter IFSC code"
+                />
+              </div>
+            </div>
+          </Card>
+          <Card className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-4">GST Settings</h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between">

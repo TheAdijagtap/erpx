@@ -1054,13 +1054,26 @@ const ViewProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
             </div>
           </div>
           
-          {businessInfo.signature && (
-            <div className="signature-section">
-              <div>Authorized Signatory</div>
-              <img src={businessInfo.signature} alt="Authorized Signature" className="signature-image" style={{ marginTop: '8px' }} />
-              <div className="muted">{businessInfo.name}</div>
-            </div>
-          )}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '24px' }}>
+            {businessInfo.bankDetails && (
+              <div className="section">
+                <strong>Bank Details:</strong>
+                <div className="muted" style={{ marginTop: '8px', lineHeight: '1.6' }}>
+                  Bank Name: {businessInfo.bankDetails.bankName}<br />
+                  Account No: {businessInfo.bankDetails.accountNumber}<br />
+                  IFSC Code: {businessInfo.bankDetails.ifscCode}
+                </div>
+              </div>
+            )}
+            
+            {businessInfo.signature && (
+              <div className="signature-section">
+                <div>Authorized Signatory</div>
+                <img src={businessInfo.signature} alt="Authorized Signature" className="signature-image" style={{ marginTop: '8px' }} />
+                <div className="muted">{businessInfo.name}</div>
+              </div>
+            )}
+          </div>
           
           {invoice.notes && <div className="footer">Notes: {invoice.notes}</div>}
         </div>
