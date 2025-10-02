@@ -437,7 +437,7 @@ function ViewGRDialog({ id }: { id: string }) {
           </div>
           
           <div className="section terms">
-            <strong>Receipt Confirmation:</strong>
+            <strong>Terms & Conditions:</strong>
             <div className="muted" style={{ marginTop: '8px', lineHeight: '1.4' }}>
               1. All goods have been inspected upon receipt<br />
               2. Quality check completed as per standards<br />
@@ -447,12 +447,13 @@ function ViewGRDialog({ id }: { id: string }) {
             </div>
           </div>
           
-          <div className="signature-section">
-            <div>Authorized Signatory</div>
-            <div style={{ marginTop: '40px', borderTop: '1px solid #000', width: '200px', textAlign: 'center', paddingTop: '8px' }}>
-              {businessInfo.name}
+          {businessInfo.signature && (
+            <div className="signature-section">
+              <div>Authorized Signatory</div>
+              <img src={businessInfo.signature} alt="Authorized Signature" className="signature-image" style={{ marginTop: '8px' }} />
+              <div className="muted">{businessInfo.name}</div>
             </div>
-          </div>
+          )}
           
           {receipt.notes && <div className="footer">Notes: {receipt.notes}</div>}
         </div>
@@ -594,6 +595,23 @@ function PrintGRButton({ id }: { id: string }) {
           </tbody>
         </table>
       </div>
+      <div class="section terms">
+        <strong>Terms & Conditions:</strong>
+        <div class="muted" style="margin-top: 8px; line-height: 1.4">
+          1. All goods have been inspected upon receipt<br />
+          2. Quality check completed as per standards<br />
+          3. Quantities verified and confirmed<br />
+          4. Any discrepancies noted in remarks section<br />
+          5. Goods accepted in good condition
+        </div>
+      </div>
+      ${businessInfo.signature ? `
+        <div class="signature-section">
+          <div>Authorized Signatory</div>
+          <img src="${businessInfo.signature}" alt="Authorized Signature" class="signature-image" style="margin-top: 8px" />
+          <div class="muted">${businessInfo.name}</div>
+        </div>
+      ` : ''}
       ${receipt.notes ? `<div class="footer">Notes: ${receipt.notes}</div>` : ''}
     `;
     

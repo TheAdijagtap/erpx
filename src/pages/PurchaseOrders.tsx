@@ -585,6 +585,23 @@ function PrintPOButton({ id }: { id: string }) {
         </table>
         <div class="amount-words">Amount in Words: ${numberToWords(order.total)}</div>
       </div>
+      <div class="section terms">
+        <strong>Terms & Conditions:</strong>
+        <div class="muted" style="margin-top: 8px; line-height: 1.4">
+          1. Payment terms: ${order.paymentTerms || "30 days from invoice date"}<br />
+          2. All disputes subject to local jurisdiction<br />
+          3. Goods once sold will not be taken back<br />
+          4. Late payment may attract penalty charges<br />
+          5. All rates are inclusive of applicable taxes
+        </div>
+      </div>
+      ${businessInfo.signature ? `
+        <div class="signature-section">
+          <div>Authorized Signatory</div>
+          <img src="${businessInfo.signature}" alt="Authorized Signature" class="signature-image" style="margin-top: 8px" />
+          <div class="muted">${businessInfo.name}</div>
+        </div>
+      ` : ''}
       ${order.notes ? `<div class="footer">Notes: ${order.notes}</div>` : ''}
     `;
     
