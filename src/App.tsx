@@ -24,8 +24,11 @@ const App = () => (
       <AppProvider>
         <BrowserRouter>
           <Routes>
+            {/* Homepage without sidebar */}
+            <Route index element={<Dashboard />} />
+            
+            {/* App routes with sidebar */}
             <Route path="/" element={<Layout />}>
-              <Route index element={<Dashboard />} />
               <Route path="inventory" element={<Inventory />} />
               <Route path="purchase-orders" element={<PurchaseOrders />} />
               <Route path="goods-receipt" element={<GoodsReceiptPage />} />
@@ -33,6 +36,7 @@ const App = () => (
               <Route path="proforma" element={<ProformaInvoice />} />
               <Route path="business" element={<BusinessSetup />} />
             </Route>
+            
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
