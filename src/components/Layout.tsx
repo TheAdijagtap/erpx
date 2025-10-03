@@ -21,7 +21,7 @@ const Layout = () => {
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="flex h-16 items-center px-6 border-b">
-            <img src={samanvayLogo} alt="Samanvay Logo" className="h-8 object-contain" />
+            <img src={samanvayLogo} alt="Samanvay Logo" className="h-8 object-contain scale-[1.03]" />
           </div>
 
           {/* Navigation */}
