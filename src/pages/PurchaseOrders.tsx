@@ -485,7 +485,7 @@ function EditPODialog({ id }: { id: string }) {
 }
 
 function PrintPOButton({ id }: { id: string }) {
-  const { purchaseOrders, businessInfo } = useApp();
+  const { purchaseOrders, businessInfo, gstSettings } = useApp();
   const order = purchaseOrders.find(p => p.id === id)!;
   const elId = `po-print-standalone-${id}`;
   
@@ -523,6 +523,7 @@ function PrintPOButton({ id }: { id: string }) {
             <div>Date: ${formatDateIN(order.date)}</div>
             <div>Status: ${order.status}</div>
             <div>Payment Terms: ${order.paymentTerms || "30 days from invoice date"}</div>
+            <div>GST: ${order.sgst + order.cgst > 0 ? `${gstSettings.sgstRate + gstSettings.cgstRate}%` : 'Not Applied'}</div>
           </div>
         </div>
       </div>

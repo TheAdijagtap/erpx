@@ -1,7 +1,6 @@
 import { Outlet, NavLink } from "react-router-dom";
 import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt } from "lucide-react";
 import { cn } from "@/lib/utils";
-import samanvayLogo from "@/assets/samanvay-logo.png";
 
 const Layout = () => {
   const navigation = [
@@ -19,13 +18,8 @@ const Layout = () => {
       {/* Sidebar */}
       <div className="fixed inset-y-0 left-0 z-50 w-64 bg-card border-r shadow-[var(--shadow-card)]">
         <div className="flex h-full flex-col">
-          {/* Logo */}
-          <div className="flex h-16 items-center px-6 border-b">
-            <img src={samanvayLogo} alt="Samanvay Logo" className="h-8 object-contain scale-[1.05]" />
-          </div>
-
           {/* Navigation */}
-          <nav className="flex-1 space-y-1 px-4 py-6">
+          <nav className="flex-1 space-y-1 px-4 pt-6 pb-6">
             {navigation.map((item) => {
               const Icon = item.icon;
               return (

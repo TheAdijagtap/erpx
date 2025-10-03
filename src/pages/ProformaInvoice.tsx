@@ -1212,6 +1212,35 @@ const PrintProformaButton = ({ id }: { id: string }) => {
         </table>
         <div class="amount-words">Amount in Words: ${numberToWords(invoice.total)}</div>
       </div>
+      <div class="section terms">
+        <strong>Terms & Conditions:</strong>
+        <div class="muted" style="margin-top: 8px; line-height: 1.4">
+          1. Payment terms: ${invoice.paymentTerms || "As agreed"}<br />
+          2. Prices are valid until: ${invoice.validUntil ? formatDateIN(invoice.validUntil) : "Further notice"}<br />
+          3. All prices are subject to change without prior notice<br />
+          4. This is a proforma invoice and not a tax invoice<br />
+          5. All rates are inclusive of applicable taxes
+        </div>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 24px">
+        ${businessInfo.bankDetails ? `
+          <div class="section">
+            <strong>Bank Details:</strong>
+            <div class="muted" style="margin-top: 8px; line-height: 1.6">
+              Bank Name: ${businessInfo.bankDetails.bankName}<br />
+              Account No: ${businessInfo.bankDetails.accountNumber}<br />
+              IFSC Code: ${businessInfo.bankDetails.ifscCode}
+            </div>
+          </div>
+        ` : ''}
+        ${businessInfo.signature ? `
+          <div class="signature-section">
+            <div>Authorized Signatory</div>
+            <img src="${businessInfo.signature}" alt="Authorized Signature" class="signature-image" style="margin-top: 8px" />
+            <div class="muted">${businessInfo.name}</div>
+          </div>
+        ` : ''}
+      </div>
       ${invoice.notes ? `<div class="footer">Notes: ${invoice.notes}</div>` : ''}
     `;
     

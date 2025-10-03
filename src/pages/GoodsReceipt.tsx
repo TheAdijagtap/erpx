@@ -10,6 +10,7 @@ import { Plus, Search, Package, Eye, Edit, Printer, CheckCircle, XCircle, Trash2
 import { useApp } from "@/store/AppContext";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
+import { numberToWords } from "@/lib/numberToWords";
 
 const GoodsReceiptPage = () => {
   const { goodsReceipts } = useApp();
@@ -494,7 +495,7 @@ function UpdateStatusButton({ id, status, label, destructive }: { id: string; st
 }
 
 function PrintGRButton({ id }: { id: string }) {
-  const { goodsReceipts, businessInfo } = useApp();
+  const { goodsReceipts, businessInfo, gstSettings } = useApp();
   const receipt = goodsReceipts.find(g => g.id === id)!;
   const elId = `gr-print-standalone-${id}`;
   
@@ -533,6 +534,7 @@ function PrintGRButton({ id }: { id: string }) {
             <strong>Receipt Details</strong>
             <div>Date: ${formatDateIN(receipt.date)}</div>
             <div>Status: ${receipt.status}</div>
+            <div>GST: ${receipt.sgst + receipt.cgst > 0 ? `${gstSettings.sgstRate + gstSettings.cgstRate}%` : 'Not Applied'}</div>
           </div>
         </div>
       </div>
@@ -570,6 +572,7 @@ function PrintGRButton({ id }: { id: string }) {
             <tr><td class="label"><strong>Total Amount</strong></td><td class="value"><strong>${formatINR(receipt.total)}</strong></td></tr>
           </tbody>
         </table>
+        <div class="amount-words">Amount in Words: ${numberToWords(receipt.total)}</div>
       </div>
       <div class="section terms">
         <strong>Terms & Conditions:</strong>
