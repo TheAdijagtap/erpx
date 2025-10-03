@@ -1,7 +1,7 @@
 import { Outlet, NavLink } from "react-router-dom";
 import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt } from "lucide-react";
 import { cn } from "@/lib/utils";
-import inventoryLogo from "@/assets/inventory-logo.png";
+import samanvayLogo from "@/assets/samanvay-logo.png";
 
 const Layout = () => {
   const navigation = [
@@ -21,8 +21,7 @@ const Layout = () => {
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="flex h-16 items-center px-6 border-b">
-            <img src={inventoryLogo} alt="Logo" className="h-8 w-8 mr-3" />
-            <span className="text-xl font-bold text-primary">StockFlow</span>
+            <img src={samanvayLogo} alt="Samanvay Logo" className="h-8 object-contain" />
           </div>
 
           {/* Navigation */}
