@@ -1,9 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, ShoppingCart, FileText, Users, TrendingUp, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Package, ShoppingCart, FileText, Users, TrendingUp, AlertCircle, Plus, ArrowRight } from "lucide-react";
 import { useApp } from "@/store/AppContext";
 import { useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
 const AppDashboard = () => {
+  const navigate = useNavigate();
   const { items, purchaseOrders, suppliers, goodsReceipts, proformaInvoices } = useApp();
 
   const stats = useMemo(() => {
@@ -14,13 +19,14 @@ const AppDashboard = () => {
     ).length;
     const lowStockItems = items.filter(
       item => item.currentStock <= item.minStock
-    ).length;
+    );
 
     return {
       totalItems,
       totalSuppliers,
       activePurchaseOrders,
-      lowStockItems,
+      lowStockCount: lowStockItems.length,
+      lowStockItems: lowStockItems.slice(0, 10), // Top 10 low stock items
     };
   }, [items, purchaseOrders, suppliers]);
 
@@ -118,11 +124,60 @@ const AppDashboard = () => {
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.lowStockItems}</div>
+            <div className="text-2xl font-bold">{stats.lowStockCount}</div>
             <p className="text-xs text-muted-foreground">Items need restock</p>
           </CardContent>
         </Card>
       </div>
+
+      {/* Low Stock Items Section */}
+      {stats.lowStockItems.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Low Stock Items</span>
+              <Badge variant="destructive">{stats.lowStockCount} Items</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Item Name</TableHead>
+                  <TableHead>SKU</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead className="text-right">Current Stock</TableHead>
+                  <TableHead className="text-right">Min Stock</TableHead>
+                  <TableHead className="text-right">Stock %</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {stats.lowStockItems.map((item) => {
+                  const stockPercentage = ((item.currentStock / item.minStock) * 100).toFixed(0);
+                  const isCritical = item.currentStock < item.minStock * 0.5;
+                  
+                  return (
+                    <TableRow key={item.id}>
+                      <TableCell className="font-medium">{item.name}</TableCell>
+                      <TableCell>{item.sku}</TableCell>
+                      <TableCell>{item.category}</TableCell>
+                      <TableCell className="text-right">{item.currentStock} {item.unit}</TableCell>
+                      <TableCell className="text-right">{item.minStock} {item.unit}</TableCell>
+                      <TableCell className="text-right">{stockPercentage}%</TableCell>
+                      <TableCell>
+                        <Badge variant={isCritical ? "destructive" : "secondary"}>
+                          {isCritical ? "Critical" : "Low"}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
@@ -160,16 +215,56 @@ const AppDashboard = () => {
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Use the navigation menu to:
-            </p>
-            <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
-              <li>Add new inventory items</li>
-              <li>Create purchase orders</li>
-              <li>Manage suppliers</li>
-              <li>Generate proforma invoices</li>
-            </ul>
+          <CardContent className="space-y-3">
+            <Button 
+              className="w-full justify-start" 
+              variant="outline"
+              onClick={() => navigate('/inventory')}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Add New Inventory Item
+              <ArrowRight className="ml-auto h-4 w-4" />
+            </Button>
+            
+            <Button 
+              className="w-full justify-start" 
+              variant="outline"
+              onClick={() => navigate('/purchase-orders')}
+            >
+              <ShoppingCart className="mr-2 h-4 w-4" />
+              Create Purchase Order
+              <ArrowRight className="ml-auto h-4 w-4" />
+            </Button>
+            
+            <Button 
+              className="w-full justify-start" 
+              variant="outline"
+              onClick={() => navigate('/goods-receipt')}
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              Record Goods Receipt
+              <ArrowRight className="ml-auto h-4 w-4" />
+            </Button>
+            
+            <Button 
+              className="w-full justify-start" 
+              variant="outline"
+              onClick={() => navigate('/proforma')}
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              Generate Proforma Invoice
+              <ArrowRight className="ml-auto h-4 w-4" />
+            </Button>
+            
+            <Button 
+              className="w-full justify-start" 
+              variant="outline"
+              onClick={() => navigate('/suppliers')}
+            >
+              <Users className="mr-2 h-4 w-4" />
+              Manage Suppliers
+              <ArrowRight className="ml-auto h-4 w-4" />
+            </Button>
           </CardContent>
         </Card>
       </div>
