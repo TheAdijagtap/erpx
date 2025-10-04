@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -6,9 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Search, Users, Mail, Phone, MapPin, Edit, Eye, Trash2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Plus, Search, Users, Mail, Phone, MapPin, Edit, Eye, Trash2, FileText, Package } from "lucide-react";
 import { useApp } from "@/store/AppContext";
 import { toast } from "@/hooks/use-toast";
+import { formatINR, formatDateIN } from "@/lib/format";
 
 const Suppliers = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -180,6 +183,25 @@ const Suppliers = () => {
 
 function ViewSupplierDialog({ supplier }: { supplier: any }) {
   const [open, setOpen] = useState(false);
+  const { purchaseOrders, goodsReceipts } = useApp();
+
+  const supplierData = useMemo(() => {
+    const pos = purchaseOrders.filter(po => po.supplierId === supplier.id);
+    const grs = goodsReceipts.filter(gr => gr.supplierId === supplier.id);
+    
+    const totalPurchased = pos.reduce((sum, po) => sum + po.total, 0);
+    const totalReceived = grs.reduce((sum, gr) => sum + gr.total, 0);
+    
+    return {
+      purchaseOrders: pos.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
+      goodsReceipts: grs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()),
+      totalPurchased,
+      totalReceived,
+      totalOrders: pos.length,
+      totalReceipts: grs.length
+    };
+  }, [purchaseOrders, goodsReceipts, supplier.id]);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -188,38 +210,165 @@ function ViewSupplierDialog({ supplier }: { supplier: any }) {
           View
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Supplier Details</DialogTitle>
+          <DialogTitle>Supplier Details - {supplier.name}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <Label className="text-muted-foreground">Company Name</Label>
-            <p className="font-medium">{supplier.name}</p>
-          </div>
-          <div>
-            <Label className="text-muted-foreground">Contact Person</Label>
-            <p className="font-medium">{supplier.contactPerson}</p>
-          </div>
-          <div>
-            <Label className="text-muted-foreground">Email</Label>
-            <p className="font-medium">{supplier.email}</p>
-          </div>
-          <div>
-            <Label className="text-muted-foreground">Phone</Label>
-            <p className="font-medium">{supplier.phone}</p>
-          </div>
-          <div>
-            <Label className="text-muted-foreground">Address</Label>
-            <p className="font-medium">{supplier.address}</p>
-          </div>
-          {supplier.gstNumber && (
-            <div>
-              <Label className="text-muted-foreground">GST Number</Label>
-              <p className="font-medium">{supplier.gstNumber}</p>
+        
+        <Tabs defaultValue="details" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="purchases">Purchase Orders ({supplierData.totalOrders})</TabsTrigger>
+            <TabsTrigger value="receipts">Goods Receipts ({supplierData.totalReceipts})</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="details" className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <Card className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="w-4 h-4 text-primary" />
+                  <p className="text-sm text-muted-foreground">Total Purchased</p>
+                </div>
+                <p className="text-2xl font-bold">{formatINR(supplierData.totalPurchased)}</p>
+              </Card>
+              <Card className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Package className="w-4 h-4 text-success" />
+                  <p className="text-sm text-muted-foreground">Total Received</p>
+                </div>
+                <p className="text-2xl font-bold">{formatINR(supplierData.totalReceived)}</p>
+              </Card>
             </div>
-          )}
-        </div>
+            
+            <div className="space-y-3">
+              <div>
+                <Label className="text-muted-foreground">Company Name</Label>
+                <p className="font-medium">{supplier.name}</p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Contact Person</Label>
+                <p className="font-medium">{supplier.contactPerson}</p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Email</Label>
+                <p className="font-medium">{supplier.email}</p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Phone</Label>
+                <p className="font-medium">{supplier.phone}</p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Address</Label>
+                <p className="font-medium">{supplier.address}</p>
+              </div>
+              {supplier.gstNumber && (
+                <div>
+                  <Label className="text-muted-foreground">GST Number</Label>
+                  <p className="font-medium">{supplier.gstNumber}</p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="purchases" className="space-y-4">
+            {supplierData.purchaseOrders.length === 0 ? (
+              <div className="text-center py-8">
+                <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No purchase orders found</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {supplierData.purchaseOrders.map((po) => (
+                  <Card key={po.id} className="p-4">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h4 className="font-semibold">{po.poNumber}</h4>
+                        <p className="text-sm text-muted-foreground">{formatDateIN(po.date)}</p>
+                      </div>
+                      <Badge variant={po.status === 'RECEIVED' ? 'default' : 'secondary'}>
+                        {po.status}
+                      </Badge>
+                    </div>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Item</TableHead>
+                          <TableHead className="text-right">Qty</TableHead>
+                          <TableHead className="text-right">Unit Price</TableHead>
+                          <TableHead className="text-right">Total</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {po.items.map((item) => (
+                          <TableRow key={item.id}>
+                            <TableCell>{item.item.name}</TableCell>
+                            <TableCell className="text-right">{item.quantity} {item.item.unit}</TableCell>
+                            <TableCell className="text-right">{formatINR(item.unitPrice)}</TableCell>
+                            <TableCell className="text-right">{formatINR(item.total)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                    <div className="mt-3 pt-3 border-t flex justify-between">
+                      <span className="font-medium">Total Amount</span>
+                      <span className="font-bold">{formatINR(po.total)}</span>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="receipts" className="space-y-4">
+            {supplierData.goodsReceipts.length === 0 ? (
+              <div className="text-center py-8">
+                <Package className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No goods receipts found</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {supplierData.goodsReceipts.map((gr) => (
+                  <Card key={gr.id} className="p-4">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h4 className="font-semibold">{gr.grNumber}</h4>
+                        <p className="text-sm text-muted-foreground">{formatDateIN(gr.date)}</p>
+                      </div>
+                      <Badge variant={gr.status === 'ACCEPTED' ? 'default' : 'secondary'}>
+                        {gr.status}
+                      </Badge>
+                    </div>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Item</TableHead>
+                          <TableHead className="text-right">Received Qty</TableHead>
+                          <TableHead className="text-right">Unit Price</TableHead>
+                          <TableHead className="text-right">Total</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {gr.items.map((item) => (
+                          <TableRow key={item.id}>
+                            <TableCell>{item.item.name}</TableCell>
+                            <TableCell className="text-right">{item.receivedQuantity} {item.item.unit}</TableCell>
+                            <TableCell className="text-right">{formatINR(item.unitPrice)}</TableCell>
+                            <TableCell className="text-right">{formatINR(item.total)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                    <div className="mt-3 pt-3 border-t flex justify-between">
+                      <span className="font-medium">Total Amount</span>
+                      <span className="font-bold">{formatINR(gr.total)}</span>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+        
         <DialogFooter>
           <Button onClick={() => setOpen(false)}>Close</Button>
         </DialogFooter>
