@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 const Layout = () => {
   const navigation = [
-    { name: "Dashboard", href: "/", icon: BarChart3 },
+    { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
     { name: "Inventory", href: "/inventory", icon: Package },
     { name: "Purchase Orders", href: "/purchase-orders", icon: ShoppingCart },
     { name: "Goods Receipt", href: "/goods-receipt", icon: FileText },
