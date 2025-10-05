@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, Users, Mail, Phone, MapPin, Edit, Eye, Trash2, FileText, Package } from "lucide-react";
+import { Plus, Search, Users, Mail, Phone, MapPin, Edit, Eye, Trash2, FileText, Package, Download } from "lucide-react";
 import { useApp } from "@/store/AppContext";
 import { toast } from "@/hooks/use-toast";
 import { formatINR, formatDateIN } from "@/lib/format";
@@ -22,6 +22,27 @@ const Suppliers = () => {
     supplier.contactPerson.toLowerCase().includes(searchTerm.toLowerCase()) ||
     supplier.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const exportSupplierList = () => {
+    const csvContent = [
+      ['Company Name', 'Contact Person', 'Email', 'Phone', 'Address', 'GST Number'].join(','),
+      ...filteredSuppliers.map(supplier => [
+        `"${supplier.name}"`,
+        `"${supplier.contactPerson}"`,
+        `"${supplier.email}"`,
+        `"${supplier.phone}"`,
+        `"${supplier.address}"`,
+        `"${supplier.gstNumber || '-'}"`
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `suppliers-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    toast({ title: "Success", description: "Supplier list exported successfully!" });
+  };
 
   return (
     <div className="space-y-6">
@@ -53,7 +74,10 @@ const Suppliers = () => {
               className="pl-10"
             />
           </div>
-          <Button variant="outline">Export List</Button>
+          <Button variant="outline" onClick={exportSupplierList}>
+            <Download className="w-4 h-4 mr-2" />
+            Export List
+          </Button>
         </div>
       </Card>
 
