@@ -10,6 +10,8 @@ import type {
   PurchaseOrderItem,
   GoodsReceiptItem,
   ProformaInvoice,
+  Customer,
+  CustomerActivity,
 } from "@/types/inventory";
 
 const STORAGE_KEY = "stockflow_app_state_v1";
@@ -21,6 +23,8 @@ interface AppState {
   goodsReceipts: GoodsReceipt[];
   proformaInvoices: ProformaInvoice[];
   transactions: Transaction[];
+  customers: Customer[];
+  customerActivities: CustomerActivity[];
   businessInfo: BusinessInfo;
   gstSettings: GSTSettings;
 }
@@ -65,6 +69,13 @@ interface AppContextValue extends AppState {
   ) => string;
   updateProformaInvoice: (id: string, patch: Partial<ProformaInvoice>) => void;
   removeProformaInvoice: (id: string) => void;
+
+  // CRM / Customers
+  addCustomer: (customer: Omit<Customer, "id" | "createdAt" | "updatedAt" | "totalProformas" | "totalValue">) => string;
+  updateCustomer: (id: string, patch: Partial<Customer>) => void;
+  removeCustomer: (id: string) => void;
+  addCustomerActivity: (activity: Omit<CustomerActivity, "id" | "date">) => void;
+  syncCustomerFromPI: (proformaInvoice: ProformaInvoice) => void;
 
   // Business
   setBusinessInfo: (info: BusinessInfo) => void;
@@ -147,8 +158,10 @@ const initialState = (): AppState => {
   const purchaseOrders: PurchaseOrder[] = [];
   const goodsReceipts: GoodsReceipt[] = [];
   const proformaInvoices: ProformaInvoice[] = [];
+  const customers: Customer[] = [];
+  const customerActivities: CustomerActivity[] = [];
 
-  return { items, suppliers, purchaseOrders, goodsReceipts, proformaInvoices, transactions, businessInfo, gstSettings };
+  return { items, suppliers, purchaseOrders, goodsReceipts, proformaInvoices, transactions, customers, customerActivities, businessInfo, gstSettings };
 };
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
@@ -192,6 +205,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           return p;
         }) ?? [];
         parsed.transactions = parsed.transactions?.map((t: any) => reviveDates(t)) ?? [];
+        parsed.customers = parsed.customers?.map((c: any) => {
+          reviveDates(c);
+          if (c.lastContact) c.lastContact = new Date(c.lastContact);
+          return c;
+        }) ?? [];
+        parsed.customerActivities = parsed.customerActivities?.map((a: any) => reviveDates(a)) ?? [];
         return parsed as AppState;
       } catch (e) {
         console.warn("Failed to parse stored app state, using defaults", e);
@@ -398,6 +417,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     addProformaInvoice: (pi) => {
       const id = crypto.randomUUID();
       const totals = calcTotals(pi.items.map((i) => ({ quantity: i.quantity, unitPrice: i.unitPrice })), pi.applyGST ?? true, pi.additionalCharges);
+      const newPI = {
+        ...pi,
+        id,
+        date: pi.date || new Date(),
+        subtotal: totals.subtotal,
+        sgst: totals.sgst,
+        cgst: totals.cgst,
+        total: totals.total,
+      };
+      
+      // Auto-sync customer from PI
+      value.syncCustomerFromPI(newPI);
+      
       setState((s) => ({
         ...s,
         proformaInvoices: [
@@ -425,6 +457,90 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         ...s,
         proformaInvoices: s.proformaInvoices.filter((p) => p.id !== id),
       }));
+    },
+
+    // CRM / Customers
+    addCustomer: (customer) => {
+      const id = crypto.randomUUID();
+      const now = new Date();
+      setState((s) => ({
+        ...s,
+        customers: [
+          ...s.customers,
+          { ...customer, id, totalProformas: 0, totalValue: 0, createdAt: now, updatedAt: now },
+        ],
+      }));
+      return id;
+    },
+    updateCustomer: (id, patch) => {
+      setState((s) => ({
+        ...s,
+        customers: s.customers.map((c) => (c.id === id ? { ...c, ...patch, updatedAt: new Date() } : c)),
+      }));
+    },
+    removeCustomer: (id) => {
+      setState((s) => ({
+        ...s,
+        customers: s.customers.filter((c) => c.id !== id),
+        customerActivities: s.customerActivities.filter((a) => a.customerId !== id),
+      }));
+    },
+    addCustomerActivity: (activity) => {
+      const id = crypto.randomUUID();
+      setState((s) => ({
+        ...s,
+        customerActivities: [{ ...activity, id, date: new Date() }, ...s.customerActivities],
+      }));
+    },
+    syncCustomerFromPI: (pi) => {
+      setState((s) => {
+        const { buyerInfo } = pi;
+        // Check if customer already exists by email
+        let customer = s.customers.find((c) => c.email.toLowerCase() === buyerInfo.email.toLowerCase());
+        
+        const piTotal = pi.total;
+        const now = new Date();
+
+        if (customer) {
+          // Update existing customer
+          const updatedCustomers = s.customers.map((c) =>
+            c.id === customer!.id
+              ? {
+                  ...c,
+                  name: buyerInfo.name,
+                  contactPerson: buyerInfo.contactPerson,
+                  phone: buyerInfo.phone,
+                  address: buyerInfo.address,
+                  gstNumber: buyerInfo.gstNumber,
+                  totalProformas: c.totalProformas + 1,
+                  totalValue: c.totalValue + piTotal,
+                  lastContact: now,
+                  updatedAt: now,
+                }
+              : c
+          );
+          return { ...s, customers: updatedCustomers };
+        } else {
+          // Create new customer
+          const newCustomer: Customer = {
+            id: crypto.randomUUID(),
+            name: buyerInfo.name,
+            contactPerson: buyerInfo.contactPerson,
+            email: buyerInfo.email,
+            phone: buyerInfo.phone,
+            address: buyerInfo.address,
+            gstNumber: buyerInfo.gstNumber,
+            status: 'ACTIVE',
+            source: 'PROFORMA_INVOICE',
+            totalProformas: 1,
+            totalValue: piTotal,
+            lastContact: now,
+            createdAt: now,
+            updatedAt: now,
+          };
+          return { ...s, customers: [...s.customers, newCustomer] };
+        }
+      });
     },
 
     // Business

@@ -163,3 +163,31 @@ export interface BuyerInfo {
   address: string;
   gstNumber?: string;
 }
+
+export interface Customer {
+  id: string;
+  name: string;
+  contactPerson: string;
+  email: string;
+  phone: string;
+  address: string;
+  gstNumber?: string;
+  status: 'ACTIVE' | 'INACTIVE' | 'LEAD';
+  source: 'PROFORMA_INVOICE' | 'MANUAL';
+  totalProformas: number;
+  totalValue: number;
+  lastContact?: Date;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CustomerActivity {
+  id: string;
+  customerId: string;
+  type: 'PROFORMA_CREATED' | 'PROFORMA_SENT' | 'PROFORMA_ACCEPTED' | 'NOTE_ADDED' | 'STATUS_CHANGED' | 'CONTACT_MADE';
+  description: string;
+  reference?: string;
+  date: Date;
+  createdBy?: string;
+}
