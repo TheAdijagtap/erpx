@@ -21,7 +21,7 @@ const Layout = () => {
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="px-6 py-8 border-b">
-            <img src={samanvayLogo} alt="Samanvay ERP" className="w-full h-auto scale-110" />
+            <img src={samanvayLogo} alt="Samanvay ERP" className="w-full h-auto scale-140" />
           </div>
           {/* Navigation */}
           <nav className="flex-1 space-y-1 px-4 pt-6 pb-6">
