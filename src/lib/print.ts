@@ -29,8 +29,8 @@ export function printElementById(id: string, title = "Document") {
       .signature-section { margin-top: 12px; text-align: right; }
       .signature-image { max-width: 100px; max-height: 50px; }
       img { max-height: 36px; }
-      @media print { 
-        @page { margin: 10mm; size: A4; } 
+      @media print {
+        @page { margin: 10mm; size: A4; }
         body { margin: 0; font-size: 13px; }
         .doc { border: 2px solid #0f172a; padding: 12px; }
         .section { margin: 4px 0; padding: 8px; }
@@ -38,7 +38,25 @@ export function printElementById(id: string, title = "Document") {
     </style>
   </head><body><div class="doc">${content}</div></body></html>`);
   win.document.close();
-  win.focus();
-  win.print();
-  setTimeout(() => win.close(), 250);
+
+  const images = win.document.getElementsByTagName('img');
+  const imageLoadPromises = Array.from(images).map(img => {
+    return new Promise((resolve) => {
+      if (img.complete) {
+        resolve(true);
+      } else {
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(true);
+        setTimeout(() => resolve(true), 1000);
+      }
+    });
+  });
+
+  Promise.all(imageLoadPromises).then(() => {
+    setTimeout(() => {
+      win.focus();
+      win.print();
+      setTimeout(() => win.close(), 250);
+    }, 100);
+  });
 }
