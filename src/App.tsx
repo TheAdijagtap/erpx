@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import AppDashboard from "./pages/AppDashboard";
@@ -14,9 +14,25 @@ import BusinessSetup from "./pages/BusinessSetup";
 import ProformaInvoice from "./pages/ProformaInvoice";
 import CRM from "./pages/CRM";
 import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth";
 import { AppProvider } from "./store/AppContext";
+import { useAuth } from "./hooks/useAuth";
 
 const queryClient = new QueryClient();
+
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+  
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+  
+  return <>{children}</>;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -26,11 +42,22 @@ const App = () => (
       <AppProvider>
         <BrowserRouter>
           <Routes>
-            {/* Homepage without sidebar */}
-            <Route index element={<Dashboard />} />
+            {/* Auth route */}
+            <Route path="/auth" element={<Auth />} />
             
-            {/* App routes with sidebar */}
-            <Route path="/" element={<Layout />}>
+            {/* Homepage - redirect to dashboard if logged in */}
+            <Route index element={
+              <ProtectedRoute>
+                <Navigate to="/dashboard" replace />
+              </ProtectedRoute>
+            } />
+            
+            {/* Protected app routes with sidebar */}
+            <Route path="/" element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }>
               <Route path="dashboard" element={<AppDashboard />} />
               <Route path="inventory" element={<Inventory />} />
               <Route path="purchase-orders" element={<PurchaseOrders />} />
@@ -41,7 +68,6 @@ const App = () => (
               <Route path="business" element={<BusinessSetup />} />
             </Route>
             
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
