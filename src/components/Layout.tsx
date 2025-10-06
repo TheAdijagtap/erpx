@@ -1,13 +1,9 @@
 import { Outlet, NavLink } from "react-router-dom";
-import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt, UserCircle, LogOut } from "lucide-react";
+import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt, UserCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import samanvayLogo from "@/assets/samanvay-logo.png";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/useAuth";
 
 const Layout = () => {
-  const { signOut, user } = useAuth();
-  
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
     { name: "Inventory", href: "/inventory", icon: Package },
@@ -52,21 +48,6 @@ const Layout = () => {
               );
             })}
           </nav>
-          
-          {/* User section */}
-          <div className="border-t px-4 py-4 space-y-3">
-            <div className="text-xs text-muted-foreground px-3 truncate">
-              {user?.email}
-            </div>
-            <Button
-              variant="ghost"
-              className="w-full justify-start gap-3 text-sm"
-              onClick={signOut}
-            >
-              <LogOut className="h-4 w-4" />
-              Sign Out
-            </Button>
-          </div>
         </div>
       </div>
 

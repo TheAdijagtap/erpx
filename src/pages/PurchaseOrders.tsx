@@ -566,10 +566,10 @@ function PrintPOButton({ id }: { id: string }) {
         <strong>Terms & Conditions:</strong>
         <div class="muted" style="margin-top: 8px; line-height: 1.4">
           1. Payment terms: ${order.paymentTerms || "30 days from invoice date"}<br />
-          2. Furnish Transporter copy of the invoice at the time of delivery of material<br />
-          3. Please mentioned our GSTIN on your tax invoice<br />
-          4. Any damaged Due To Manufacturer Transit Needs To be Replace At Free Of Cost<br />
-          5. Please mentioned PO Number & PO date all corrosponding documents.
+          2. All disputes subject to local jurisdiction<br />
+          3. Goods once sold will not be taken back<br />
+          4. Late payment may attract penalty charges<br />
+          5. All rates are inclusive of applicable taxes
         </div>
       </div>
       ${businessInfo.signature ? `
