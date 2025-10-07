@@ -11,10 +11,7 @@ export function printElementById(id: string, title = "Document") {
       * { box-sizing: border-box; }
       body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; margin: 8px; color: #0f172a; font-size: 14px; line-height: 1.4; }
       .doc { max-width: 100%; margin: 0 auto; border: 2px solid #0f172a; padding: 16px; border-radius: 8px; }
-      .header { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
-      .text-logo { display: flex; flex-direction: column; line-height: 1.2; }
-      .text-logo-main { font-family: 'Arial', sans-serif; font-size: 32px; font-weight: 800; letter-spacing: 2px; color: #0f172a; }
-      .text-logo-subtitle { font-family: 'Arial', sans-serif; font-size: 10px; font-weight: 400; letter-spacing: 0.5px; color: #64748b; text-transform: uppercase; margin-top: 2px; }
+      .header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
       .brand { font-size: 20px; font-weight: 700; }
       .muted { color: #64748b; font-size: 13px; }
       .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 8px 0; }

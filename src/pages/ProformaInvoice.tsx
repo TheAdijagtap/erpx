@@ -944,10 +944,7 @@ const ViewProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
         <div id={`proforma-print-${invoice.id}`} ref={printRef}>
           <div className="section">
             <div className="header">
-              <div className="text-logo">
-                <div className="text-logo-main">CORS</div>
-                <div className="text-logo-subtitle">Corporate Operations Resource System</div>
-              </div>
+              {businessInfo.logo && <img src={businessInfo.logo} alt="Logo" />}
               <div>
                 <div className="brand">{businessInfo.name}</div>
                 <div className="muted">{businessInfo.address}</div>
@@ -1151,10 +1148,7 @@ const PrintProformaButton = ({ id }: { id: string }) => {
     tempDiv.innerHTML = `
       <div class="section">
         <div class="header">
-          <div class="text-logo">
-            <div class="text-logo-main">CORS</div>
-            <div class="text-logo-subtitle">Corporate Operations Resource System</div>
-          </div>
+          ${businessInfo.logo ? `<img src="${businessInfo.logo}" alt="Logo" />` : ''}
           <div>
             <div class="brand">${businessInfo.name}</div>
             <div class="muted">${businessInfo.address}</div>

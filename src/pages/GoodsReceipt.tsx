@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Package, Eye, CreditCard as Edit, Printer, CircleCheck as CheckCircle, Circle as XCircle, Trash2 } from "lucide-react";
+import { Plus, Search, Package, Eye, Edit, Printer, CheckCircle, XCircle, Trash2 } from "lucide-react";
 import { useApp } from "@/store/AppContext";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
@@ -342,10 +342,7 @@ function ViewGRDialog({ id }: { id: string }) {
         <div id={elId}>
           <div className="section">
             <div className="header">
-              <div className="text-logo">
-                <div className="text-logo-main">CORS</div>
-                <div className="text-logo-subtitle">Corporate Operations Resource System</div>
-              </div>
+              {businessInfo.logo && <img src={businessInfo.logo} alt="Logo" />}
               <div>
                 <div className="brand">{businessInfo.name}</div>
                 <div className="muted">{businessInfo.address}</div>
@@ -514,10 +511,7 @@ function PrintGRButton({ id }: { id: string }) {
     tempDiv.innerHTML = `
       <div class="section">
         <div class="header">
-          <div class="text-logo">
-            <div class="text-logo-main">CORS</div>
-            <div class="text-logo-subtitle">Corporate Operations Resource System</div>
-          </div>
+          ${businessInfo.logo ? `<img src="${businessInfo.logo}" alt="Logo" />` : ''}
           <div>
             <div class="brand">${businessInfo.name}</div>
             <div class="muted">${businessInfo.address}</div>
