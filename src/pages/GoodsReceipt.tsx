@@ -342,7 +342,10 @@ function ViewGRDialog({ id }: { id: string }) {
         <div id={elId}>
           <div className="section">
             <div className="header">
-              {businessInfo.logo && <img src={businessInfo.logo} alt="Logo" />}
+              <div className="text-logo">
+                <div className="text-logo-main">CORS</div>
+                <div className="text-logo-subtitle">Corporate Operations Resource System</div>
+              </div>
               <div>
                 <div className="brand">{businessInfo.name}</div>
                 <div className="muted">{businessInfo.address}</div>
@@ -511,7 +514,10 @@ function PrintGRButton({ id }: { id: string }) {
     tempDiv.innerHTML = `
       <div class="section">
         <div class="header">
-          ${businessInfo.logo ? `<img src="${businessInfo.logo}" alt="Logo" />` : ''}
+          <div class="text-logo">
+            <div class="text-logo-main">CORS</div>
+            <div class="text-logo-subtitle">Corporate Operations Resource System</div>
+          </div>
           <div>
             <div class="brand">${businessInfo.name}</div>
             <div class="muted">${businessInfo.address}</div>
