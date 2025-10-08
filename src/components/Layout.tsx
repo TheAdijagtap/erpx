@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from "react-router-dom";
-import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt, UserCircle } from "lucide-react";
+import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt } from "lucide-react";
 import { cn } from "@/lib/utils";
 import samanvayLogo from "@/assets/samanvay-logo.png";
 
@@ -11,7 +11,6 @@ const Layout = () => {
     { name: "Goods Receipt", href: "/goods-receipt", icon: FileText },
     { name: "Proforma Invoice", href: "/proforma", icon: Receipt },
     { name: "Suppliers", href: "/suppliers", icon: Users },
-    { name: "CRM", href: "/crm", icon: UserCircle },
     { name: "Business Setup", href: "/business", icon: Building },
   ];
 
