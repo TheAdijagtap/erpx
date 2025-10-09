@@ -506,6 +506,8 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
   const [items, setItems] = useState<ProformaInvoiceItem[]>([]);
   const [additionalCharges, setAdditionalCharges] = useState<Array<{ name: string; amount: number }>>([]);
   const [notes, setNotes] = useState("");
+  const [manualSgst, setManualSgst] = useState<number | null>(null);
+  const [manualCgst, setManualCgst] = useState<number | null>(null);
 
   const addRow = () => {
     if (!proformaProducts || proformaProducts.length === 0) return;
@@ -576,8 +578,8 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
   const calcTotals = () => {
     const subtotal = items.reduce((sum, item) => sum + item.total, 0);
     const chargesTotal = additionalCharges.reduce((sum, charge) => sum + charge.amount, 0);
-    const sgst = gstSettings.enabled ? ((subtotal + chargesTotal) * gstSettings.sgstRate) / 100 : 0;
-    const cgst = gstSettings.enabled ? ((subtotal + chargesTotal) * gstSettings.cgstRate) / 100 : 0;
+    const sgst = manualSgst !== null ? manualSgst : (gstSettings.enabled ? ((subtotal + chargesTotal) * gstSettings.sgstRate) / 100 : 0);
+    const cgst = manualCgst !== null ? manualCgst : (gstSettings.enabled ? ((subtotal + chargesTotal) * gstSettings.cgstRate) / 100 : 0);
     const total = subtotal + chargesTotal + sgst + cgst;
     return { subtotal, sgst, cgst, total };
   };
@@ -619,6 +621,8 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
     setPaymentTerms("");
     setItems([]);
     setNotes("");
+    setManualSgst(null);
+    setManualCgst(null);
   };
 
   const { subtotal, sgst, cgst, total } = calcTotals();
@@ -819,18 +823,36 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
                     <span>{formatINR(charge.amount)}</span>
                   </div>
                 ))}
-                {gstSettings.enabled && (
-                  <>
-                    <div className="flex justify-between">
-                      <span>SGST ({gstSettings.sgstRate}%):</span>
-                      <span>{formatINR(sgst)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>CGST ({gstSettings.cgstRate}%):</span>
-                      <span>{formatINR(cgst)}</span>
-                    </div>
-                  </>
-                )}
+                <div className="flex justify-between items-center gap-2">
+                  <span>SGST:</span>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={manualSgst !== null ? manualSgst : sgst}
+                      onChange={(e) => setManualSgst(parseFloat(e.target.value) || 0)}
+                      placeholder="Enter SGST"
+                      className="w-32"
+                    />
+                    <span>{formatINR(manualSgst !== null ? manualSgst : sgst)}</span>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center gap-2">
+                  <span>CGST:</span>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={manualCgst !== null ? manualCgst : cgst}
+                      onChange={(e) => setManualCgst(parseFloat(e.target.value) || 0)}
+                      placeholder="Enter CGST"
+                      className="w-32"
+                    />
+                    <span>{formatINR(manualCgst !== null ? manualCgst : cgst)}</span>
+                  </div>
+                </div>
                 <div className="flex justify-between font-semibold text-lg border-t pt-2">
                   <span>Total:</span>
                   <span>{formatINR(total)}</span>
