@@ -72,83 +72,56 @@ const Inventory = () => {
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="space-y-2">
         {filteredItems.map((item) => {
           const stockStatus = getStockStatus(item.currentStock, item.minStock);
-          const itemTransactions = transactions.filter(t => t.itemId === item.id).slice(0, 5);
           return (
-            <Card key={item.id} className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
-              <div className="space-y-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-foreground">{item.name}</h3>
-                    <p className="text-sm text-muted-foreground">{item.description}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{item.category}</p>
-                  </div>
-                  <div className="p-2 bg-primary-light rounded-lg">
-                    <Package className="w-5 h-5 text-primary" />
-                  </div>
+            <Card key={item.id} className="p-4 hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-4">
+                <div className="p-2 bg-primary-light rounded-lg shrink-0">
+                  <Package className="w-4 h-4 text-primary" />
                 </div>
 
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Current Stock:</span>
-                    <span className="font-bold text-lg">
-                      {item.currentStock} {item.unit}
-                    </span>
+                <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 items-center">
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-foreground truncate">{item.name}</h3>
+                    <p className="text-xs text-muted-foreground truncate">{item.category}</p>
                   </div>
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <span>Min: {item.minStock}</span>
-                    <span>Max: {item.maxStock}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Unit Price:</span>
-                    <span className="font-semibold">{formatINR(item.unitPrice)}</span>
-                  </div>
-                </div>
 
-                <div className="flex items-center justify-between">
-                  {getStockBadge(stockStatus)}
-                  <span className="text-sm text-muted-foreground">
-                    Value: {formatINR(item.currentStock * item.unitPrice)}
-                  </span>
-                </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Stock:</span>
+                    <span className="font-bold">{item.currentStock} {item.unit}</span>
+                  </div>
 
-                <div className="flex gap-2">
-                  <ItemViewDialog itemId={item.id}>
-                    <Button variant="outline" size="sm" className="flex-1 gap-1">
-                      <Eye className="w-4 h-4" /> View
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Price:</span>
+                    <span className="font-semibold text-sm">{formatINR(item.unitPrice)}</span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {getStockBadge(stockStatus)}
+                  </div>
+
+                  <div className="flex gap-1 shrink-0">
+                    <ItemViewDialog itemId={item.id}>
+                      <Button variant="outline" size="sm">
+                        <Eye className="w-4 h-4" />
+                      </Button>
+                    </ItemViewDialog>
+                    <ItemTransactDialog itemId={item.id} type="OUT">
+                      <Button variant="outline" size="sm">
+                        <Minus className="w-4 h-4" />
+                      </Button>
+                    </ItemTransactDialog>
+                    <Button variant="outline" size="sm" onClick={() => {
+                      if (confirm(`Are you sure you want to delete ${item.name}?`)) {
+                        removeItem(item.id);
+                      }
+                    }}>
+                      <Trash2 className="w-4 h-4" />
                     </Button>
-                  </ItemViewDialog>
-                  <Button variant="outline" size="sm" className="flex-1 gap-1">
-                    <Edit className="w-4 h-4" /> Edit
-                  </Button>
-                  <ItemTransactDialog itemId={item.id} type="OUT">
-                    <Button variant="accent" size="sm" className="flex-1 gap-1">
-                      <Minus className="w-4 h-4" /> Use
-                    </Button>
-                  </ItemTransactDialog>
-                  <Button variant="destructive" size="sm" className="gap-1" onClick={() => {
-                    if (confirm(`Are you sure you want to delete item ${item.name}?`)) {
-                      removeItem(item.id);
-                    }
-                  }}>
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-
-                {itemTransactions.length > 0 && (
-                  <div className="pt-3 border-t border-border">
-                    <p className="text-xs text-muted-foreground mb-2">Recent activity</p>
-                    <div className="flex gap-2 flex-wrap">
-                      {itemTransactions.map((t) => (
-                        <Badge key={t.id} variant="secondary">
-                          {t.type === 'IN' ? '+' : '-'}{t.quantity}
-                        </Badge>
-                      ))}
-                    </div>
                   </div>
-                )}
+                </div>
               </div>
             </Card>
           );
