@@ -401,10 +401,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return id;
     },
     updateGoodsReceipt: (id, patch) => {
-      setState((s) => ({
-        ...s,
-        goodsReceipts: s.goodsReceipts.map((g) => (g.id === id ? { ...g, ...patch } : g)),
-      }));
+      setState((s) => {
+        const gr = s.goodsReceipts.find(g => g.id === id);
+
+        let updatedPOs = s.purchaseOrders;
+        if (gr && gr.poId && patch.status === 'ACCEPTED') {
+          updatedPOs = s.purchaseOrders.map(po =>
+            po.id === gr.poId ? { ...po, status: 'RECEIVED' as const } : po
+          );
+        }
+
+        return {
+          ...s,
+          goodsReceipts: s.goodsReceipts.map((g) => (g.id === id ? { ...g, ...patch } : g)),
+          purchaseOrders: updatedPOs,
+        };
+      });
     },
     removeGoodsReceipt: (id) => {
       setState((s) => ({

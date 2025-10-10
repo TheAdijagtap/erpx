@@ -136,8 +136,9 @@ function getStatusBadge(status: string) {
 }
 
 function CreateGRDialog() {
-  const { suppliers, items, addGoodsReceipt, gstSettings } = useApp();
+  const { suppliers, items, addGoodsReceipt, gstSettings, purchaseOrders } = useApp();
   const [open, setOpen] = useState(false);
+  const [selectedPoId, setSelectedPoId] = useState<string | null>(null);
   const [supplierId, setSupplierId] = useState<string | null>(suppliers[0]?.id || null);
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [applyGST, setApplyGST] = useState<boolean>(gstSettings.enabled);
@@ -145,6 +146,28 @@ function CreateGRDialog() {
     { itemId: items[0]?.id || "", receivedQuantity: 1, unitPrice: items[0]?.unitPrice || 0 },
   ]);
   const [additionalCharges, setAdditionalCharges] = useState<Array<{ name: string; amount: number }>>([]);
+
+  const availablePOs = purchaseOrders.filter(po => po.status !== 'CANCELLED' && po.status !== 'RECEIVED');
+
+  const handlePOSelection = (poId: string) => {
+    setSelectedPoId(poId);
+    const selectedPO = purchaseOrders.find(po => po.id === poId);
+    if (selectedPO) {
+      setSupplierId(selectedPO.supplierId);
+      setDate(new Date().toISOString().slice(0, 10));
+      setApplyGST(selectedPO.sgst > 0 || selectedPO.cgst > 0);
+      setRows(selectedPO.items.map(item => ({
+        itemId: item.itemId,
+        orderedQuantity: item.quantity,
+        receivedQuantity: item.quantity,
+        unitPrice: item.unitPrice
+      })));
+      setAdditionalCharges(selectedPO.additionalCharges?.map(charge => ({
+        name: charge.name,
+        amount: charge.amount
+      })) || []);
+    }
+  };
 
   const onAddRow = () => setRows([...rows, { itemId: items[0]?.id || "", receivedQuantity: 1, unitPrice: items[0]?.unitPrice || 0 }]);
   const onSubmit = () => {
@@ -172,10 +195,13 @@ function CreateGRDialog() {
       status: "QUALITY_CHECK",
       date: new Date(date),
       notes: "",
-      poId: undefined,
+      poId: selectedPoId || undefined,
       applyGST,
     });
     setOpen(false);
+    setSelectedPoId(null);
+    setRows([{ itemId: items[0]?.id || "", receivedQuantity: 1, unitPrice: items[0]?.unitPrice || 0 }]);
+    setAdditionalCharges([]);
   };
 
   return (
@@ -190,14 +216,16 @@ function CreateGRDialog() {
           <DialogTitle>Create Goods Receipt</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 text-sm">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <div className="mb-1">Supplier</div>
-              <Select value={supplierId || undefined} onValueChange={setSupplierId}>
-                <SelectTrigger><SelectValue placeholder="Select supplier" /></SelectTrigger>
+              <div className="mb-1">Select Purchase Order (Optional)</div>
+              <Select value={selectedPoId || undefined} onValueChange={handlePOSelection}>
+                <SelectTrigger><SelectValue placeholder="Select PO to auto-fill" /></SelectTrigger>
                 <SelectContent className="z-50">
-                  {suppliers.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                  {availablePOs.map((po) => (
+                    <SelectItem key={po.id} value={po.id}>
+                      {po.poNumber} - {po.supplier.name} ({formatINR(po.total)})
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -205,6 +233,20 @@ function CreateGRDialog() {
             <div>
               <div className="mb-1">Date</div>
               <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <div className="mb-1">Supplier</div>
+              <Select value={supplierId || undefined} onValueChange={setSupplierId} disabled={!!selectedPoId}>
+                <SelectTrigger><SelectValue placeholder="Select supplier" /></SelectTrigger>
+                <SelectContent className="z-50">
+                  {suppliers.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex items-end gap-2">
               <input id="applyGSTgr" type="checkbox" checked={applyGST} onChange={(e) => setApplyGST(e.target.checked)} />
