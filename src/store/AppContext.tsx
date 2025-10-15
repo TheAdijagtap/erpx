@@ -403,25 +403,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // GRs
     addGoodsReceipt: (gr) => {
       const id = crypto.randomUUID();
-      const supplier = state.suppliers.find((s) => s.id === gr.supplierId)!;
       const totals = calcTotals(gr.items.map((i) => ({ quantity: i.receivedQuantity, unitPrice: i.unitPrice })), gr.applyGST ?? true, gr.additionalCharges);
-      
+
       setState((s) => {
-        // Update inventory items with received quantities
-        const updatedItems = s.items.map(item => {
-          const grItem = gr.items.find(gi => gi.itemId === item.id);
+        const supplierFromState = s.suppliers.find((sup) => sup.id === gr.supplierId) ?? state.suppliers.find((sup) => sup.id === gr.supplierId)!;
+
+        const updatedItems = s.items.map((item) => {
+          const grItem = gr.items.find((gi) => gi.itemId === item.id);
           if (grItem) {
             return {
               ...item,
               currentStock: item.currentStock + grItem.receivedQuantity,
-              updatedAt: new Date()
+              updatedAt: new Date(),
             };
           }
           return item;
         });
 
-        // Create transaction records for received items
-        const newTransactions = gr.items.map(grItem => ({
+        const newTransactions = gr.items.map((grItem) => ({
           id: crypto.randomUUID(),
           itemId: grItem.itemId,
           type: 'IN' as const,
@@ -430,52 +429,55 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           totalValue: grItem.receivedQuantity * grItem.unitPrice,
           reason: `Goods Receipt: ${gr.grNumber}`,
           reference: gr.grNumber,
-          date: gr.date
+          date: gr.date,
         }));
+
+        const { applyGST: _applyGST, ...incoming } = gr as typeof gr & { applyGST?: boolean };
+        const nextReceipt: GoodsReceipt = {
+          ...incoming,
+          id,
+          supplier: supplierFromState,
+          subtotal: totals.subtotal,
+          sgst: totals.sgst,
+          cgst: totals.cgst,
+          total: totals.total,
+        };
+        const nextGoodsReceipts = [nextReceipt, ...s.goodsReceipts];
+        const nextPurchaseOrders = reconcilePurchaseOrdersWithReceipts(s.purchaseOrders, nextGoodsReceipts);
 
         return {
           ...s,
           items: updatedItems,
           transactions: [...newTransactions, ...s.transactions],
-          goodsReceipts: [
-            {
-              ...gr,
-              id,
-              supplier,
-              subtotal: totals.subtotal,
-              sgst: totals.sgst,
-              cgst: totals.cgst,
-              total: totals.total,
-            },
-            ...s.goodsReceipts,
-          ],
+          goodsReceipts: nextGoodsReceipts,
+          purchaseOrders: nextPurchaseOrders,
         };
       });
       return id;
     },
     updateGoodsReceipt: (id, patch) => {
       setState((s) => {
-        const gr = s.goodsReceipts.find(g => g.id === id);
-
-        let updatedPOs = s.purchaseOrders;
-        if (gr && gr.poId && patch.status === 'ACCEPTED') {
-          updatedPOs = s.purchaseOrders.map(po =>
-            po.id === gr.poId ? { ...po, status: 'RECEIVED' as const } : po
-          );
-        }
+        const nextGoodsReceipts = s.goodsReceipts.map((receipt) => (receipt.id === id ? { ...receipt, ...patch } : receipt));
+        const nextPurchaseOrders = reconcilePurchaseOrdersWithReceipts(s.purchaseOrders, nextGoodsReceipts);
 
         return {
           ...s,
-          goodsReceipts: s.goodsReceipts.map((g) => (g.id === id ? { ...g, ...patch } : g)),
-          purchaseOrders: updatedPOs,
+          goodsReceipts: nextGoodsReceipts,
+          purchaseOrders: nextPurchaseOrders,
         };
       });
     },
     removeGoodsReceipt: (id) => {
-      setState((s) => ({
-        ...s,
-        goodsReceipts: s.goodsReceipts.filter((g) => g.id !== id),
-      }));
+      setState((s) => {
+        const nextGoodsReceipts = s.goodsReceipts.filter((g) => g.id !== id);
+        const nextPurchaseOrders = reconcilePurchaseOrdersWithReceipts(s.purchaseOrders, nextGoodsReceipts);
+
+        return {
+          ...s,
+          goodsReceipts: nextGoodsReceipts,
+          purchaseOrders: nextPurchaseOrders,
+        };
+      });
     },
 
     // Proforma Invoices
