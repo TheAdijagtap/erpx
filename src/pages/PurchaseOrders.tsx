@@ -1,4 +1,5 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
+import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,9 +13,141 @@ import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
 import { numberToWords } from "@/lib/numberToWords";
 
+interface PurchaseAggregateRow {
+  key: string;
+  label: string;
+  total: number;
+  count: number;
+}
+
+interface PurchaseOrderStatsSummary {
+  totalOrders: number;
+  totalValue: number;
+  averageValue: number;
+  pendingCount: number;
+  pendingValue: number;
+  receivedCount: number;
+  receivedValue: number;
+  uniqueSuppliers: number;
+  monthlyTotals: PurchaseAggregateRow[];
+  yearlyTotals: PurchaseAggregateRow[];
+}
+
 const PurchaseOrders = () => {
   const { purchaseOrders } = useApp();
   const [searchTerm, setSearchTerm] = useState("");
+
+  const stats = useMemo<PurchaseOrderStatsSummary>(() => {
+    const base: PurchaseOrderStatsSummary = {
+      totalOrders: purchaseOrders.length,
+      totalValue: 0,
+      averageValue: 0,
+      pendingCount: 0,
+      pendingValue: 0,
+      receivedCount: 0,
+      receivedValue: 0,
+      uniqueSuppliers: 0,
+      monthlyTotals: [],
+      yearlyTotals: [],
+    };
+
+    if (purchaseOrders.length === 0) {
+      return base;
+    }
+
+    const supplierIds = new Set<string>();
+    const monthlyMap = new Map<string, { year: number; month: number; total: number; count: number }>();
+    const yearlyMap = new Map<number, { total: number; count: number }>();
+    const pendingStatuses = new Set(["DRAFT", "SENT", "PARTIAL"]);
+
+    purchaseOrders.forEach((order) => {
+      const orderTotal = order.total ?? 0;
+      base.totalValue += orderTotal;
+      supplierIds.add(order.supplierId);
+
+      if (order.status === "RECEIVED") {
+        base.receivedCount += 1;
+        base.receivedValue += orderTotal;
+      } else if (pendingStatuses.has(order.status)) {
+        base.pendingCount += 1;
+        base.pendingValue += orderTotal;
+      }
+
+      const orderDate = order.date instanceof Date ? order.date : new Date(order.date);
+      if (Number.isNaN(orderDate.getTime())) {
+        return;
+      }
+
+      const monthKey = `${orderDate.getFullYear()}-${orderDate.getMonth()}`;
+      const monthEntry = monthlyMap.get(monthKey) ?? {
+        year: orderDate.getFullYear(),
+        month: orderDate.getMonth(),
+        total: 0,
+        count: 0,
+      };
+      monthEntry.total += orderTotal;
+      monthEntry.count += 1;
+      monthlyMap.set(monthKey, monthEntry);
+
+      const yearEntry = yearlyMap.get(orderDate.getFullYear()) ?? { total: 0, count: 0 };
+      yearEntry.total += orderTotal;
+      yearEntry.count += 1;
+      yearlyMap.set(orderDate.getFullYear(), yearEntry);
+    });
+
+    base.uniqueSuppliers = supplierIds.size;
+    base.averageValue = base.totalOrders ? base.totalValue / base.totalOrders : 0;
+
+    base.monthlyTotals = Array.from(monthlyMap.values())
+      .sort((a, b) => {
+        const aDate = new Date(a.year, a.month, 1).getTime();
+        const bDate = new Date(b.year, b.month, 1).getTime();
+        return bDate - aDate;
+      })
+      .map((entry) => ({
+        key: `${entry.year}-${entry.month}`,
+        label: format(new Date(entry.year, entry.month, 1), "MMM yyyy"),
+        total: entry.total,
+        count: entry.count,
+      }));
+
+    base.yearlyTotals = Array.from(yearlyMap.entries())
+      .sort((a, b) => b[0] - a[0])
+      .map(([year, entry]) => ({
+        key: String(year),
+        label: String(year),
+        total: entry.total,
+        count: entry.count,
+      }));
+
+    return base;
+  }, [purchaseOrders]);
+
+  const monthlyInsights = stats.monthlyTotals.slice(0, 12);
+  const yearlyInsights = stats.yearlyTotals;
+
+  const summaryTiles = [
+    {
+      label: "Total Spend",
+      value: formatINR(stats.totalValue),
+      description: `${stats.totalOrders} ${stats.totalOrders === 1 ? "order" : "orders"} from ${stats.uniqueSuppliers} ${stats.uniqueSuppliers === 1 ? "supplier" : "suppliers"}`,
+    },
+    {
+      label: "Average Order Value",
+      value: formatINR(stats.averageValue),
+      description: stats.totalOrders ? "Based on all purchase orders" : "Add purchase orders to calculate averages",
+    },
+    {
+      label: "Received Orders Value",
+      value: formatINR(stats.receivedValue),
+      description: `${stats.receivedCount} ${stats.receivedCount === 1 ? "order" : "orders"} received`,
+    },
+    {
+      label: "Pending Orders Value",
+      value: formatINR(stats.pendingValue),
+      description: `${stats.pendingCount} ${stats.pendingCount === 1 ? "order" : "orders"} in progress`,
+    },
+  ];
 
   const filteredOrders = useMemo(() => purchaseOrders.filter(order =>
     order.poNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -32,6 +165,69 @@ const PurchaseOrders = () => {
         </div>
         <CreatePODialog />
       </div>
+
+      <Card className="p-6 space-y-6">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-xl font-semibold text-foreground">Purchase Insights</h2>
+          <p className="text-sm text-muted-foreground">
+            Track your purchasing activity at a glance with totals, averages, and trend breakdowns.
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {summaryTiles.map((tile) => (
+            <div key={tile.label} className="rounded-lg border border-border/60 bg-muted/10 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{tile.label}</p>
+              <p className="mt-2 text-lg font-semibold text-foreground">{tile.value}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{tile.description}</p>
+            </div>
+          ))}
+        </div>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div>
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Monthly Purchase Amount</h3>
+              {monthlyInsights.length > 0 && (
+                <span className="text-xs text-muted-foreground">Latest {monthlyInsights.length} months</span>
+              )}
+            </div>
+            {monthlyInsights.length ? (
+              <div className="mt-4 space-y-3">
+                {monthlyInsights.map((month) => (
+                  <div key={month.key} className="flex items-center justify-between rounded-md border border-border/60 bg-background px-4 py-3">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{month.label}</p>
+                      <p className="text-xs text-muted-foreground">{month.count} {month.count === 1 ? "order" : "orders"}</p>
+                    </div>
+                    <div className="text-sm font-semibold text-foreground">{formatINR(month.total)}</div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-3 text-sm text-muted-foreground">Add purchase orders to see monthly trends.</p>
+            )}
+          </div>
+          <div>
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Yearly Purchase Amount</h3>
+            </div>
+            {yearlyInsights.length ? (
+              <div className="mt-4 space-y-3">
+                {yearlyInsights.map((year) => (
+                  <div key={year.key} className="flex items-center justify-between rounded-md border border-border/60 bg-background px-4 py-3">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{year.label}</p>
+                      <p className="text-xs text-muted-foreground">{year.count} {year.count === 1 ? "order" : "orders"}</p>
+                    </div>
+                    <div className="text-sm font-semibold text-foreground">{formatINR(year.total)}</div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-3 text-sm text-muted-foreground">Yearly totals will appear once purchases are recorded.</p>
+            )}
+          </div>
+        </div>
+      </Card>
 
       <Card className="p-6">
         <div className="flex items-center gap-4">
