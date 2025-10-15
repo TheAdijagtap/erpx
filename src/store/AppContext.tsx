@@ -164,6 +164,59 @@ const initialState = (): AppState => {
   return { items, suppliers, purchaseOrders, goodsReceipts, proformaInvoices, transactions, customers, customerActivities, businessInfo, gstSettings };
 };
 
+const derivePurchaseOrderStatusFromReceipts = (po: PurchaseOrder, receipts: GoodsReceipt[]): PurchaseOrder['status'] | null => {
+  if (po.status === 'CANCELLED') {
+    return 'CANCELLED';
+  }
+
+  const relevantReceipts = receipts.filter((receipt) => receipt.poId === po.id && receipt.status === 'ACCEPTED');
+  if (relevantReceipts.length === 0) {
+    return null;
+  }
+
+  const orderedByItem = new Map<string, number>();
+  po.items.forEach((item) => {
+    orderedByItem.set(item.itemId, (orderedByItem.get(item.itemId) ?? 0) + item.quantity);
+  });
+
+  const receivedByItem = new Map<string, number>();
+  relevantReceipts.forEach((receipt) => {
+    receipt.items.forEach((item) => {
+      receivedByItem.set(item.itemId, (receivedByItem.get(item.itemId) ?? 0) + item.receivedQuantity);
+    });
+  });
+
+  const allItemsFulfilled = Array.from(orderedByItem.entries()).every(([itemId, orderedQty]) => {
+    const received = receivedByItem.get(itemId) ?? 0;
+    return received >= orderedQty;
+  });
+
+  const anyReceived = Array.from(receivedByItem.values()).some((qty) => qty > 0);
+  if (!anyReceived) {
+    return null;
+  }
+
+  return allItemsFulfilled ? 'RECEIVED' : 'PARTIAL';
+};
+
+const reconcilePurchaseOrdersWithReceipts = (purchaseOrders: PurchaseOrder[], receipts: GoodsReceipt[]): PurchaseOrder[] =>
+  purchaseOrders.map((po) => {
+    if (po.status === 'CANCELLED') {
+      return po;
+    }
+
+    const derivedStatus = derivePurchaseOrderStatusFromReceipts(po, receipts);
+    if (derivedStatus && derivedStatus !== po.status) {
+      return { ...po, status: derivedStatus };
+    }
+
+    if (!derivedStatus && (po.status === 'RECEIVED' || po.status === 'PARTIAL')) {
+      return { ...po, status: 'SENT' };
+    }
+
+    return po;
+  });
+
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<AppState>(() => {
     const raw = localStorage.getItem(STORAGE_KEY);
