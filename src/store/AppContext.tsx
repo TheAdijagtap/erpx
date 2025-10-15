@@ -432,7 +432,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           date: gr.date,
         }));
 
-        const { applyGST: _applyGST, ...incoming } = gr as typeof gr & { applyGST?: boolean };
+        const { applyGST: _applyGST, ...incoming } = gr;
         const nextReceipt: GoodsReceipt = {
           ...incoming,
           id,
