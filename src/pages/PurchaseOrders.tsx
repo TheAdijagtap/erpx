@@ -36,6 +36,7 @@ interface PurchaseOrderStatsSummary {
 const PurchaseOrders = () => {
   const { purchaseOrders } = useApp();
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
 
   const stats = useMemo<PurchaseOrderStatsSummary>(() => {
     const base: PurchaseOrderStatsSummary = {
@@ -126,33 +127,86 @@ const PurchaseOrders = () => {
   const monthlyInsights = stats.monthlyTotals.slice(0, 12);
   const yearlyInsights = stats.yearlyTotals;
 
-  const summaryTiles = [
-    {
-      label: "Total Spend",
-      value: formatINR(stats.totalValue),
-      description: `${stats.totalOrders} ${stats.totalOrders === 1 ? "order" : "orders"} from ${stats.uniqueSuppliers} ${stats.uniqueSuppliers === 1 ? "supplier" : "suppliers"}`,
-    },
-    {
-      label: "Average Order Value",
-      value: formatINR(stats.averageValue),
-      description: stats.totalOrders ? "Based on all purchase orders" : "Add purchase orders to calculate averages",
-    },
-    {
-      label: "Received Orders Value",
-      value: formatINR(stats.receivedValue),
-      description: `${stats.receivedCount} ${stats.receivedCount === 1 ? "order" : "orders"} received`,
-    },
-    {
-      label: "Pending Orders Value",
-      value: formatINR(stats.pendingValue),
-      description: `${stats.pendingCount} ${stats.pendingCount === 1 ? "order" : "orders"} in progress`,
-    },
-  ];
+  const selectedMonthStats = useMemo(() => {
+    if (!selectedMonth || monthlyInsights.length === 0) return null;
+    return monthlyInsights.find((m) => m.key === selectedMonth) ?? null;
+  }, [selectedMonth, monthlyInsights]);
 
-  const filteredOrders = useMemo(() => purchaseOrders.filter(order =>
-    order.poNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.supplier.name.toLowerCase().includes(searchTerm.toLowerCase())
-  ), [purchaseOrders, searchTerm]);
+  const monthlyOrdersFiltered = useMemo(() => {
+    if (!selectedMonth) return purchaseOrders;
+    const [yearStr, monthStr] = selectedMonth.split("-");
+    const targetYear = parseInt(yearStr, 10);
+    const targetMonth = parseInt(monthStr, 10);
+    return purchaseOrders.filter((order) => {
+      const orderDate = order.date instanceof Date ? order.date : new Date(order.date);
+      return orderDate.getFullYear() === targetYear && orderDate.getMonth() === targetMonth;
+    });
+  }, [selectedMonth, purchaseOrders]);
+
+  const monthlyStats = useMemo(() => {
+    if (!selectedMonthStats) {
+      return [
+        {
+          label: "Total Spend",
+          value: formatINR(stats.totalValue),
+          description: `${stats.totalOrders} ${stats.totalOrders === 1 ? "order" : "orders"} from ${stats.uniqueSuppliers} ${stats.uniqueSuppliers === 1 ? "supplier" : "suppliers"}`,
+        },
+        {
+          label: "Average Order Value",
+          value: formatINR(stats.averageValue),
+          description: stats.totalOrders ? "Based on all purchase orders" : "Add purchase orders to calculate averages",
+        },
+        {
+          label: "Received Orders Value",
+          value: formatINR(stats.receivedValue),
+          description: `${stats.receivedCount} ${stats.receivedCount === 1 ? "order" : "orders"} received`,
+        },
+        {
+          label: "Pending Orders Value",
+          value: formatINR(stats.pendingValue),
+          description: `${stats.pendingCount} ${stats.pendingCount === 1 ? "order" : "orders"} in progress`,
+        },
+      ];
+    }
+
+    const monthlyReceived = monthlyOrdersFiltered.filter((o) => o.status === "RECEIVED").reduce((sum, o) => sum + o.total, 0);
+    const monthlyPending = monthlyOrdersFiltered.filter((o) => ["DRAFT", "SENT", "PARTIAL"].includes(o.status)).reduce((sum, o) => sum + o.total, 0);
+    const monthlyAvg = monthlyOrdersFiltered.length ? selectedMonthStats.total / monthlyOrdersFiltered.length : 0;
+
+    return [
+      {
+        label: "Total Spend",
+        value: formatINR(selectedMonthStats.total),
+        description: `${selectedMonthStats.count} ${selectedMonthStats.count === 1 ? "order" : "orders"} in ${selectedMonthStats.label}`,
+      },
+      {
+        label: "Average Order Value",
+        value: formatINR(monthlyAvg),
+        description: monthlyOrdersFiltered.length ? `Based on ${selectedMonthStats.label} orders` : "No orders this month",
+      },
+      {
+        label: "Received Orders Value",
+        value: formatINR(monthlyReceived),
+        description: `${monthlyOrdersFiltered.filter((o) => o.status === "RECEIVED").length} orders received`,
+      },
+      {
+        label: "Pending Orders Value",
+        value: formatINR(monthlyPending),
+        description: `${monthlyOrdersFiltered.filter((o) => ["DRAFT", "SENT", "PARTIAL"].includes(o.status)).length} orders pending`,
+      },
+    ];
+  }, [selectedMonthStats, monthlyOrdersFiltered, stats]);
+
+  const summaryTiles = monthlyStats;
+
+  const filteredOrders = useMemo(() => {
+    const baseOrders = selectedMonth ? monthlyOrdersFiltered : purchaseOrders;
+    return baseOrders.filter(
+      (order) =>
+        order.poNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.supplier.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [purchaseOrders, selectedMonth, monthlyOrdersFiltered, searchTerm]);
 
   return (
     <div className="space-y-6">
@@ -167,11 +221,31 @@ const PurchaseOrders = () => {
       </div>
 
       <Card className="p-6 space-y-6">
-        <div className="flex flex-col gap-1">
-          <h2 className="text-xl font-semibold text-foreground">Purchase Insights</h2>
-          <p className="text-sm text-muted-foreground">
-            Track your purchasing activity at a glance with totals, averages, and trend breakdowns.
-          </p>
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-xl font-semibold text-foreground">Purchase Insights</h2>
+            <p className="text-sm text-muted-foreground">
+              Track your purchasing activity at a glance with totals, averages, and trend breakdowns.
+            </p>
+          </div>
+          {monthlyInsights.length > 0 && (
+            <div className="flex items-center gap-3">
+              <label className="text-sm font-medium text-muted-foreground">View by Month:</label>
+              <Select value={selectedMonth || "all"} onValueChange={(value) => setSelectedMonth(value === "all" ? null : value)}>
+                <SelectTrigger className="w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="z-50">
+                  <SelectItem value="all">All Time</SelectItem>
+                  {monthlyInsights.map((month) => (
+                    <SelectItem key={month.key} value={month.key}>
+                      {month.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {summaryTiles.map((tile) => (
