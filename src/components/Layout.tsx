@@ -19,11 +19,8 @@ const Layout = () => {
       <div className="fixed inset-y-0 left-0 z-50 w-64 bg-card border-r shadow-[var(--shadow-card)]">
         <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className="px-6 py-8 border-b">
-            <div className="flex flex-col">
-              <span className="text-2xl font-bold tracking-tight" style={{ fontFamily: "'Microma', sans-serif", fontWeight: 700 }}>CORS</span>
-              <span className="text-xs text-muted-foreground" style={{ fontFamily: "'Microma', sans-serif" }}>Corporate Operations Resource System</span>
-            </div>
+          <div className="px-6 py-4 border-b flex items-center justify-center">
+            <img src="https://cdn.builder.io/api/v1/image/assets%2Fc53d55d6e77f4fc3a0917324bbf678cd%2F499b782c908b4381899ecd66fa4267f4?format=webp&width=800" alt="CORS Logo" className="h-12 object-contain" />
           </div>
           {/* Navigation */}
           <nav className="flex-1 space-y-1 px-4 pt-6 pb-6">
