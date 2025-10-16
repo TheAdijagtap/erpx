@@ -20,7 +20,7 @@ const Layout = () => {
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="px-6 py-4 border-b flex items-center justify-center">
-            <img src="https://cdn.builder.io/api/v1/image/assets%2Fc53d55d6e77f4fc3a0917324bbf678cd%2F499b782c908b4381899ecd66fa4267f4?format=webp&width=800" alt="CORS Logo" className="h-12 object-contain" />
+            <img src="https://cdn.builder.io/api/v1/image/assets%2Fc53d55d6e77f4fc3a0917324bbf678cd%2F412d48dbf4c849de93f6467e12198818?format=webp&width=800" alt="CORS Logo" className="h-12 object-contain" />
           </div>
           {/* Navigation */}
           <nav className="flex-1 space-y-1 px-4 pt-6 pb-6">
