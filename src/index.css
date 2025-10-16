@@ -148,3 +148,7 @@
     @apply bg-background text-foreground;
   }
 }
+
+.font-microma {
+  font-family: 'Microma', sans-serif;
+}
