@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Microma:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Microma:wght@400;700&display=block');
 
 @tailwind base;
 @tailwind components;
@@ -150,7 +150,7 @@
 }
 
 .font-microma {
-  font-family: 'Microma', sans-serif !important;
+  font-family: 'Microma', 'Courier New', monospace !important;
   font-weight: 700 !important;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.02em;
 }
