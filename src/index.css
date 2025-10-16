@@ -150,5 +150,7 @@
 }
 
 .font-microma {
-  font-family: 'Microma', sans-serif;
+  font-family: 'Microma', sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em;
 }
