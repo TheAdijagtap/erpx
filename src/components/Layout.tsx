@@ -21,8 +21,8 @@ const Layout = () => {
           {/* Logo */}
           <div className="px-6 py-8 border-b">
             <div className="flex flex-col">
-              <span className="text-2xl font-bold tracking-tight">CORS</span>
-              <span className="text-xs text-muted-foreground">Corporate Operations Resource System</span>
+              <span className="text-2xl font-bold tracking-tight font-microma">CORS</span>
+              <span className="text-xs text-muted-foreground font-microma">Corporate Operations Resource System</span>
             </div>
           </div>
           {/* Navigation */}
