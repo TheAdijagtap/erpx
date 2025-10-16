@@ -93,8 +93,8 @@ const Dashboard = () => {
           <div className="text-center space-y-6 animate-fade-in">
             <div className="mb-6">
               <div className="flex flex-col items-center gap-2">
-                <span className="text-5xl font-bold tracking-tight font-microma">CORS</span>
-                <span className="text-sm text-muted-foreground font-microma">Corporate Operations Resource System</span>
+                <span className="text-5xl font-bold tracking-tight" style={{ fontFamily: "'Microma', sans-serif", fontWeight: 700 }}>CORS</span>
+                <span className="text-sm text-muted-foreground" style={{ fontFamily: "'Microma', sans-serif" }}>Corporate Operations Resource System</span>
               </div>
             </div>
             <div className="inline-block px-4 py-2 bg-primary/10 rounded-full text-primary text-sm font-medium">
