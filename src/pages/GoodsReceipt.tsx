@@ -123,15 +123,15 @@ const GoodsReceiptPage = () => {
 function getStatusBadge(status: string) {
   switch (status) {
     case "RECEIVED":
-      return <Badge className="bg-warning text-warning-foreground">Received</Badge>;
+      return <Badge className="bg-blue-400 text-blue-900">Received</Badge>;
     case "QUALITY_CHECK":
-      return <Badge className="bg-accent text-accent-foreground">Quality Check</Badge>;
+      return <Badge className="bg-yellow-400 text-yellow-900">Quality Check</Badge>;
     case "ACCEPTED":
-      return <Badge className="bg-success text-success-foreground">Accepted</Badge>;
+      return <Badge className="bg-green-500 text-white">Accepted</Badge>;
     case "REJECTED":
-      return <Badge variant="destructive">Rejected</Badge>;
+      return <Badge className="bg-red-500 text-white">Rejected</Badge>;
     default:
-      return <Badge variant="secondary">{status}</Badge>;
+      return <Badge className="bg-gray-400 text-gray-900">{status}</Badge>;
   }
 }
 
