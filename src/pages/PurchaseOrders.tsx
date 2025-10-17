@@ -221,168 +221,46 @@ const PurchaseOrders = () => {
         <CreatePODialog />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-4">
-          <div className="space-y-3">
-            <div>
-              <h2 className="text-lg font-semibold text-foreground mb-3">Purchase Orders</h2>
-            </div>
-            <Card className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                  <Input
-                    placeholder="Search by PO number or supplier..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-            </Card>
-          </div>
-
-          <div className="grid grid-cols-1 gap-3">
-            {filteredOrders.map((order) => (
-              <Card key={order.id} className="p-4 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
-                <div className="space-y-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-base font-semibold text-foreground">{order.poNumber}</h3>
-                        {getStatusBadge(order.status)}
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {order.supplier.name} · {formatDateIN(order.date)}
-                      </p>
-                    </div>
-                    <div className="p-1.5 bg-primary-light rounded">
-                      <FileText className="w-4 h-4 text-primary" />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-3">
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground">Items</p>
-                      <p className="text-sm font-semibold">{order.items.length}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground">Qty</p>
-                      <p className="text-sm font-semibold">
-                        {order.items.reduce((sum, item) => sum + item.quantity, 0)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground">Total</p>
-                      <p className="text-sm font-semibold">{formatINR(order.total)}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-1.5 flex-wrap">
-                    <ViewPODialog id={order.id} />
-                    <EditPODialog id={order.id} />
-                    <PrintPOButton id={order.id} />
-                    <DeletePODialog id={order.id} />
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-
-          {filteredOrders.length === 0 && (
-            <Card className="p-12 text-center">
-              <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold text-foreground mb-2">No purchase orders found</h3>
-              <p className="text-muted-foreground mb-4">
-                {searchTerm ? "Try adjusting your search terms" : "Create your first purchase order to get started"}
-              </p>
-              <CreatePODialog />
-            </Card>
-          )}
-        </div>
-
-        <div className="lg:col-span-1">
-          <Card className="p-6 space-y-6 sticky top-20">
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1">
-                <h2 className="text-lg font-semibold text-foreground">Purchase Insights</h2>
-                <p className="text-xs text-muted-foreground">
-                  Track your purchasing activity at a glance.
-                </p>
-              </div>
-              <ExportPurchaseDataButton
-                orders={filteredOrders}
-                monthLabel={selectedMonthStats?.label || "All"}
-              />
-              {monthlyInsights.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <label className="text-xs font-medium text-muted-foreground">Month:</label>
-                  <Select value={selectedMonth || "all"} onValueChange={(value) => setSelectedMonth(value === "all" ? null : value)}>
-                    <SelectTrigger className="w-full text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="z-50">
-                      <SelectItem value="all">All Time</SelectItem>
-                      {monthlyInsights.map((month) => (
-                        <SelectItem key={month.key} value={month.key}>
-                          {month.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </div>
-            <div className="space-y-3">
-              {summaryTiles.map((tile) => (
-                <div key={tile.label} className="rounded-lg border border-border/60 bg-muted/10 p-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{tile.label}</p>
-                  <p className="mt-1 text-sm font-semibold text-foreground">{tile.value}</p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">{tile.description}</p>
-                </div>
-              ))}
-            </div>
-            <div className="border-t border-border pt-4">
-              <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Monthly</h3>
-                {monthlyInsights.length ? (
-                  <div className="space-y-2">
-                    {monthlyInsights.slice(0, 6).map((month) => (
-                      <div key={month.key} className="flex items-center justify-between rounded-md border border-border/60 bg-background px-3 py-2">
-                        <div>
-                          <p className="text-xs font-medium text-foreground">{month.label}</p>
-                        </div>
-                        <div className="text-xs font-semibold text-foreground">{formatINR(month.total)}</div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground">Add purchase orders to see trends.</p>
-                )}
-              </div>
-            </div>
-            <div className="border-t border-border pt-4">
-              <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Yearly</h3>
-                {yearlyInsights.length ? (
-                  <div className="space-y-2">
-                    {yearlyInsights.map((year) => (
-                      <div key={year.key} className="flex items-center justify-between rounded-md border border-border/60 bg-background px-3 py-2">
-                        <div>
-                          <p className="text-xs font-medium text-foreground">{year.label}</p>
-                        </div>
-                        <div className="text-xs font-semibold text-foreground">{formatINR(year.total)}</div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground">Yearly totals will appear soon.</p>
-                )}
-              </div>
-            </div>
-          </Card>
-        </div>
+      <div className="flex gap-4 border-b">
+        <button
+          onClick={() => setActiveTab("orders")}
+          className={`pb-2 px-1 border-b-2 transition-colors ${
+            activeTab === "orders"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Purchase Orders
+        </button>
+        <button
+          onClick={() => setActiveTab("insights")}
+          className={`pb-2 px-1 border-b-2 transition-colors ${
+            activeTab === "insights"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Purchase Insights
+        </button>
       </div>
+
+      {activeTab === "orders" ? (
+        <PurchaseOrdersTab
+          filteredOrders={filteredOrders}
+          selectedMonthStats={selectedMonthStats}
+        />
+      ) : (
+        <PurchaseInsightsTab
+          stats={stats}
+          monthlyInsights={monthlyInsights}
+          yearlyInsights={yearlyInsights}
+          summaryTiles={summaryTiles}
+          selectedMonth={selectedMonth}
+          setSelectedMonth={setSelectedMonth}
+          filteredOrders={filteredOrders}
+          selectedMonthStats={selectedMonthStats}
+        />
+      )}
     </div>
   );
 };
