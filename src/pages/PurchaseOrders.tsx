@@ -314,6 +314,10 @@ const PurchaseOrders = () => {
               className="pl-10"
             />
           </div>
+          <ExportPurchaseDataButton
+            orders={filteredOrders}
+            monthLabel={selectedMonthStats?.label || "All"}
+          />
         </div>
       </Card>
 
