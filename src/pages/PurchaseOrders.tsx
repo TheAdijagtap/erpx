@@ -870,7 +870,7 @@ function PrintPOButton({ id }: { id: string }) {
 function DeletePODialog({ id }: { id: string }) {
   const { purchaseOrders, removePurchaseOrder } = useApp();
   const order = purchaseOrders.find(p => p.id === id)!;
-  
+
   const handleDelete = () => {
     if (confirm(`Are you sure you want to delete PO ${order.poNumber}?`)) {
       removePurchaseOrder(id);
@@ -880,6 +880,67 @@ function DeletePODialog({ id }: { id: string }) {
   return (
     <Button variant="destructive" onClick={handleDelete} className="gap-1">
       <Trash2 className="w-4 h-4" /> Delete
+    </Button>
+  );
+}
+
+interface ExportPurchaseDataButtonProps {
+  orders: typeof PurchaseOrders extends () => infer R ? R extends { purchaseOrders: (infer T)[] } ? T[] : never : never;
+  monthLabel: string;
+}
+
+function ExportPurchaseDataButton({ orders, monthLabel }: { orders: any[]; monthLabel: string }) {
+  const handleExport = () => {
+    if (orders.length === 0) {
+      alert("No purchase orders to export");
+      return;
+    }
+
+    const csvRows: string[] = [];
+
+    csvRows.push(["PO Number", "Supplier Name", "Item", "Amount"].join(","));
+
+    orders.forEach((order) => {
+      order.items.forEach((item: any) => {
+        const poNumber = order.poNumber;
+        const supplierName = order.supplier.name;
+        const itemName = item.item.name;
+        const amount = item.total;
+
+        const csvRow = [
+          `"${poNumber}"`,
+          `"${supplierName}"`,
+          `"${itemName}"`,
+          amount
+        ].join(",");
+
+        csvRows.push(csvRow);
+      });
+    });
+
+    const csvContent = csvRows.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+
+    const filename = `purchase-data-${monthLabel.toLowerCase().replace(/\s+/g, "-")}-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.visibility = "hidden";
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  return (
+    <Button
+      variant="outline"
+      onClick={handleExport}
+      className="gap-2"
+      disabled={orders.length === 0}
+    >
+      <Download className="w-4 h-4" /> Export
     </Button>
   );
 }
