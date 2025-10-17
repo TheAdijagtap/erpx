@@ -478,17 +478,17 @@ function PurchaseInsightsTab({
 function getStatusBadge(status: string) {
   switch (status) {
     case "DRAFT":
-      return <Badge variant="secondary">Draft</Badge>;
+      return <Badge className="bg-slate-400 text-slate-900">Draft</Badge>;
     case "SENT":
-      return <Badge className="bg-warning text-warning-foreground">Sent</Badge>;
+      return <Badge className="bg-yellow-400 text-yellow-900">Sent</Badge>;
     case "RECEIVED":
-      return <Badge className="bg-success text-success-foreground">Received</Badge>;
+      return <Badge className="bg-green-500 text-white">Received</Badge>;
     case "PARTIAL":
-      return <Badge className="bg-accent text-accent-foreground">Partial</Badge>;
+      return <Badge className="bg-blue-400 text-blue-900">Partial</Badge>;
     case "CANCELLED":
-      return <Badge variant="destructive">Cancelled</Badge>;
+      return <Badge className="bg-red-500 text-white">Cancelled</Badge>;
     default:
-      return <Badge variant="secondary">{status}</Badge>;
+      return <Badge className="bg-gray-400 text-gray-900">{status}</Badge>;
   }
 }
 
