@@ -37,6 +37,7 @@ const PurchaseOrders = () => {
   const { purchaseOrders } = useApp();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"orders" | "insights">("orders");
 
   const stats = useMemo<PurchaseOrderStatsSummary>(() => {
     const base: PurchaseOrderStatsSummary = {
