@@ -95,7 +95,7 @@ const Dashboard = () => {
               <img src="https://cdn.builder.io/api/v1/image/assets%2Fc53d55d6e77f4fc3a0917324bbf678cd%2F412d48dbf4c849de93f6467e12198818?format=webp&width=800" alt="CORS Logo" className="h-20 mx-auto object-contain" />
             </div>
             <div className="inline-block px-4 py-2 bg-primary/10 rounded-full text-primary text-sm font-medium">
-              Professional Inventory Management System
+              <p>Corporate Operations Resource System </p>
             </div>
             <h1 className="text-5xl md:text-6xl font-bold text-foreground leading-tight">
               Manage Your Inventory
