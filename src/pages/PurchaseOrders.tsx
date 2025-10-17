@@ -265,6 +265,216 @@ const PurchaseOrders = () => {
   );
 };
 
+interface PurchaseOrdersTabProps {
+  filteredOrders: any[];
+  selectedMonthStats: any;
+}
+
+function PurchaseOrdersTab({ filteredOrders, selectedMonthStats }: PurchaseOrdersTabProps) {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const ordersFiltered = useMemo(() => {
+    return filteredOrders.filter(
+      (order) =>
+        order.poNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.supplier.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [filteredOrders, searchTerm]);
+
+  return (
+    <div className="space-y-6">
+      <Card className="p-6">
+        <div className="flex items-center gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              placeholder="Search by PO number or supplier..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <ExportPurchaseDataButton
+            orders={ordersFiltered}
+            monthLabel={selectedMonthStats?.label || "All"}
+          />
+        </div>
+      </Card>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        {ordersFiltered.map((order) => (
+          <Card key={order.id} className="p-4 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
+            <div className="space-y-3">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-semibold text-foreground">{order.poNumber}</h3>
+                    {getStatusBadge(order.status)}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {order.supplier.name} · {formatDateIN(order.date)}
+                  </p>
+                </div>
+                <div className="p-1.5 bg-primary-light rounded">
+                  <FileText className="w-4 h-4 text-primary" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground">Items</p>
+                  <p className="text-sm font-semibold">{order.items.length}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground">Qty</p>
+                  <p className="text-sm font-semibold">
+                    {order.items.reduce((sum, item) => sum + item.quantity, 0)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground">Total</p>
+                  <p className="text-sm font-semibold">{formatINR(order.total)}</p>
+                </div>
+              </div>
+
+              <div className="flex gap-1.5 flex-wrap">
+                <ViewPODialog id={order.id} />
+                <EditPODialog id={order.id} />
+                <PrintPOButton id={order.id} />
+                <DeletePODialog id={order.id} />
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {ordersFiltered.length === 0 && (
+        <Card className="p-12 text-center">
+          <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold text-foreground mb-2">No purchase orders found</h3>
+          <p className="text-muted-foreground mb-4">
+            {searchTerm ? "Try adjusting your search terms" : "Create your first purchase order to get started"}
+          </p>
+          <CreatePODialog />
+        </Card>
+      )}
+    </div>
+  );
+}
+
+interface PurchaseInsightsTabProps {
+  stats: PurchaseOrderStatsSummary;
+  monthlyInsights: PurchaseAggregateRow[];
+  yearlyInsights: PurchaseAggregateRow[];
+  summaryTiles: any[];
+  selectedMonth: string | null;
+  setSelectedMonth: (month: string | null) => void;
+  filteredOrders: any[];
+  selectedMonthStats: any;
+}
+
+function PurchaseInsightsTab({
+  stats,
+  monthlyInsights,
+  yearlyInsights,
+  summaryTiles,
+  selectedMonth,
+  setSelectedMonth,
+  filteredOrders,
+  selectedMonthStats,
+}: PurchaseInsightsTabProps) {
+  return (
+    <Card className="p-6 space-y-6">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-xl font-semibold text-foreground">Purchase Insights</h2>
+          <p className="text-sm text-muted-foreground">
+            Track your purchasing activity at a glance with totals, averages, and trend breakdowns.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <ExportPurchaseDataButton
+            orders={filteredOrders}
+            monthLabel={selectedMonthStats?.label || "All"}
+          />
+          {monthlyInsights.length > 0 && (
+            <div className="flex items-center gap-3 ml-auto">
+              <label className="text-sm font-medium text-muted-foreground">View by Month:</label>
+              <Select value={selectedMonth || "all"} onValueChange={(value) => setSelectedMonth(value === "all" ? null : value)}>
+                <SelectTrigger className="w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="z-50">
+                  <SelectItem value="all">All Time</SelectItem>
+                  {monthlyInsights.map((month) => (
+                    <SelectItem key={month.key} value={month.key}>
+                      {month.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {summaryTiles.map((tile) => (
+          <div key={tile.label} className="rounded-lg border border-border/60 bg-muted/10 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{tile.label}</p>
+            <p className="mt-2 text-lg font-semibold text-foreground">{tile.value}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{tile.description}</p>
+          </div>
+        ))}
+      </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Monthly Purchase Amount</h3>
+            {monthlyInsights.length > 0 && (
+              <span className="text-xs text-muted-foreground">Latest {monthlyInsights.length} months</span>
+            )}
+          </div>
+          {monthlyInsights.length ? (
+            <div className="mt-4 space-y-3">
+              {monthlyInsights.map((month) => (
+                <div key={month.key} className="flex items-center justify-between rounded-md border border-border/60 bg-background px-4 py-3">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{month.label}</p>
+                    <p className="text-xs text-muted-foreground">{month.count} {month.count === 1 ? "order" : "orders"}</p>
+                  </div>
+                  <div className="text-sm font-semibold text-foreground">{formatINR(month.total)}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-3 text-sm text-muted-foreground">Add purchase orders to see monthly trends.</p>
+          )}
+        </div>
+        <div>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Yearly Purchase Amount</h3>
+          </div>
+          {yearlyInsights.length ? (
+            <div className="mt-4 space-y-3">
+              {yearlyInsights.map((year) => (
+                <div key={year.key} className="flex items-center justify-between rounded-md border border-border/60 bg-background px-4 py-3">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{year.label}</p>
+                    <p className="text-xs text-muted-foreground">{year.count} {year.count === 1 ? "order" : "orders"}</p>
+                  </div>
+                  <div className="text-sm font-semibold text-foreground">{formatINR(year.total)}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-3 text-sm text-muted-foreground">Yearly totals will appear once purchases are recorded.</p>
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 function getStatusBadge(status: string) {
   switch (status) {
     case "DRAFT":
