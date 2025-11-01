@@ -530,7 +530,7 @@ function EditGRDialog({ id }: { id: string }) {
 function UpdateStatusButton({ id, status, label, destructive }: { id: string; status: any; label: string; destructive?: boolean }) {
   const { updateGoodsReceipt } = useApp();
   return (
-    <Button variant={destructive ? 'destructive' : 'default'} size="sm" onClick={() => updateGoodsReceipt(id, { status })}>
+    <Button variant={destructive ? 'destructive' : 'success'} size="sm" onClick={() => updateGoodsReceipt(id, { status })}>
       {label}
     </Button>
   );

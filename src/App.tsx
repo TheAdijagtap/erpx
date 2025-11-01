@@ -6,8 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import AppDashboard from "./pages/AppDashboard";
-import Auth from "./pages/Auth";
-import { ProtectedRoute } from "./components/ProtectedRoute";
 import Inventory from "./pages/Inventory";
 import PurchaseOrders from "./pages/PurchaseOrders";
 import GoodsReceiptPage from "./pages/GoodsReceipt";
@@ -30,11 +28,8 @@ const App = () => (
             {/* Homepage without sidebar */}
             <Route index element={<Dashboard />} />
             
-            {/* Auth route */}
-            <Route path="/auth" element={<Auth />} />
-            
-            {/* Protected app routes with sidebar */}
-            <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+            {/* App routes with sidebar */}
+            <Route path="/" element={<Layout />}>
               <Route path="dashboard" element={<AppDashboard />} />
               <Route path="inventory" element={<Inventory />} />
               <Route path="purchase-orders" element={<PurchaseOrders />} />

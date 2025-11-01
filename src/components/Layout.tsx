@@ -1,11 +1,8 @@
 import { Outlet, NavLink } from "react-router-dom";
-import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt, LogOut } from "lucide-react";
+import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/button";
 
 const Layout = () => {
-  const { user, signOut } = useAuth();
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
     { name: "Inventory", href: "/inventory", icon: Package },
@@ -22,13 +19,8 @@ const Layout = () => {
       <div className="fixed inset-y-0 left-0 z-50 w-64 bg-card border-r shadow-[var(--shadow-card)]">
         <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className="px-6 py-4 border-b">
-            <div className="flex items-center justify-center">
-              <img src="https://cdn.builder.io/api/v1/image/assets%2Fc53d55d6e77f4fc3a0917324bbf678cd%2F412d48dbf4c849de93f6467e12198818?format=webp&width=800" alt="CORS Logo" className="h-12 object-contain" />
-            </div>
-            {user && (
-              <p className="text-xs text-muted-foreground mt-2 text-center truncate px-2">{user.email}</p>
-            )}
+          <div className="px-6 py-4 border-b flex items-center justify-center">
+            <img src="https://cdn.builder.io/api/v1/image/assets%2Fc53d55d6e77f4fc3a0917324bbf678cd%2F412d48dbf4c849de93f6467e12198818?format=webp&width=800" alt="CORS Logo" className="h-12 object-contain" />
           </div>
           {/* Navigation */}
           <nav className="flex-1 space-y-1 px-4 pt-6 pb-6">
@@ -54,17 +46,6 @@ const Layout = () => {
               );
             })}
           </nav>
-          
-          <div className="mt-auto p-4 border-t">
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-              onClick={signOut}
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </Button>
-          </div>
         </div>
       </div>
 
