@@ -102,6 +102,7 @@ export type Database = {
       }
       goods_receipt_items: {
         Row: {
+          amount: number
           goods_receipt_id: string
           id: string
           item_id: string | null
@@ -110,8 +111,10 @@ export type Database = {
           quantity_ordered: number
           quantity_received: number
           unit: string
+          unit_price: number
         }
         Insert: {
+          amount?: number
           goods_receipt_id: string
           id?: string
           item_id?: string | null
@@ -120,8 +123,10 @@ export type Database = {
           quantity_ordered: number
           quantity_received: number
           unit: string
+          unit_price?: number
         }
         Update: {
+          amount?: number
           goods_receipt_id?: string
           id?: string
           item_id?: string | null
@@ -130,6 +135,7 @@ export type Database = {
           quantity_ordered?: number
           quantity_received?: number
           unit?: string
+          unit_price?: number
         }
         Relationships: [
           {
@@ -156,8 +162,12 @@ export type Database = {
           notes: string | null
           purchase_order_id: string | null
           receipt_date: string
+          status: string
+          subtotal: number
           supplier_id: string | null
           supplier_name: string
+          tax_amount: number
+          total: number
           user_id: string
         }
         Insert: {
@@ -167,8 +177,12 @@ export type Database = {
           notes?: string | null
           purchase_order_id?: string | null
           receipt_date: string
+          status?: string
+          subtotal?: number
           supplier_id?: string | null
           supplier_name: string
+          tax_amount?: number
+          total?: number
           user_id: string
         }
         Update: {
@@ -178,8 +192,12 @@ export type Database = {
           notes?: string | null
           purchase_order_id?: string | null
           receipt_date?: string
+          status?: string
+          subtotal?: number
           supplier_id?: string | null
           supplier_name?: string
+          tax_amount?: number
+          total?: number
           user_id?: string
         }
         Relationships: [
