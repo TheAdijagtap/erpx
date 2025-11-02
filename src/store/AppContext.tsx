@@ -13,6 +13,8 @@ import type {
   Customer,
   CustomerActivity,
 } from "@/types/inventory";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 const STORAGE_KEY = "stockflow_app_state_v1";
 
@@ -303,6 +305,32 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         ...s,
         items: [...s.items, { ...item, id, createdAt: now, updatedAt: now }],
       }));
+
+      // Persist to backend in the background
+      (async () => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return; // Not logged in, skip cloud sync
+          await supabase.from("inventory_items").insert([
+            {
+              user_id: user.id,
+              name: item.name,
+              description: item.description,
+              category: item.category,
+              unit: item.unit,
+              current_stock: item.currentStock,
+              reorder_level: item.minStock ?? null,
+              unit_price: item.unitPrice ?? null,
+              supplier_id: null,
+              hsn_code: null,
+            },
+          ]);
+        } catch (e) {
+          console.error("Persist item failed", e);
+          toast({ title: "Sync issue", description: "Item saved locally but failed to sync to cloud.", variant: "destructive" as any });
+        }
+      })();
+
       return id;
     },
     updateItem: (id, patch) => {
@@ -350,6 +378,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         ...s,
         suppliers: [...s.suppliers, { ...supplier, id, createdAt: new Date() }],
       }));
+
+      // Persist to backend in the background
+      (async () => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+          await supabase.from("suppliers").insert([
+            {
+              user_id: user.id,
+              name: supplier.name,
+              contact_person: supplier.contactPerson,
+              email: supplier.email,
+              phone: supplier.phone,
+              address: supplier.address,
+              gst_number: supplier.gstNumber ?? null,
+              payment_terms: null,
+              notes: null,
+            },
+          ]);
+        } catch (e) {
+          console.error("Persist supplier failed", e);
+          toast({ title: "Sync issue", description: "Supplier saved locally but failed to sync to cloud.", variant: "destructive" as any });
+        }
+      })();
+
       return id;
     },
     updateSupplier: (id, patch) => {
@@ -385,6 +438,52 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           ...s.purchaseOrders,
         ],
       }));
+
+      // Persist to backend in the background
+      (async () => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+          const poDateStr = (po.date instanceof Date ? po.date : new Date(po.date)).toISOString().slice(0, 10);
+          const { data: poRow, error: poErr } = await supabase
+            .from("purchase_orders")
+            .insert([
+              {
+                user_id: user.id,
+                po_number: po.poNumber,
+                supplier_id: null, // local supplier id may not match backend uuid
+                supplier_name: supplier.name,
+                date: poDateStr,
+                expected_delivery: po.expectedDelivery ? new Date(po.expectedDelivery).toISOString().slice(0, 10) : null,
+                subtotal: totals.subtotal,
+                tax_amount: totals.sgst + totals.cgst,
+                total: totals.total,
+                status: po.status ?? 'SENT',
+                notes: po.notes ?? null,
+              },
+            ])
+            .select()
+            .single();
+          if (poErr || !poRow) throw poErr || new Error("No PO row returned");
+
+          const itemsRows = po.items.map((it) => ({
+            purchase_order_id: poRow.id,
+            item_id: null,
+            item_name: it.item.name,
+            description: it.item.description,
+            unit: it.item.unit,
+            quantity: it.quantity,
+            rate: it.unitPrice,
+            amount: it.total,
+          }));
+          const { error: itemsErr } = await supabase.from("purchase_order_items").insert(itemsRows);
+          if (itemsErr) throw itemsErr;
+        } catch (e) {
+          console.error("Persist purchase order failed", e);
+          toast({ title: "Sync issue", description: "Purchase order saved locally but failed to sync to cloud.", variant: "destructive" as any });
+        }
+      })();
+
       return id;
     },
     updatePurchaseOrder: (id, patch) => {
@@ -453,6 +552,53 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           purchaseOrders: nextPurchaseOrders,
         };
       });
+
+      // Persist to backend in the background
+      (async () => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+          const dateStr = (gr.date instanceof Date ? gr.date : new Date(gr.date)).toISOString().slice(0, 10);
+          const { data: grRow, error: grErr } = await supabase
+            .from("goods_receipts")
+            .insert([
+              {
+                user_id: user.id,
+                gr_number: gr.grNumber,
+                purchase_order_id: gr.poId ?? null,
+                supplier_id: null,
+                supplier_name: (state.suppliers.find((s) => s.id === gr.supplierId) ?? gr.supplier)?.name ?? '',
+                receipt_date: dateStr,
+                subtotal: totals.subtotal,
+                tax_amount: totals.sgst + totals.cgst,
+                total: totals.total,
+                notes: gr.notes ?? null,
+                status: gr.status,
+              },
+            ])
+            .select()
+            .single();
+          if (grErr || !grRow) throw grErr || new Error("No GR row returned");
+
+          const itemsRows = gr.items.map((it) => ({
+            goods_receipt_id: grRow.id,
+            item_id: null,
+            item_name: it.item.name,
+            unit: it.item.unit,
+            quantity_ordered: it.orderedQuantity ?? it.receivedQuantity,
+            quantity_received: it.receivedQuantity,
+            unit_price: it.unitPrice,
+            amount: it.total,
+            notes: null,
+          }));
+          const { error: itemsErr } = await supabase.from("goods_receipt_items").insert(itemsRows);
+          if (itemsErr) throw itemsErr;
+        } catch (e) {
+          console.error("Persist goods receipt failed", e);
+          toast({ title: "Sync issue", description: "Goods receipt saved locally but failed to sync to cloud.", variant: "destructive" as any });
+        }
+      })();
+
       return id;
     },
     updateGoodsReceipt: (id, patch) => {
@@ -511,6 +657,53 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           ...s.proformaInvoices,
         ],
       }));
+
+      // Persist to backend in the background
+      (async () => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+          const dateStr = ((pi.date as Date) || new Date()).toISOString().slice(0, 10);
+          const { data: invRow, error: invErr } = await supabase
+            .from("proforma_invoices")
+            .insert([
+              {
+                user_id: user.id,
+                invoice_number: pi.proformaNumber,
+                customer_id: null,
+                customer_name: pi.buyerInfo?.name ?? '',
+                customer_address: pi.buyerInfo?.address ?? null,
+                customer_gst: pi.buyerInfo?.gstNumber ?? null,
+                date: dateStr,
+                subtotal: totals.subtotal,
+                tax_amount: totals.sgst + totals.cgst,
+                total: totals.total,
+                payment_terms: pi.paymentTerms ?? null,
+                notes: pi.notes ?? null,
+              },
+            ])
+            .select()
+            .single();
+          if (invErr || !invRow) throw invErr || new Error("No PI row returned");
+
+          const itemsRows = pi.items.map((it) => ({
+            proforma_invoice_id: invRow.id,
+            item_name: it.item.name,
+            description: it.item.description,
+            hsn_code: null,
+            unit: it.item.unit,
+            quantity: it.quantity,
+            rate: it.unitPrice,
+            amount: it.total,
+          }));
+          const { error: itemsErr } = await supabase.from("proforma_invoice_items").insert(itemsRows);
+          if (itemsErr) throw itemsErr;
+        } catch (e) {
+          console.error("Persist proforma invoice failed", e);
+          toast({ title: "Sync issue", description: "Proforma invoice saved locally but failed to sync to cloud.", variant: "destructive" as any });
+        }
+      })();
+
       return id;
     },
     updateProformaInvoice: (id, patch) => {
