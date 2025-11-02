@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -15,20 +14,9 @@ import {
   Users,
   DollarSign
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { Link } from "react-router-dom";
 
 const Dashboard = () => {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    // Check if user is already logged in and redirect to dashboard
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        navigate("/dashboard");
-      }
-    });
-  }, [navigate]);
   const features = [
     {
       icon: Package,
@@ -122,13 +110,13 @@ const Dashboard = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Button asChild size="lg" className="text-lg px-8 group">
-                <Link to="/auth">
+                <Link to="/inventory">
                   Get Started
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="text-lg px-8">
-                <Link to="/auth">Sign In</Link>
+                <Link to="/business">Configure Business</Link>
               </Button>
             </div>
           </div>
@@ -232,10 +220,10 @@ const Dashboard = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
                 <Button asChild size="lg" className="text-lg px-8">
-                  <Link to="/auth">Start Managing Inventory</Link>
+                  <Link to="/inventory">Start Managing Inventory</Link>
                 </Button>
                 <Button asChild size="lg" variant="secondary">
-                  <Link to="/auth">Create Account</Link>
+                  <Link to="/suppliers">Add Your First Supplier</Link>
                 </Button>
               </div>
             </div>
