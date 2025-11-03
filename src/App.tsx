@@ -12,6 +12,7 @@ import GoodsReceiptPage from "./pages/GoodsReceipt";
 import Suppliers from "./pages/Suppliers";
 import BusinessSetup from "./pages/BusinessSetup";
 import ProformaInvoice from "./pages/ProformaInvoice";
+import ScrapNote from "./pages/ScrapNote";
 import NotFound from "./pages/NotFound";
 import { AppProvider } from "./store/AppContext";
 
@@ -36,6 +37,7 @@ const App = () => (
               <Route path="goods-receipt" element={<GoodsReceiptPage />} />
               <Route path="suppliers" element={<Suppliers />} />
               <Route path="proforma" element={<ProformaInvoice />} />
+              <Route path="scrap-notes" element={<ScrapNote />} />
               <Route path="business" element={<BusinessSetup />} />
             </Route>
             

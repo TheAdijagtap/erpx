@@ -191,3 +191,26 @@ export interface CustomerActivity {
   date: Date;
   createdBy?: string;
 }
+
+export interface ScrapNote {
+  id: string;
+  noteNumber: string;
+  title: string;
+  description: string;
+  items: ScrapNoteItem[];
+  status: 'DRAFT' | 'FINALIZED' | 'ARCHIVED';
+  totalValue: number;
+  date: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ScrapNoteItem {
+  id: string;
+  itemId?: string;
+  itemName: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+}
