@@ -1,26 +1,3 @@
-export function printDocument(content: string, title = "Document") {
-  const win = window.open("", "_blank", "width=1024,height=768");
-  if (!win) return;
-  win.document.open();
-  win.document.write(`<!doctype html><html><head><title>${title}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style>
-      * { box-sizing: border-box; }
-      body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; margin: 8px; color: #0f172a; }
-      @media print {
-        @page { margin: 10mm; size: A4; }
-        body { margin: 0; }
-      }
-    </style>
-  </head><body>${content}</body></html>`);
-  win.document.close();
-  setTimeout(() => {
-    win.focus();
-    win.print();
-    setTimeout(() => win.close(), 250);
-  }, 250);
-}
-
 export function printElementById(id: string, title = "Document") {
   const el = document.getElementById(id);
   if (!el) return;

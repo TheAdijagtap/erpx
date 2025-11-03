@@ -110,13 +110,13 @@ const Dashboard = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Button asChild size="lg" className="text-lg px-8 group">
-                <Link to="/auth">
+                <Link to="/inventory">
                   Get Started
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="text-lg px-8">
-                <Link to="/auth">Sign In</Link>
+                <Link to="/business">Configure Business</Link>
               </Button>
             </div>
           </div>
@@ -220,10 +220,10 @@ const Dashboard = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
                 <Button asChild size="lg" className="text-lg px-8">
-                  <Link to="/auth">Start Managing Inventory</Link>
+                  <Link to="/inventory">Start Managing Inventory</Link>
                 </Button>
                 <Button asChild size="lg" variant="secondary">
-                  <Link to="/auth">Sign Up Now</Link>
+                  <Link to="/suppliers">Add Your First Supplier</Link>
                 </Button>
               </div>
             </div>

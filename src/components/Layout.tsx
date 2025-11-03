@@ -1,26 +1,14 @@
-import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt, Recycle, LogOut } from "lucide-react";
+import { Outlet, NavLink } from "react-router-dom";
+import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
 const Layout = () => {
-  const navigate = useNavigate();
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    toast.success("Signed out successfully");
-    navigate("/auth");
-  };
-
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
     { name: "Inventory", href: "/inventory", icon: Package },
     { name: "Purchase Orders", href: "/purchase-orders", icon: ShoppingCart },
     { name: "Goods Receipt", href: "/goods-receipt", icon: FileText },
     { name: "Proforma Invoice", href: "/proforma", icon: Receipt },
-    { name: "Scrap Notes", href: "/scrap-notes", icon: Recycle },
     { name: "Suppliers", href: "/suppliers", icon: Users },
     { name: "Business Setup", href: "/business", icon: Building },
   ];
@@ -58,13 +46,6 @@ const Layout = () => {
               );
             })}
           </nav>
-          {/* Sign Out Button */}
-          <div className="p-4 border-t">
-            <Button variant="outline" className="w-full" onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </Button>
-          </div>
         </div>
       </div>
 
