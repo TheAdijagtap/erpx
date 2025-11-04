@@ -14,6 +14,8 @@ import BusinessSetup from "./pages/BusinessSetup";
 import ProformaInvoice from "./pages/ProformaInvoice";
 import ScrapNote from "./pages/ScrapNote";
 import PriceTracker from "./pages/PriceTracker";
+import Auth from "./pages/Auth";
+import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 import { AppProvider } from "./store/AppContext";
 
@@ -27,11 +29,10 @@ const App = () => (
       <AppProvider>
         <BrowserRouter>
           <Routes>
-            {/* Homepage without sidebar */}
+            <Route path="/auth" element={<Auth />} />
             <Route index element={<Dashboard />} />
             
-            {/* App routes with sidebar */}
-            <Route path="/" element={<Layout />}>
+            <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
               <Route path="dashboard" element={<AppDashboard />} />
               <Route path="inventory" element={<Inventory />} />
               <Route path="purchase-orders" element={<PurchaseOrders />} />
@@ -43,7 +44,6 @@ const App = () => (
               <Route path="business" element={<BusinessSetup />} />
             </Route>
             
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
