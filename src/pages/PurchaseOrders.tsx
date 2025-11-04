@@ -12,7 +12,6 @@ import { useApp } from "@/store/AppContext";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
 import { numberToWords } from "@/lib/numberToWords";
-import { supabase } from "@/integrations/supabase/client";
 
 interface PurchaseAggregateRow {
   key: string;
@@ -506,7 +505,7 @@ function CreatePODialog() {
   const [additionalCharges, setAdditionalCharges] = useState<Array<{ name: string; amount: number }>>([]);
 
   const onAddRow = () => setRows([...rows, { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0, unit: items[0]?.unit || "PCS" }]);
-  const onSubmit = async () => {
+  const onSubmit = () => {
     if (!supplierId || rows.some(r => !r.itemId || r.quantity <= 0)) return;
     const poNumber = `PO-${new Date().getFullYear()}-${String(Math.floor(Math.random()*999)+1).padStart(3, '0')}`;
     const poItems = rows.map((r) => ({
@@ -518,12 +517,10 @@ function CreatePODialog() {
       total: r.quantity * r.unitPrice,
     }));
     
-    const supplier = suppliers.find(s => s.id === supplierId)!;
-    
     addPurchaseOrder({
       poNumber,
       supplierId,
-      supplier,
+      supplier: suppliers.find(s => s.id === supplierId)!,
       items: poItems,
       additionalCharges: additionalCharges.map(charge => ({
         id: crypto.randomUUID(),
@@ -537,30 +534,6 @@ function CreatePODialog() {
       paymentTerms,
       applyGST,
     });
-
-    // Save price history to database
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const priceRecords = rows.map(r => {
-          const item = items.find(i => i.id === r.itemId);
-          return {
-            user_id: user.id,
-            item_id: r.itemId,
-            item_name: item?.name || 'Unknown Item',
-            unit_price: r.unitPrice,
-            purchase_order_id: null, // Will be updated if PO is saved to DB
-            po_number: poNumber,
-            supplier_name: supplier.name,
-            recorded_date: date,
-          };
-        });
-
-        await supabase.from('item_price_history').insert(priceRecords);
-      }
-    } catch (error) {
-      console.error('Error saving price history:', error);
-    }
 
     setOpen(false);
   };

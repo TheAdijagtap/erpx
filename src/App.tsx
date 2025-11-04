@@ -13,9 +13,6 @@ import Suppliers from "./pages/Suppliers";
 import BusinessSetup from "./pages/BusinessSetup";
 import ProformaInvoice from "./pages/ProformaInvoice";
 import ScrapNote from "./pages/ScrapNote";
-import PriceTracker from "./pages/PriceTracker";
-import Auth from "./pages/Auth";
-import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 import { AppProvider } from "./store/AppContext";
 
@@ -29,10 +26,9 @@ const App = () => (
       <AppProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/auth" element={<Auth />} />
             <Route index element={<Dashboard />} />
             
-            <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+            <Route path="/" element={<Layout />}>
               <Route path="dashboard" element={<AppDashboard />} />
               <Route path="inventory" element={<Inventory />} />
               <Route path="purchase-orders" element={<PurchaseOrders />} />
@@ -40,7 +36,6 @@ const App = () => (
               <Route path="suppliers" element={<Suppliers />} />
               <Route path="proforma" element={<ProformaInvoice />} />
               <Route path="scrap-notes" element={<ScrapNote />} />
-              <Route path="price-tracker" element={<PriceTracker />} />
               <Route path="business" element={<BusinessSetup />} />
             </Route>
             
