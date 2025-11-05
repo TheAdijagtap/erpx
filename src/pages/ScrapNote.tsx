@@ -653,11 +653,112 @@ const EditScrapNoteDialog = ({ note }: { note: ScrapNoteType }) => {
 };
 
 const PrintScrapNoteButton = ({ note }: { note: ScrapNoteType }) => {
+  const { businessInfo } = useApp();
+
+  const handlePrint = () => {
+    const printContent = `
+      <div class="space-y-6">
+        <div class="border rounded-lg p-6">
+          <div class="flex items-start justify-between mb-6">
+            <div class="flex items-center gap-4">
+              ${businessInfo.logo ? `<img src="${businessInfo.logo}" alt="Logo" style="height: 64px; width: auto;" />` : ''}
+              <div>
+                <h2 class="text-2xl font-bold">${businessInfo.name}</h2>
+                <p class="text-sm muted">${businessInfo.address}</p>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <h3 class="text-xl font-bold">SCRAP NOTE</h3>
+              <p class="text-sm muted">${note.noteNumber}</p>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid #e2e8f0;">
+            <div>
+              <p style="font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 4px;">Note Date</p>
+              <p>${formatDateIN(note.date)}</p>
+            </div>
+            <div>
+              <p style="font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 4px;">Status</p>
+              <p>${note.status}</p>
+            </div>
+            <div>
+              <p style="font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 4px;">Total Value</p>
+              <p style="font-weight: bold;">${formatINR(note.totalValue)}</p>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 24px;">
+            <h4 style="font-weight: 600; margin-bottom: 8px;">Title</h4>
+            <p>${note.title}</p>
+          </div>
+
+          ${note.description ? `
+            <div style="margin-bottom: 24px;">
+              <h4 style="font-weight: 600; margin-bottom: 8px;">Description</h4>
+              <p style="white-space: pre-wrap;">${note.description}</p>
+            </div>
+          ` : ''}
+
+          <div style="margin-bottom: 24px;">
+            <h4 style="font-weight: 600; margin-bottom: 12px;">Scrap Items</h4>
+            <table style="width: 100%; font-size: 13px;">
+              <thead>
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                  <th style="text-align: left; padding: 8px 0;">Item Name</th>
+                  <th style="text-align: left; padding: 8px 0;">Description</th>
+                  <th style="text-align: right; padding: 8px 0;">Qty</th>
+                  <th style="text-align: right; padding: 8px 0;">Unit Price</th>
+                  <th style="text-align: right; padding: 8px 0;">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${note.items.map(item => `
+                  <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 8px 0;">${item.itemName}</td>
+                    <td style="padding: 8px 0; color: #64748b;">${item.description}</td>
+                    <td style="text-align: right; padding: 8px 0;">${item.quantity}</td>
+                    <td style="text-align: right; padding: 8px 0;">${formatINR(item.unitPrice)}</td>
+                    <td style="text-align: right; padding: 8px 0; font-weight: 600;">${formatINR(item.total)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end;">
+            <div style="width: 256px;">
+              <div style="display: flex; justify-content: space-between; padding: 8px 0; border-top: 2px solid #0f172a;">
+                <span style="font-weight: bold;">TOTAL VALUE:</span>
+                <span style="font-weight: bold; font-size: 18px;">${formatINR(note.totalValue)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Create temporary element
+    const tempDiv = document.createElement('div');
+    tempDiv.id = `temp-scrap-print-${note.id}`;
+    tempDiv.innerHTML = printContent;
+    tempDiv.style.display = 'none';
+    document.body.appendChild(tempDiv);
+
+    // Print
+    printElementById(`temp-scrap-print-${note.id}`, `Scrap Note ${note.noteNumber}`);
+
+    // Clean up after a delay
+    setTimeout(() => {
+      document.body.removeChild(tempDiv);
+    }, 1000);
+  };
+
   return (
     <Button
       variant="outline"
       size="sm"
-      onClick={() => printElementById(`scrap-print-${note.id}`, `Scrap Note ${note.noteNumber}`)}
+      onClick={handlePrint}
     >
       <Printer className="w-4 h-4" />
     </Button>
