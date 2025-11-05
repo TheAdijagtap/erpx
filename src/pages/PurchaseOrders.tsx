@@ -508,6 +508,7 @@ function CreatePODialog() {
   const onSubmit = () => {
     if (!supplierId || rows.some(r => !r.itemId || r.quantity <= 0)) return;
     const poNumber = `PO-${new Date().getFullYear()}-${String(Math.floor(Math.random()*999)+1).padStart(3, '0')}`;
+    const supplier = suppliers.find(s => s.id === supplierId)!;
     const poItems = rows.map((r) => ({
       id: crypto.randomUUID(),
       itemId: r.itemId,
@@ -520,7 +521,7 @@ function CreatePODialog() {
     addPurchaseOrder({
       poNumber,
       supplierId,
-      supplier: suppliers.find(s => s.id === supplierId)!,
+      supplier,
       items: poItems,
       additionalCharges: additionalCharges.map(charge => ({
         id: crypto.randomUUID(),
@@ -534,6 +535,24 @@ function CreatePODialog() {
       paymentTerms,
       applyGST,
     });
+
+    // Save price history to localStorage
+    const priceRecords = rows.map(r => {
+      const item = items.find(i => i.id === r.itemId);
+      return {
+        id: crypto.randomUUID(),
+        itemId: r.itemId,
+        itemName: item?.name || 'Unknown Item',
+        unitPrice: r.unitPrice,
+        poNumber,
+        supplierName: supplier.name,
+        recordedDate: new Date(date).toISOString(),
+      };
+    });
+
+    const existingHistory = localStorage.getItem("priceHistory");
+    const history = existingHistory ? JSON.parse(existingHistory) : [];
+    localStorage.setItem("priceHistory", JSON.stringify([...history, ...priceRecords]));
 
     setOpen(false);
   };
