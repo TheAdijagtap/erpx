@@ -499,6 +499,7 @@ function CreatePODialog() {
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [paymentTerms, setPaymentTerms] = useState<string>("30 days from invoice date");
   const [applyGST, setApplyGST] = useState<boolean>(gstSettings.enabled);
+  const [gstRate, setGstRate] = useState<number>(gstSettings.sgstRate + gstSettings.cgstRate);
   const [rows, setRows] = useState<Array<{ itemId: string; quantity: number; unitPrice: number; unit: string }>>([
     { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0, unit: items[0]?.unit || "PCS" },
   ]);
@@ -623,9 +624,24 @@ function CreatePODialog() {
             </div>
             <div className="flex items-end gap-2">
               <input id="applyGST" type="checkbox" checked={applyGST} onChange={(e) => setApplyGST(e.target.checked)} />
-              <label htmlFor="applyGST">Apply GST (SGST/CGST)</label>
+              <label htmlFor="applyGST">Apply GST</label>
             </div>
           </div>
+          {applyGST && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <div className="mb-1">GST Rate (%)</div>
+                <Input 
+                  type="number" 
+                  min="0" 
+                  step="0.01" 
+                  value={gstRate} 
+                  onChange={(e) => setGstRate(parseFloat(e.target.value) || 0)} 
+                  placeholder="e.g., 18"
+                />
+              </div>
+            </div>
+          )}
 
           <div className="rounded-md border overflow-x-auto">
             <Table>
