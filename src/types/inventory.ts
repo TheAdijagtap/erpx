@@ -214,3 +214,15 @@ export interface ScrapNoteItem {
   unitPrice: number;
   total: number;
 }
+
+export interface FollowUp {
+  id: string;
+  supplierId: string;
+  supplier: Supplier;
+  purchaseOrderId?: string;
+  message: string;
+  reminderDate: Date;
+  status: 'PENDING' | 'COMPLETED' | 'CANCELLED';
+  createdAt: Date;
+  updatedAt: Date;
+}
