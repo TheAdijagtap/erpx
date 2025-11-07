@@ -13,7 +13,6 @@ import type {
   Customer,
   CustomerActivity,
   ScrapNote,
-  FollowUp,
 } from "@/types/inventory";
 
 const STORAGE_KEY = "stockflow_app_state_v1";
@@ -28,7 +27,6 @@ interface AppState {
   transactions: Transaction[];
   customers: Customer[];
   customerActivities: CustomerActivity[];
-  followUps: FollowUp[];
   businessInfo: BusinessInfo;
   gstSettings: GSTSettings;
 }
@@ -85,11 +83,6 @@ interface AppContextValue extends AppState {
   addScrapNote: (note: Omit<ScrapNote, "id" | "noteNumber" | "createdAt" | "updatedAt">) => string;
   updateScrapNote: (id: string, patch: Partial<ScrapNote>) => void;
   removeScrapNote: (id: string) => void;
-
-  // Follow-Ups
-  addFollowUp: (followUp: Omit<FollowUp, "id" | "createdAt" | "updatedAt">) => string;
-  updateFollowUp: (id: string, patch: Partial<FollowUp>) => void;
-  removeFollowUp: (id: string) => void;
 
   // Business
   setBusinessInfo: (info: BusinessInfo) => void;
@@ -175,9 +168,8 @@ const initialState = (): AppState => {
   const scrapNotes: ScrapNote[] = [];
   const customers: Customer[] = [];
   const customerActivities: CustomerActivity[] = [];
-  const followUps: FollowUp[] = [];
 
-  return { items, suppliers, purchaseOrders, goodsReceipts, proformaInvoices, scrapNotes, transactions, customers, customerActivities, followUps, businessInfo, gstSettings };
+  return { items, suppliers, purchaseOrders, goodsReceipts, proformaInvoices, scrapNotes, transactions, customers, customerActivities, businessInfo, gstSettings };
 };
 
 const derivePurchaseOrderStatusFromReceipts = (po: PurchaseOrder, receipts: GoodsReceipt[]): PurchaseOrder['status'] | null => {
@@ -285,11 +277,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           return c;
         }) ?? [];
         parsed.customerActivities = parsed.customerActivities?.map((a: any) => reviveDates(a)) ?? [];
-        parsed.followUps = parsed.followUps?.map((f: any) => {
-          reviveDates(f);
-          if (f.reminderDate) f.reminderDate = new Date(f.reminderDate);
-          return f;
-        }) ?? [];
         return parsed as AppState;
       } catch (e) {
         console.warn("Failed to parse stored app state, using defaults", e);
@@ -657,29 +644,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setState((s) => ({
         ...s,
         scrapNotes: s.scrapNotes.filter((n) => n.id !== id),
-      }));
-    },
-
-    // Follow-Ups
-    addFollowUp: (followUp) => {
-      const id = crypto.randomUUID();
-      const now = new Date();
-      setState((s) => ({
-        ...s,
-        followUps: [...s.followUps, { ...followUp, id, createdAt: now, updatedAt: now }],
-      }));
-      return id;
-    },
-    updateFollowUp: (id, patch) => {
-      setState((s) => ({
-        ...s,
-        followUps: s.followUps.map((f) => (f.id === id ? { ...f, ...patch, updatedAt: new Date() } : f)),
-      }));
-    },
-    removeFollowUp: (id) => {
-      setState((s) => ({
-        ...s,
-        followUps: s.followUps.filter((f) => f.id !== id),
       }));
     },
 

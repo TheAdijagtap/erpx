@@ -8,15 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Users, Mail, Phone, MapPin, Edit, Eye, Trash2, FileText, Package, Download, Bell, MessageCircle, Calendar, CheckCircle } from "lucide-react";
+import { Plus, Search, Users, Mail, Phone, MapPin, Edit, Eye, Trash2, FileText, Package, Download } from "lucide-react";
 import { useApp } from "@/store/AppContext";
 import { toast } from "@/hooks/use-toast";
 import { formatINR, formatDateIN } from "@/lib/format";
 
 const Suppliers = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState<"suppliers" | "follow-ups">("suppliers");
   const { suppliers, removeSupplier, addSupplier } = useApp();
 
   const filteredSuppliers = suppliers.filter(supplier =>
@@ -53,7 +51,7 @@ const Suppliers = () => {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Supplier Management</h1>
           <p className="text-muted-foreground mt-1">
-            Manage your supplier relationships and follow-up reminders.
+            Manage your supplier relationships and contact information.
           </p>
         </div>
         <CreateSupplierDialog>
@@ -63,21 +61,6 @@ const Suppliers = () => {
           </Button>
         </CreateSupplierDialog>
       </div>
-
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "suppliers" | "follow-ups")}>
-        <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="suppliers">
-            <Users className="w-4 h-4 mr-2" />
-            Suppliers
-          </TabsTrigger>
-          <TabsTrigger value="follow-ups">
-            <Bell className="w-4 h-4 mr-2" />
-            Follow-Ups
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="suppliers" className="space-y-6 mt-6">
 
       {/* Search and Filters */}
       <Card className="p-6">
@@ -203,27 +186,21 @@ const Suppliers = () => {
         ))}
       </div>
 
-        {filteredSuppliers.length === 0 && (
-          <Card className="p-12 text-center">
-            <Users className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">No suppliers found</h3>
-            <p className="text-muted-foreground mb-4">
-              {searchTerm ? "Try adjusting your search terms" : "Add your first supplier to start managing relationships"}
-            </p>
-            <CreateSupplierDialog>
-              <Button className="gap-2">
-                <Plus className="w-4 h-4" />
-                Add New Supplier
-              </Button>
-            </CreateSupplierDialog>
-          </Card>
-        )}
-        </TabsContent>
-
-        <TabsContent value="follow-ups" className="space-y-6 mt-6">
-          <FollowUpSection />
-        </TabsContent>
-      </Tabs>
+      {filteredSuppliers.length === 0 && (
+        <Card className="p-12 text-center">
+          <Users className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold text-foreground mb-2">No suppliers found</h3>
+          <p className="text-muted-foreground mb-4">
+            {searchTerm ? "Try adjusting your search terms" : "Add your first supplier to start managing relationships"}
+          </p>
+          <CreateSupplierDialog>
+            <Button className="gap-2">
+              <Plus className="w-4 h-4" />
+              Add New Supplier
+            </Button>
+          </CreateSupplierDialog>
+        </Card>
+      )}
     </div>
   );
 };
@@ -637,282 +614,6 @@ function CreateSupplierDialog({ children }: { children: React.ReactNode }) {
               Cancel
             </Button>
             <Button type="submit">Add Supplier</Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function FollowUpSection() {
-  const { followUps, suppliers, purchaseOrders, addFollowUp, updateFollowUp, removeFollowUp } = useApp();
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const filteredFollowUps = useMemo(() => {
-    return followUps
-      .filter(f => 
-        f.supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        f.message.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-      .sort((a, b) => new Date(a.reminderDate).getTime() - new Date(b.reminderDate).getTime());
-  }, [followUps, searchTerm]);
-
-  const openWhatsApp = (phoneNumber: string, message: string) => {
-    const formattedPhone = phoneNumber.replace(/\D/g, '');
-    const encodedMessage = encodeURIComponent(message);
-    window.open(`https://wa.me/${formattedPhone}?text=${encodedMessage}`, '_blank');
-  };
-
-  return (
-    <div className="space-y-6">
-      {/* Header Actions */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-          <Input
-            placeholder="Search follow-ups by supplier or message..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <CreateFollowUpDialog>
-          <Button className="gap-2">
-            <Plus className="w-4 h-4" />
-            Add Follow-Up
-          </Button>
-        </CreateFollowUpDialog>
-      </div>
-
-      {/* Follow-Ups List */}
-      <div className="grid gap-4">
-        {filteredFollowUps.map((followUp) => {
-          const isOverdue = new Date(followUp.reminderDate) < new Date() && followUp.status === 'PENDING';
-          const po = followUp.purchaseOrderId 
-            ? purchaseOrders.find(p => p.id === followUp.purchaseOrderId)
-            : null;
-
-          return (
-            <Card key={followUp.id} className={`p-6 ${isOverdue ? 'border-destructive' : ''}`}>
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 space-y-3">
-                  <div className="flex items-start gap-3">
-                    <div className={`p-2 rounded-lg ${isOverdue ? 'bg-destructive-light' : 'bg-primary-light'}`}>
-                      <Bell className={`w-5 h-5 ${isOverdue ? 'text-destructive' : 'text-primary'}`} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-foreground">{followUp.supplier.name}</h3>
-                        <Badge variant={followUp.status === 'COMPLETED' ? 'default' : isOverdue ? 'destructive' : 'secondary'}>
-                          {followUp.status}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                        <Calendar className="w-4 h-4" />
-                        <span>Reminder: {formatDateIN(followUp.reminderDate)}</span>
-                        {isOverdue && <span className="text-destructive font-medium">(Overdue)</span>}
-                      </div>
-                      {po && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                          <FileText className="w-4 h-4" />
-                          <span>PO: {po.poNumber} - {po.status}</span>
-                        </div>
-                      )}
-                      <div className="bg-muted p-3 rounded-md">
-                        <p className="text-sm text-foreground whitespace-pre-wrap">{followUp.message}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex flex-col gap-2">
-                  <Button
-                    size="sm"
-                    className="gap-2"
-                    onClick={() => {
-                      openWhatsApp(followUp.supplier.phone, followUp.message);
-                      if (followUp.status === 'PENDING') {
-                        updateFollowUp(followUp.id, { status: 'COMPLETED' });
-                        toast({ title: "Success", description: "Follow-up marked as completed!" });
-                      }
-                    }}
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    WhatsApp
-                  </Button>
-                  {followUp.status === 'PENDING' && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="gap-2"
-                      onClick={() => {
-                        updateFollowUp(followUp.id, { status: 'COMPLETED' });
-                        toast({ title: "Success", description: "Follow-up marked as completed!" });
-                      }}
-                    >
-                      <CheckCircle className="w-4 h-4" />
-                      Complete
-                    </Button>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => {
-                      if (confirm('Are you sure you want to delete this follow-up?')) {
-                        removeFollowUp(followUp.id);
-                        toast({ title: "Success", description: "Follow-up deleted!" });
-                      }
-                    }}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          );
-        })}
-
-        {filteredFollowUps.length === 0 && (
-          <Card className="p-12 text-center">
-            <Bell className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">No follow-ups found</h3>
-            <p className="text-muted-foreground mb-4">
-              {searchTerm ? "Try adjusting your search terms" : "Add your first follow-up to track supplier communications"}
-            </p>
-            <CreateFollowUpDialog>
-              <Button className="gap-2">
-                <Plus className="w-4 h-4" />
-                Add Follow-Up
-              </Button>
-            </CreateFollowUpDialog>
-          </Card>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function CreateFollowUpDialog({ children }: { children: React.ReactNode }) {
-  const { suppliers, purchaseOrders, addFollowUp } = useApp();
-  const [open, setOpen] = useState(false);
-  const [supplierId, setSupplierId] = useState("");
-  const [purchaseOrderId, setPurchaseOrderId] = useState("");
-  const [message, setMessage] = useState("");
-  const [reminderDate, setReminderDate] = useState("");
-
-  const availablePOs = useMemo(() => {
-    if (!supplierId) return [];
-    return purchaseOrders.filter(po => po.supplierId === supplierId);
-  }, [supplierId, purchaseOrders]);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!supplierId || !message || !reminderDate) {
-      toast({ title: "Error", description: "Please fill in all required fields", variant: "destructive" });
-      return;
-    }
-
-    const supplier = suppliers.find(s => s.id === supplierId);
-    if (!supplier) {
-      toast({ title: "Error", description: "Supplier not found", variant: "destructive" });
-      return;
-    }
-
-    addFollowUp({
-      supplierId,
-      supplier,
-      purchaseOrderId: purchaseOrderId || undefined,
-      message,
-      reminderDate: new Date(reminderDate),
-      status: 'PENDING',
-    });
-
-    toast({ title: "Success", description: "Follow-up reminder created!" });
-    setOpen(false);
-    setSupplierId("");
-    setPurchaseOrderId("");
-    setMessage("");
-    setReminderDate("");
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Create Follow-Up Reminder</DialogTitle>
-        </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="supplier">Supplier *</Label>
-            <Select value={supplierId} onValueChange={setSupplierId}>
-              <SelectTrigger id="supplier">
-                <SelectValue placeholder="Select supplier" />
-              </SelectTrigger>
-              <SelectContent>
-                {suppliers.map(supplier => (
-                  <SelectItem key={supplier.id} value={supplier.id}>
-                    {supplier.name} - {supplier.phone}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {supplierId && availablePOs.length > 0 && (
-            <div>
-              <Label htmlFor="po">Related Purchase Order (Optional)</Label>
-              <Select value={purchaseOrderId} onValueChange={setPurchaseOrderId}>
-                <SelectTrigger id="po">
-                  <SelectValue placeholder="Select purchase order" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">None</SelectItem>
-                  {availablePOs.map(po => (
-                    <SelectItem key={po.id} value={po.id}>
-                      {po.poNumber} - {po.status} - {formatINR(po.total)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          <div>
-            <Label htmlFor="reminderDate">Reminder Date *</Label>
-            <Input
-              id="reminderDate"
-              type="date"
-              value={reminderDate}
-              onChange={(e) => setReminderDate(e.target.value)}
-              required
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="message">Message *</Label>
-            <Textarea
-              id="message"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Enter your follow-up message that will be sent via WhatsApp..."
-              rows={6}
-              required
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              This message will be pre-filled when you click the WhatsApp button
-            </p>
-          </div>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit">Create Follow-Up</Button>
           </DialogFooter>
         </form>
       </DialogContent>
