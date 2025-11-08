@@ -1120,7 +1120,7 @@ const ViewProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
 };
 
 const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaInvoiceType; proformaProducts?: ProformaProduct[] }) => {
-  const { updateProformaInvoice, gstSettings } = useApp();
+  const { updateProformaInvoice } = useApp();
   const [open, setOpen] = useState(false);
   const [buyerInfo, setBuyerInfo] = useState<BuyerInfo>(invoice.buyerInfo);
   const [date, setDate] = useState(invoice.date instanceof Date ? invoice.date.toISOString().split('T')[0] : new Date(invoice.date).toISOString().split('T')[0]);
