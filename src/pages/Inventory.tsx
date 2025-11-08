@@ -85,6 +85,7 @@ const Inventory = () => {
                 <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 items-center">
                   <div className="min-w-0">
                     <h3 className="font-semibold text-foreground truncate">{item.name}</h3>
+                    <p className="text-xs text-muted-foreground truncate">{item.description}</p>
                     <p className="text-xs text-muted-foreground truncate">{item.category}</p>
                   </div>
 
