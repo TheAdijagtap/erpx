@@ -503,6 +503,18 @@ function CreatePODialog() {
     { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0, unit: items[0]?.unit || "PCS" },
   ]);
   const [additionalCharges, setAdditionalCharges] = useState<Array<{ name: string; amount: number }>>([]);
+  const [supplierSearch, setSupplierSearch] = useState("");
+  const [itemSearch, setItemSearch] = useState("");
+
+  const filteredSuppliers = useMemo(() => 
+    suppliers.filter(s => s.name.toLowerCase().includes(supplierSearch.toLowerCase())),
+    [suppliers, supplierSearch]
+  );
+
+  const filteredItems = useMemo(() => 
+    items.filter(i => i.name.toLowerCase().includes(itemSearch.toLowerCase())),
+    [items, itemSearch]
+  );
 
   const onAddRow = () => setRows([...rows, { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0, unit: items[0]?.unit || "PCS" }]);
   const onSubmit = () => {
@@ -572,14 +584,34 @@ function CreatePODialog() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <div className="mb-1">Supplier</div>
-              <Select value={supplierId || undefined} onValueChange={setSupplierId}>
-                <SelectTrigger><SelectValue placeholder="Select supplier" /></SelectTrigger>
-                <SelectContent className="z-50">
-                  {suppliers.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+                <Select value={supplierId || undefined} onValueChange={setSupplierId}>
+                  <SelectTrigger className="pl-10">
+                    <SelectValue placeholder="Select supplier" />
+                  </SelectTrigger>
+                  <SelectContent className="z-50">
+                    <div className="px-2 pb-2">
+                      <Input
+                        placeholder="Search suppliers..."
+                        value={supplierSearch}
+                        onChange={(e) => setSupplierSearch(e.target.value)}
+                        className="h-8"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                    {filteredSuppliers.length === 0 ? (
+                      <div className="px-2 py-4 text-sm text-muted-foreground text-center">
+                        No suppliers found
+                      </div>
+                    ) : (
+                      filteredSuppliers.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div>
               <div className="mb-1">Date</div>
@@ -610,19 +642,39 @@ function CreatePODialog() {
                 {rows.map((row, idx) => (
                   <TableRow key={idx}>
                     <TableCell className="min-w-[180px]">
-                      <Select value={row.itemId} onValueChange={(v) => {
-                        const it = items.find(i => i.id === v)!;
-                        const next = [...rows];
-                        next[idx] = { ...row, itemId: v, unitPrice: it.unitPrice, unit: it.unit };
-                        setRows(next);
-                      }}>
-                        <SelectTrigger className="w-full"><SelectValue placeholder="Select item" /></SelectTrigger>
-                        <SelectContent className="z-50 max-h-64">
-                          {items.map((i) => (
-                            <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+                        <Select value={row.itemId} onValueChange={(v) => {
+                          const it = items.find(i => i.id === v)!;
+                          const next = [...rows];
+                          next[idx] = { ...row, itemId: v, unitPrice: it.unitPrice, unit: it.unit };
+                          setRows(next);
+                        }}>
+                          <SelectTrigger className="w-full pl-10">
+                            <SelectValue placeholder="Select item" />
+                          </SelectTrigger>
+                          <SelectContent className="z-50 max-h-64">
+                            <div className="px-2 pb-2 sticky top-0 bg-background">
+                              <Input
+                                placeholder="Search items..."
+                                value={itemSearch}
+                                onChange={(e) => setItemSearch(e.target.value)}
+                                className="h-8"
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
+                            {filteredItems.length === 0 ? (
+                              <div className="px-2 py-4 text-sm text-muted-foreground text-center">
+                                No items found
+                              </div>
+                            ) : (
+                              filteredItems.map((i) => (
+                                <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
+                              ))
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Input type="number" min={0} step="0.01" value={row.quantity} onChange={(e) => {
