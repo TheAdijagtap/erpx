@@ -493,13 +493,13 @@ function getStatusBadge(status: string) {
 }
 
 function CreatePODialog() {
-  const { suppliers, items, addPurchaseOrder, gstSettings } = useApp();
+  const { suppliers, items, addPurchaseOrder } = useApp();
   const [open, setOpen] = useState(false);
   const [supplierId, setSupplierId] = useState<string | null>(suppliers[0]?.id || null);
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [paymentTerms, setPaymentTerms] = useState<string>("30 days from invoice date");
-  const [applyGST, setApplyGST] = useState<boolean>(gstSettings.enabled);
-  const [gstRate, setGstRate] = useState<number>(gstSettings.sgstRate + gstSettings.cgstRate);
+  const [applyGST, setApplyGST] = useState<boolean>(false);
+  const [gstRate, setGstRate] = useState<number>(18);
   const [rows, setRows] = useState<Array<{ itemId: string; quantity: number; unitPrice: number; unit: string }>>([
     { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0, unit: items[0]?.unit || "PCS" },
   ]);
