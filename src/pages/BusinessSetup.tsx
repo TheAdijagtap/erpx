@@ -225,55 +225,6 @@ const BusinessSetup = () => {
               </div>
             </div>
           </Card>
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-4">GST Settings</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="gstEnabled">Enable GST Calculations</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Apply GST to purchase orders and goods receipts
-                  </p>
-                </div>
-                <Switch
-                  id="gstEnabled"
-                  checked={gstSettings.enabled}
-                  onCheckedChange={(checked) => setGstSettings({ ...gstSettings, enabled: checked })}
-                />
-              </div>
-
-              <Separator />
-
-              {gstSettings.enabled && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="sgstRate">SGST Rate (%)</Label>
-                    <Input
-                      id="sgstRate"
-                      type="number"
-                      value={gstSettings.sgstRate}
-                      onChange={(e) => setGstSettings({ ...gstSettings, sgstRate: parseFloat(e.target.value) || 0 })}
-                      placeholder="9"
-                      min={0}
-                      max={28}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="cgstRate">CGST Rate (%)</Label>
-                    <Input
-                      id="cgstRate"
-                      type="number"
-                      value={gstSettings.cgstRate}
-                      onChange={(e) => setGstSettings({ ...gstSettings, cgstRate: parseFloat(e.target.value) || 0 })}
-                      placeholder="9"
-                      min={0}
-                      max={28}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          </Card>
         </div>
       </div>
     </div>
