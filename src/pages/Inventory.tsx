@@ -68,49 +68,49 @@ const Inventory = () => {
         />
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-3">
         {filteredItems.map((item) => {
           const stockStatus = getStockStatus(item.currentStock, item.minStock);
           return (
-            <Card key={item.id} className="p-4 hover:shadow-md transition-shadow">
-              <div className="flex items-center gap-4">
-                <div className="p-2 bg-primary-light rounded-lg shrink-0">
+            <Card key={item.id} className="p-5 border border-border hover:shadow-[var(--shadow-medium)] transition-shadow">
+              <div className="flex items-start gap-4">
+                <div className="p-2.5 bg-primary-light rounded-md shrink-0">
                   <Package className="w-4 h-4 text-primary" />
                 </div>
 
                 <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 items-center">
                   <div className="min-w-0">
-                    <h3 className="font-semibold text-foreground truncate">{item.name}</h3>
-                    <p className="text-xs text-muted-foreground truncate">{item.description}</p>
+                    <h3 className="font-semibold text-foreground truncate text-sm">{item.name}</h3>
+                    <p className="text-xs text-muted-foreground truncate mt-0.5">{item.description}</p>
                     <p className="text-xs text-muted-foreground truncate">{item.category}</p>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">Stock:</span>
-                    <span className="font-bold">{item.currentStock} {item.unit}</span>
+                  <div>
+                    <div className="text-xs text-muted-foreground mb-0.5">Stock</div>
+                    <div className="text-sm font-medium text-foreground">{item.currentStock} {item.unit}</div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">Price:</span>
-                    <span className="font-semibold text-sm">{formatINR(item.unitPrice)}</span>
+                  <div>
+                    <div className="text-xs text-muted-foreground mb-0.5">Price</div>
+                    <div className="text-sm font-medium text-foreground">{formatINR(item.unitPrice)}</div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div>
                     {getStockBadge(stockStatus)}
                   </div>
 
-                  <div className="flex gap-1 shrink-0">
+                  <div className="flex gap-2 shrink-0">
                     <ItemViewDialog itemId={item.id}>
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" className="h-8 w-8 p-0">
                         <Eye className="w-4 h-4" />
                       </Button>
                     </ItemViewDialog>
                     <ItemTransactDialog itemId={item.id} type="OUT">
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" className="h-8 w-8 p-0">
                         <Minus className="w-4 h-4" />
                       </Button>
                     </ItemTransactDialog>
-                    <Button variant="outline" size="sm" onClick={() => {
+                    <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => {
                       if (confirm(`Are you sure you want to delete ${item.name}?`)) {
                         removeItem(item.id);
                       }
