@@ -7,7 +7,6 @@ import { formatINR, formatDateIN } from "@/lib/format";
 import { ArrowUp, ArrowDown, Search, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useApp } from "@/store/AppContext";
 
 interface PriceRecord {
   id: string;
@@ -23,7 +22,6 @@ const PriceTracker = () => {
   const [priceHistory, setPriceHistory] = useState<PriceRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
-  const { items } = useApp();
 
   useEffect(() => {
     const stored = localStorage.getItem("priceHistory");
@@ -105,21 +103,17 @@ const PriceTracker = () => {
           {Object.entries(groupedByItem).map(([itemId, records]) => {
             const currentRecord = records[0];
             const previousRecord = records[1];
-            const priceChange = previousRecord
+            const priceChange = previousRecord 
               ? getPriceChange(currentRecord.unitPrice, previousRecord.unitPrice)
               : null;
-            const itemDetails = items.find(item => item.id === itemId);
 
             return (
               <Card key={itemId}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
-                    <div className="flex-1">
+                    <div>
                       <CardTitle>{currentRecord.itemName}</CardTitle>
-                      {itemDetails && (
-                        <p className="text-sm text-muted-foreground mt-1">{itemDetails.description}</p>
-                      )}
-                      <CardDescription className="mt-2">
+                      <CardDescription>
                         Current Price: <span className="font-semibold text-foreground">{formatINR(currentRecord.unitPrice)}</span>
                       </CardDescription>
                     </div>

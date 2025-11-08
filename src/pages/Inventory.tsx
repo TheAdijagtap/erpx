@@ -45,72 +45,75 @@ const Inventory = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl font-semibold text-foreground">Inventory Management</h1>
-          <p className="text-muted-foreground mt-2 text-sm">
+          <h1 className="text-3xl font-bold text-foreground">Inventory Management</h1>
+          <p className="text-muted-foreground mt-1">
             Manage your stock levels and track inventory movements.
           </p>
         </div>
         <CreateItemDialog>
-          <Button className="gap-2 bg-primary hover:bg-primary-hover">
+          <Button className="gap-2">
             <Plus className="w-4 h-4" />
             Add New Item
           </Button>
         </CreateItemDialog>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-        <Input
-          placeholder="Search items by name, description, or category..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 bg-white border-border"
-        />
-      </div>
+      <Card className="p-6">
+        <div className="flex items-center gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <Input
+              placeholder="Search items by name, description, or category..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
+      </Card>
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         {filteredItems.map((item) => {
           const stockStatus = getStockStatus(item.currentStock, item.minStock);
           return (
-            <Card key={item.id} className="p-5 border border-border hover:shadow-[var(--shadow-medium)] transition-shadow">
-              <div className="flex items-start gap-4">
-                <div className="p-2.5 bg-primary-light rounded-md shrink-0">
+            <Card key={item.id} className="p-4 hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-4">
+                <div className="p-2 bg-primary-light rounded-lg shrink-0">
                   <Package className="w-4 h-4 text-primary" />
                 </div>
 
                 <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 items-center">
                   <div className="min-w-0">
-                    <h3 className="font-semibold text-foreground truncate text-sm">{item.name}</h3>
-                    <p className="text-xs text-muted-foreground truncate mt-0.5">{item.description}</p>
+                    <h3 className="font-semibold text-foreground truncate">{item.name}</h3>
                     <p className="text-xs text-muted-foreground truncate">{item.category}</p>
                   </div>
 
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-0.5">Stock</div>
-                    <div className="text-sm font-medium text-foreground">{item.currentStock} {item.unit}</div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Stock:</span>
+                    <span className="font-bold">{item.currentStock} {item.unit}</span>
                   </div>
 
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-0.5">Price</div>
-                    <div className="text-sm font-medium text-foreground">{formatINR(item.unitPrice)}</div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Price:</span>
+                    <span className="font-semibold text-sm">{formatINR(item.unitPrice)}</span>
                   </div>
 
-                  <div>
+                  <div className="flex items-center gap-2">
                     {getStockBadge(stockStatus)}
                   </div>
 
-                  <div className="flex gap-2 shrink-0">
+                  <div className="flex gap-1 shrink-0">
                     <ItemViewDialog itemId={item.id}>
-                      <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                      <Button variant="outline" size="sm">
                         <Eye className="w-4 h-4" />
                       </Button>
                     </ItemViewDialog>
                     <ItemTransactDialog itemId={item.id} type="OUT">
-                      <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                      <Button variant="outline" size="sm">
                         <Minus className="w-4 h-4" />
                       </Button>
                     </ItemTransactDialog>
-                    <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => {
+                    <Button variant="outline" size="sm" onClick={() => {
                       if (confirm(`Are you sure you want to delete ${item.name}?`)) {
                         removeItem(item.id);
                       }
@@ -126,14 +129,14 @@ const Inventory = () => {
       </div>
 
       {filteredItems.length === 0 && (
-        <Card className="p-16 text-center border border-border">
+        <Card className="p-12 text-center">
           <Package className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-semibold text-foreground mb-2">No items found</h3>
-          <p className="text-sm text-muted-foreground mb-6">
+          <p className="text-muted-foreground mb-4">
             {searchTerm ? "Try adjusting your search terms" : "Get started by adding your first inventory item"}
           </p>
           <CreateItemDialog>
-            <Button className="gap-2 bg-primary hover:bg-primary-hover">
+            <Button className="gap-2">
               <Plus className="w-4 h-4" />
               Add New Item
             </Button>

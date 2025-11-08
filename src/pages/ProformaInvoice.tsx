@@ -507,8 +507,6 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
   const [additionalCharges, setAdditionalCharges] = useState<Array<{ name: string; amount: number }>>([]);
   const [notes, setNotes] = useState("");
   const [itemSearch, setItemSearch] = useState("");
-  const [applyGST, setApplyGST] = useState<boolean>(gstSettings.enabled);
-  const [gstRate, setGstRate] = useState<number>(gstSettings.sgstRate + gstSettings.cgstRate);
 
   const filteredProducts = useMemo(() => 
     proformaProducts?.filter(p => p.name.toLowerCase().includes(itemSearch.toLowerCase())) || [],
@@ -584,8 +582,8 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
   const calcTotals = () => {
     const subtotal = items.reduce((sum, item) => sum + item.total, 0);
     const chargesTotal = additionalCharges.reduce((sum, charge) => sum + charge.amount, 0);
-    const sgst = applyGST ? ((subtotal + chargesTotal) * gstRate) / 200 : 0;
-    const cgst = applyGST ? ((subtotal + chargesTotal) * gstRate) / 200 : 0;
+    const sgst = gstSettings.enabled ? ((subtotal + chargesTotal) * gstSettings.sgstRate) / 100 : 0;
+    const cgst = gstSettings.enabled ? ((subtotal + chargesTotal) * gstSettings.cgstRate) / 100 : 0;
     const total = subtotal + chargesTotal + sgst + cgst;
     return { subtotal, sgst, cgst, total };
   };
@@ -740,31 +738,6 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
                 />
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <div className="flex items-center gap-2">
-                <input 
-                  id="applyGST" 
-                  type="checkbox" 
-                  checked={applyGST} 
-                  onChange={(e) => setApplyGST(e.target.checked)} 
-                />
-                <label htmlFor="applyGST">Apply GST</label>
-              </div>
-              {applyGST && (
-                <div>
-                  <Label htmlFor="gstRate">GST Rate (%)</Label>
-                  <Input
-                    id="gstRate"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={gstRate}
-                    onChange={(e) => setGstRate(parseFloat(e.target.value) || 0)}
-                    placeholder="e.g., 18"
-                  />
-                </div>
-              )}
-            </div>
           </Card>
 
           {/* Items */}
@@ -870,14 +843,14 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
                     <span>{formatINR(charge.amount)}</span>
                   </div>
                 ))}
-                {applyGST && (
+                {gstSettings.enabled && (
                   <>
                     <div className="flex justify-between">
-                      <span>SGST ({(gstRate / 2).toFixed(2)}%):</span>
+                      <span>SGST ({gstSettings.sgstRate}%):</span>
                       <span>{formatINR(sgst)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>CGST ({(gstRate / 2).toFixed(2)}%):</span>
+                      <span>CGST ({gstSettings.cgstRate}%):</span>
                       <span>{formatINR(cgst)}</span>
                     </div>
                   </>
