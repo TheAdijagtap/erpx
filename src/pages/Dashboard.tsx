@@ -1,18 +1,26 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  Package, 
-  TrendingUp, 
-  ShoppingCart, 
-  FileText, 
-  BarChart3, 
-  Shield, 
-  Zap, 
-  Clock, 
+import {
+  Package,
+  TrendingUp,
+  ShoppingCart,
+  FileText,
+  BarChart3,
+  Shield,
+  Zap,
+  Clock,
   CheckCircle2,
   ArrowRight,
   Users,
-  DollarSign
+  DollarSign,
+  Lock,
+  AlertCircle,
+  Target,
+  Layers,
+  RefreshCw,
+  Eye,
+  Truck,
+  FileCheck
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
