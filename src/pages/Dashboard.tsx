@@ -246,7 +246,7 @@ const Dashboard = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-6">
+      <section className="py-20 px-6 bg-muted/30">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -260,8 +260,8 @@ const Dashboard = () => {
             {features.map((feature, index) => {
               const Icon = feature.icon;
               return (
-                <Card 
-                  key={feature.title} 
+                <Card
+                  key={feature.title}
                   className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)] animate-fade-in"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
@@ -272,6 +272,79 @@ const Dashboard = () => {
                     {feature.title}
                   </h3>
                   <p className="text-muted-foreground text-sm">
+                    {feature.description}
+                  </p>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Core Features Section */}
+      <section className="py-20 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Core Modules
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Powerful modules to manage every aspect of your inventory
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-8">
+            {coreFeatures.map((feature) => {
+              const Icon = feature.icon;
+              return (
+                <Card key={feature.title} className="p-8 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 bg-primary/10 rounded-lg shrink-0">
+                      <Icon className="w-6 h-6 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold text-foreground mb-4">
+                        {feature.title}
+                      </h3>
+                      <ul className="space-y-2">
+                        {feature.points.map((point) => (
+                          <li key={point} className="flex items-start gap-2 text-sm text-muted-foreground">
+                            <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                            <span>{point}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Indian Business Features */}
+      <section className="py-20 px-6 bg-muted/30">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Built for Indian Businesses
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Features specifically designed to meet Indian business requirements
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {indianBusinessFeatures.map((feature) => {
+              const Icon = feature.icon;
+              return (
+                <Card key={feature.title} className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
+                  <div className="p-3 bg-primary/10 rounded-lg w-fit mb-4">
+                    <Icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-foreground mb-2">
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
                     {feature.description}
                   </p>
                 </Card>
