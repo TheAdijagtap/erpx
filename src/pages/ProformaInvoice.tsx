@@ -1474,14 +1474,14 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
                     <span>{formatINR(charge.amount)}</span>
                   </div>
                 ))}
-                {gstSettings.enabled && (
+                {applyGST && (
                   <>
                     <div className="flex justify-between">
-                      <span>SGST ({gstSettings.sgstRate}%):</span>
+                      <span>SGST ({(gstRate / 2).toFixed(2)}%):</span>
                       <span>{formatINR(sgst)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>CGST ({gstSettings.cgstRate}%):</span>
+                      <span>CGST ({(gstRate / 2).toFixed(2)}%):</span>
                       <span>{formatINR(cgst)}</span>
                     </div>
                   </>
