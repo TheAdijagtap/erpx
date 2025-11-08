@@ -23,6 +23,7 @@ const PriceTracker = () => {
   const [priceHistory, setPriceHistory] = useState<PriceRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
+  const { items } = useApp();
 
   useEffect(() => {
     const stored = localStorage.getItem("priceHistory");
