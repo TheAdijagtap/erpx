@@ -92,6 +92,79 @@ const Dashboard = () => {
     { step: "04", title: "Manage Stock", description: "Receive goods and monitor inventory levels" }
   ];
 
+  const coreFeatures = [
+    {
+      icon: Package,
+      title: "Inventory Tracking",
+      points: [
+        "Real-time stock level monitoring",
+        "Automatic low stock alerts",
+        "Multi-unit support (pcs, kg, liters, etc.)",
+        "Historical inventory analytics"
+      ]
+    },
+    {
+      icon: ShoppingCart,
+      title: "Purchase Management",
+      points: [
+        "Create and manage purchase orders",
+        "Supplier relationship management",
+        "Automated pricing calculations",
+        "Order status tracking"
+      ]
+    },
+    {
+      icon: FileText,
+      title: "Document Management",
+      points: [
+        "Goods receipt notes generation",
+        "Proforma invoice creation",
+        "Scrap note management",
+        "Complete audit trails"
+      ]
+    },
+    {
+      icon: BarChart3,
+      title: "Business Intelligence",
+      points: [
+        "Price tracking and analytics",
+        "Inventory valuation reports",
+        "Supplier performance metrics",
+        "Business dashboard insights"
+      ]
+    }
+  ];
+
+  const indianBusinessFeatures = [
+    {
+      icon: Shield,
+      title: "GST Compliance",
+      description: "Automatic GST calculations and compliance ready for Indian tax requirements"
+    },
+    {
+      icon: Lock,
+      title: "Secure Data",
+      description: "Enterprise-level security with encrypted data storage and regular backups"
+    },
+    {
+      icon: DollarSign,
+      title: "Cost Optimization",
+      description: "Track supplier prices, manage discounts, and optimize purchase costs"
+    },
+    {
+      icon: RefreshCw,
+      title: "Automated Workflows",
+      description: "Streamline repetitive tasks with automated purchase order and invoice generation"
+    }
+  ];
+
+  const keyCapabilities = [
+    { number: "15+", label: "Key Features" },
+    { number: "100%", label: "GST Compliant" },
+    { number: "24/7", label: "Support Ready" },
+    { number: "∞", label: "Scalability" }
+  ];
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
