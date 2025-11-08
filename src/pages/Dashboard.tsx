@@ -536,8 +536,83 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* FAQ Section */}
       <section className="py-20 px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Quick Questions?
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Everything you need to know to get started
+            </p>
+          </div>
+          <div className="space-y-4">
+            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
+              <details className="cursor-pointer">
+                <summary className="flex items-center justify-between font-semibold text-foreground hover:text-primary transition-colors">
+                  <span>How long does it take to set up?</span>
+                  <span className="text-sm">+</span>
+                </summary>
+                <p className="text-muted-foreground text-sm mt-4">
+                  CORS is designed for quick setup. You can start in minutes by configuring your business details, adding suppliers, and creating your first inventory items. Most businesses are fully operational within 30 minutes.
+                </p>
+              </details>
+            </Card>
+
+            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
+              <details className="cursor-pointer">
+                <summary className="flex items-center justify-between font-semibold text-foreground hover:text-primary transition-colors">
+                  <span>Is it GST compliant?</span>
+                  <span className="text-sm">+</span>
+                </summary>
+                <p className="text-muted-foreground text-sm mt-4">
+                  Yes, CORS is fully GST compliant for Indian businesses. All invoices and receipts automatically calculate GST based on your configured rates, and you can generate compliant tax reports.
+                </p>
+              </details>
+            </Card>
+
+            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
+              <details className="cursor-pointer">
+                <summary className="flex items-center justify-between font-semibold text-foreground hover:text-primary transition-colors">
+                  <span>What inventory limits do I have?</span>
+                  <span className="text-sm">+</span>
+                </summary>
+                <p className="text-muted-foreground text-sm mt-4">
+                  There are no limits on the number of items, suppliers, or transactions you can manage. CORS scales with your business from small operations to large enterprises.
+                </p>
+              </details>
+            </Card>
+
+            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
+              <details className="cursor-pointer">
+                <summary className="flex items-center justify-between font-semibold text-foreground hover:text-primary transition-colors">
+                  <span>Can I import existing data?</span>
+                  <span className="text-sm">+</span>
+                </summary>
+                <p className="text-muted-foreground text-sm mt-4">
+                  Yes, you can manually add your existing inventory and supplier data through our intuitive interface. We're also working on bulk import features for easier data migration.
+                </p>
+              </details>
+            </Card>
+
+            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
+              <details className="cursor-pointer">
+                <summary className="flex items-center justify-between font-semibold text-foreground hover:text-primary transition-colors">
+                  <span>How is my data secured?</span>
+                  <span className="text-sm">+</span>
+                </summary>
+                <p className="text-muted-foreground text-sm mt-4">
+                  We employ enterprise-level security with encrypted data storage, regular backups, and secure access controls. Your business data is protected with industry-standard security practices.
+                </p>
+              </details>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 px-6 bg-muted/30">
         <div className="max-w-4xl mx-auto">
           <Card className="p-12 bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20">
             <div className="text-center space-y-6">
@@ -545,15 +620,21 @@ const Dashboard = () => {
                 Ready to Transform Your Business?
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Join hundreds of businesses using our platform to streamline their inventory management
+                Join hundreds of businesses using CORS to streamline their inventory management, reduce costs, and scale efficiently.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                <Button asChild size="lg" className="text-lg px-8">
-                  <Link to="/inventory">Start Managing Inventory</Link>
-                </Button>
-                <Button asChild size="lg" variant="secondary">
-                  <Link to="/suppliers">Add Your First Supplier</Link>
-                </Button>
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">Get started in three easy steps:</p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                  <Button asChild size="lg" className="text-base px-8">
+                    <Link to="/business">1. Configure Business</Link>
+                  </Button>
+                  <Button asChild size="lg" className="text-base px-8">
+                    <Link to="/suppliers">2. Add Suppliers</Link>
+                  </Button>
+                  <Button asChild size="lg" className="text-base px-8">
+                    <Link to="/inventory">3. Manage Inventory</Link>
+                  </Button>
+                </div>
               </div>
             </div>
           </Card>
