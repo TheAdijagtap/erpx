@@ -7,6 +7,7 @@ import { formatINR, formatDateIN } from "@/lib/format";
 import { ArrowUp, ArrowDown, Search, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useApp } from "@/store/AppContext";
 
 interface PriceRecord {
   id: string;
