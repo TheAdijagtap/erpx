@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Building, Upload, Save } from "lucide-react";
+import { Building, Upload, Save, Settings } from "lucide-react";
 import { useApp } from "@/store/AppContext";
 import { toast } from "@/hooks/use-toast";
 
