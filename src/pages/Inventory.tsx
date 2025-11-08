@@ -45,32 +45,28 @@ const Inventory = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Inventory Management</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-4xl font-semibold text-foreground">Inventory Management</h1>
+          <p className="text-muted-foreground mt-2 text-sm">
             Manage your stock levels and track inventory movements.
           </p>
         </div>
         <CreateItemDialog>
-          <Button className="gap-2">
+          <Button className="gap-2 bg-primary hover:bg-primary-hover">
             <Plus className="w-4 h-4" />
             Add New Item
           </Button>
         </CreateItemDialog>
       </div>
 
-      <Card className="p-6">
-        <div className="flex items-center gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input
-              placeholder="Search items by name, description, or category..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </div>
-      </Card>
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+        <Input
+          placeholder="Search items by name, description, or category..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-10 bg-white border-border"
+        />
+      </div>
 
       <div className="space-y-2">
         {filteredItems.map((item) => {
