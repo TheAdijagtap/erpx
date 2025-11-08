@@ -4,9 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { formatINR, formatDateIN } from "@/lib/format";
-import { ArrowUp, ArrowDown, Search, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { ArrowUp, ArrowDown, Search } from "lucide-react";
 
 interface PriceRecord {
   id: string;
@@ -21,7 +19,6 @@ interface PriceRecord {
 const PriceTracker = () => {
   const [priceHistory, setPriceHistory] = useState<PriceRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const { toast } = useToast();
 
   useEffect(() => {
     const stored = localStorage.getItem("priceHistory");
@@ -29,26 +26,6 @@ const PriceTracker = () => {
       setPriceHistory(JSON.parse(stored));
     }
   }, []);
-
-  const deleteSingleEntry = (recordId: string) => {
-    const updated = priceHistory.filter(record => record.id !== recordId);
-    setPriceHistory(updated);
-    localStorage.setItem("priceHistory", JSON.stringify(updated));
-    toast({
-      title: "Entry deleted",
-      description: "Price entry has been removed",
-    });
-  };
-
-  const deleteAllItemEntries = (itemId: string, itemName: string) => {
-    const updated = priceHistory.filter(record => record.itemId !== itemId);
-    setPriceHistory(updated);
-    localStorage.setItem("priceHistory", JSON.stringify(updated));
-    toast({
-      title: "Item deleted",
-      description: `All price history for ${itemName} has been removed`,
-    });
-  };
 
   const filteredHistory = priceHistory.filter(record =>
     record.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -117,22 +94,12 @@ const PriceTracker = () => {
                         Current Price: <span className="font-semibold text-foreground">{formatINR(currentRecord.unitPrice)}</span>
                       </CardDescription>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {priceChange !== null && (
-                        <Badge variant={priceChange > 0 ? "destructive" : "default"} className="gap-1">
-                          {priceChange > 0 ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
-                          {Math.abs(priceChange).toFixed(2)}%
-                        </Badge>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => deleteAllItemEntries(itemId, currentRecord.itemName)}
-                        title="Delete all entries for this item"
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
+                    {priceChange !== null && (
+                      <Badge variant={priceChange > 0 ? "destructive" : "default"} className="gap-1">
+                        {priceChange > 0 ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
+                        {Math.abs(priceChange).toFixed(2)}%
+                      </Badge>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -144,7 +111,6 @@ const PriceTracker = () => {
                         <TableHead>Supplier</TableHead>
                         <TableHead className="text-right">Unit Price</TableHead>
                         <TableHead className="text-right">Change</TableHead>
-                        <TableHead className="text-right">Action</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -168,16 +134,6 @@ const PriceTracker = () => {
                                   {change > 0 ? "+" : ""}{change.toFixed(2)}%
                                 </span>
                               )}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => deleteSingleEntry(record.id)}
-                                title="Delete this entry"
-                              >
-                                <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
-                              </Button>
                             </TableCell>
                           </TableRow>
                         );
