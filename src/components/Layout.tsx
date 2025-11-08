@@ -18,14 +18,14 @@ const Layout = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Sidebar */}
-      <div className="fixed inset-y-0 left-0 z-50 w-64 bg-card border-r shadow-[var(--shadow-card)]">
+      <div className="fixed inset-y-0 left-0 z-50 w-64 bg-sidebar border-r border-sidebar-border shadow-[var(--shadow-medium)]">
         <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className="px-6 py-4 border-b flex items-center justify-center">
-            <img src="https://cdn.builder.io/api/v1/image/assets%2Fc53d55d6e77f4fc3a0917324bbf678cd%2F412d48dbf4c849de93f6467e12198818?format=webp&width=800" alt="CORS Logo" className="h-12 object-contain" />
+          <div className="px-6 py-5 border-b border-sidebar-border flex items-center justify-center">
+            <img src="https://cdn.builder.io/api/v1/image/assets%2Fc53d55d6e77f4fc3a0917324bbf678cd%2F412d48dbf4c849de93f6467e12198818?format=webp&width=800" alt="CORS Logo" className="h-10 object-contain" />
           </div>
           {/* Navigation */}
-          <nav className="flex-1 space-y-1 px-4 pt-6 pb-6">
+          <nav className="flex-1 space-y-0.5 px-3 pt-6 pb-6">
             {navigation.map((item) => {
               const Icon = item.icon;
               return (
@@ -35,14 +35,14 @@ const Layout = () => {
                   end={item.href === "/"}
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-[var(--transition-fast)]",
+                      "flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-[var(--transition-fast)]",
                       isActive
-                        ? "bg-primary text-primary-foreground shadow-[var(--shadow-soft)]"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     )
                   }
                 >
-                  <Icon className="mr-3 h-5 w-5" />
+                  <Icon className="mr-3 h-4 w-4" />
                   {item.name}
                 </NavLink>
               );
@@ -53,7 +53,7 @@ const Layout = () => {
 
       {/* Main content */}
       <div className="pl-64">
-        <main className="p-6">
+        <main className="p-8 bg-background min-h-screen">
           <Outlet />
         </main>
       </div>
