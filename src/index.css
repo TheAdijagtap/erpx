@@ -72,19 +72,19 @@
 
     --radius: 6px;
 
-    --sidebar-background: 217 33% 17%;
+    --sidebar-background: 0 0% 100%;
 
-    --sidebar-foreground: 0 0% 100%;
+    --sidebar-foreground: 217 33% 17%;
 
     --sidebar-primary: 217 100% 43%;
 
     --sidebar-primary-foreground: 0 0% 100%;
 
-    --sidebar-accent: 217 100% 96%;
+    --sidebar-accent: 217 13% 95%;
 
     --sidebar-accent-foreground: 217 100% 43%;
 
-    --sidebar-border: 217 13% 25%;
+    --sidebar-border: 217 13% 89%;
 
     --sidebar-ring: 217 100% 43%;
   }
