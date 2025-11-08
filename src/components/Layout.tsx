@@ -18,7 +18,7 @@ const Layout = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Sidebar */}
-      <div className="fixed inset-y-0 left-0 z-50 w-64 bg-sidebar border-r border-sidebar-border shadow-[var(--shadow-medium)]">
+      <div className="fixed inset-y-0 left-0 z-50 w-64 bg-sidebar border-r border-sidebar-border shadow-[0_1px_3px_hsl(217_33%_17%_/_0.08)]">
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="px-6 py-5 border-b border-sidebar-border flex items-center justify-center">
