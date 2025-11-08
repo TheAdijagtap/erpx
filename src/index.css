@@ -140,12 +140,17 @@
 }
 
 @layer base {
+  html {
+    background-color: #ffffff;
+  }
+
   * {
     @apply border-border;
   }
 
   body {
     @apply bg-background text-foreground;
+    background-color: #ffffff;
   }
 }
 
