@@ -355,7 +355,7 @@ const Dashboard = () => {
       </section>
 
       {/* How It Works */}
-      <section className="py-20 px-6 bg-gradient-to-b from-muted/30 to-background">
+      <section className="py-20 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -379,6 +379,159 @@ const Dashboard = () => {
                 )}
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Key Workflows Section */}
+      <section className="py-20 px-6 bg-muted/30">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Essential Workflows
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Streamlined processes for your daily inventory operations
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <ShoppingCart className="w-5 h-5 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground">Purchase Order Management</h3>
+              </div>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  Create orders from supplier lists
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  Track order status and deliveries
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  Manage supplier communications
+                </li>
+              </ul>
+            </Card>
+
+            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Truck className="w-5 h-5 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground">Goods Receipt</h3>
+              </div>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  Record incoming inventory
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  Quality check workflows
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  Automatic stock updates
+                </li>
+              </ul>
+            </Card>
+
+            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <TrendingUp className="w-5 h-5 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground">Price Analytics</h3>
+              </div>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  Track price fluctuations
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  Compare supplier pricing
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  Optimize procurement costs
+                </li>
+              </ul>
+            </Card>
+
+            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <FileCheck className="w-5 h-5 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground">Invoice Management</h3>
+              </div>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  Generate proforma invoices
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  GST calculations included
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  Professional templates
+                </li>
+              </ul>
+            </Card>
+
+            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <AlertCircle className="w-5 h-5 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground">Inventory Alerts</h3>
+              </div>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  Low stock notifications
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  Expiry date tracking
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  Real-time monitoring
+                </li>
+              </ul>
+            </Card>
+
+            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <BarChart3 className="w-5 h-5 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground">Reports & Analytics</h3>
+              </div>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  Detailed inventory reports
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  Supplier performance metrics
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  Business KPI dashboard
+                </li>
+              </ul>
+            </Card>
           </div>
         </div>
       </section>
