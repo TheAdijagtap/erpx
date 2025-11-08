@@ -1132,6 +1132,8 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
   );
   const [notes, setNotes] = useState(invoice.notes || "");
   const [status, setStatus] = useState(invoice.status);
+  const [applyGST, setApplyGST] = useState<boolean>(invoice.sgst > 0 || invoice.cgst > 0);
+  const [gstRate, setGstRate] = useState<number>(invoice.sgst > 0 || invoice.cgst > 0 ? (invoice.sgst + invoice.cgst) : 18);
 
   const addRow = () => {
     if (!proformaProducts || proformaProducts.length === 0) return;
