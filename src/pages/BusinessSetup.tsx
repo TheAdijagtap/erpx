@@ -8,7 +8,7 @@ import { useApp } from "@/store/AppContext";
 import { toast } from "@/hooks/use-toast";
 
 const BusinessSetup = () => {
-  const { businessInfo, gstSettings, setBusinessInfo, setGstSettings } = useApp();
+  const { businessInfo, setBusinessInfo } = useApp();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
