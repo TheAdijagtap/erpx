@@ -1204,8 +1204,8 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
   const calcTotals = () => {
     const subtotal = items.reduce((sum, item) => sum + item.total, 0);
     const chargesTotal = additionalCharges.reduce((sum, charge) => sum + charge.amount, 0);
-    const sgst = gstSettings.enabled ? ((subtotal + chargesTotal) * gstSettings.sgstRate) / 100 : 0;
-    const cgst = gstSettings.enabled ? ((subtotal + chargesTotal) * gstSettings.cgstRate) / 100 : 0;
+    const sgst = applyGST ? ((subtotal + chargesTotal) * gstRate) / 200 : 0;
+    const cgst = applyGST ? ((subtotal + chargesTotal) * gstRate) / 200 : 0;
     const total = subtotal + chargesTotal + sgst + cgst;
     return { subtotal, sgst, cgst, total };
   };
