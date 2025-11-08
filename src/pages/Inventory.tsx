@@ -126,14 +126,14 @@ const Inventory = () => {
       </div>
 
       {filteredItems.length === 0 && (
-        <Card className="p-12 text-center">
+        <Card className="p-16 text-center border border-border">
           <Package className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-semibold text-foreground mb-2">No items found</h3>
-          <p className="text-muted-foreground mb-4">
+          <p className="text-sm text-muted-foreground mb-6">
             {searchTerm ? "Try adjusting your search terms" : "Get started by adding your first inventory item"}
           </p>
           <CreateItemDialog>
-            <Button className="gap-2">
+            <Button className="gap-2 bg-primary hover:bg-primary-hover">
               <Plus className="w-4 h-4" />
               Add New Item
             </Button>
