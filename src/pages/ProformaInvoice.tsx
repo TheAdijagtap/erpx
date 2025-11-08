@@ -490,7 +490,7 @@ const getStatusBadge = (status: ProformaInvoiceType['status']) => {
 };
 
 const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: ProformaProduct[] }) => {
-  const { addProformaInvoice, businessInfo, gstSettings } = useApp();
+  const { addProformaInvoice, businessInfo } = useApp();
   const [open, setOpen] = useState(false);
   const [buyerInfo, setBuyerInfo] = useState<BuyerInfo>({
     name: "",
@@ -507,8 +507,8 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
   const [additionalCharges, setAdditionalCharges] = useState<Array<{ name: string; amount: number }>>([]);
   const [notes, setNotes] = useState("");
   const [itemSearch, setItemSearch] = useState("");
-  const [applyGST, setApplyGST] = useState<boolean>(gstSettings.enabled);
-  const [gstRate, setGstRate] = useState<number>(gstSettings.sgstRate + gstSettings.cgstRate);
+  const [applyGST, setApplyGST] = useState<boolean>(false);
+  const [gstRate, setGstRate] = useState<number>(18);
 
   const filteredProducts = useMemo(() => 
     proformaProducts?.filter(p => p.name.toLowerCase().includes(itemSearch.toLowerCase())) || [],
