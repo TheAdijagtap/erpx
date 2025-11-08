@@ -1362,6 +1362,31 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
                 </Select>
               </div>
             </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <div className="flex items-center gap-2">
+                <input
+                  id="edit-applyGST"
+                  type="checkbox"
+                  checked={applyGST}
+                  onChange={(e) => setApplyGST(e.target.checked)}
+                />
+                <label htmlFor="edit-applyGST">Apply GST</label>
+              </div>
+              {applyGST && (
+                <div>
+                  <Label htmlFor="edit-gstRate">GST Rate (%)</Label>
+                  <Input
+                    id="edit-gstRate"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={gstRate}
+                    onChange={(e) => setGstRate(parseFloat(e.target.value) || 0)}
+                    placeholder="e.g., 18"
+                  />
+                </div>
+              )}
+            </div>
           </Card>
 
           {/* Items */}
