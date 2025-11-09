@@ -486,14 +486,14 @@ function DeleteProductDialog({ productId, products, setProducts }: {
 
 const getStatusBadge = (status: ProformaInvoiceType['status']) => {
   const config = {
-    DRAFT: { label: "Draft", variant: "secondary" as const },
-    SENT: { label: "Sent", variant: "outline" as const },
-    ACCEPTED: { label: "Accepted", variant: "default" as const },
-    CANCELLED: { label: "Cancelled", variant: "destructive" as const },
+    DRAFT: { label: "Draft", variant: "secondary" as const, className: "" },
+    SENT: { label: "Sent", variant: "outline" as const, className: "" },
+    ACCEPTED: { label: "Accepted", variant: "default" as const, className: "bg-green-600 hover:bg-green-700 text-white border-transparent shadow" },
+    CANCELLED: { label: "Cancelled", variant: "destructive" as const, className: "" },
   };
 
-  const { label, variant } = config[status];
-  return <Badge variant={variant}>{label}</Badge>;
+  const { label, variant, className } = config[status];
+  return <Badge variant={variant} className={className}>{label}</Badge>;
 };
 
 const QuickStatusChangeButton = ({ invoice }: { invoice: ProformaInvoiceType }) => {
