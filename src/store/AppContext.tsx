@@ -430,7 +430,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // GRs
     addGoodsReceipt: (gr) => {
       const id = crypto.randomUUID();
-      const totals = calcTotals(gr.items.map((i) => ({ quantity: i.receivedQuantity, unitPrice: i.unitPrice })), gr.applyGST ?? true, gr.additionalCharges);
+      const totals = calcTotals(gr.items.map((i) => ({ quantity: i.receivedQuantity, unitPrice: i.unitPrice })), gr.applyGST ?? true, gr.additionalCharges, gr.gstRate);
 
       setState((s) => {
         const supplierFromState = s.suppliers.find((sup) => sup.id === gr.supplierId) ?? state.suppliers.find((sup) => sup.id === gr.supplierId)!;
