@@ -510,7 +510,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // Proforma Invoices
     addProformaInvoice: (pi) => {
       const id = crypto.randomUUID();
-      const totals = calcTotals(pi.items.map((i) => ({ quantity: i.quantity, unitPrice: i.unitPrice })), pi.applyGST ?? true, pi.additionalCharges);
+      const totals = calcTotals(pi.items.map((i) => ({ quantity: i.quantity, unitPrice: i.unitPrice })), pi.applyGST ?? true, pi.additionalCharges, pi.gstRate);
       const newPI = {
         ...pi,
         id,
