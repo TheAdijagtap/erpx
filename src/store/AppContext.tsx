@@ -396,7 +396,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     addPurchaseOrder: (po) => {
       const id = crypto.randomUUID();
       const supplier = state.suppliers.find((s) => s.id === po.supplierId)!;
-      const totals = calcTotals(po.items.map((i) => ({ quantity: i.quantity, unitPrice: i.unitPrice })), po.applyGST ?? true, po.additionalCharges);
+      const totals = calcTotals(po.items.map((i) => ({ quantity: i.quantity, unitPrice: i.unitPrice })), po.applyGST ?? true, po.additionalCharges, po.gstRate);
       setState((s) => ({
         ...s,
         purchaseOrders: [
