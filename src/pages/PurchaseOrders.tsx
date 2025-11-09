@@ -547,6 +547,7 @@ function CreatePODialog() {
       expectedDelivery: undefined,
       paymentTerms,
       applyGST,
+      gstRate: applyGST ? gstRate : undefined,
     });
 
     // Save price history to localStorage
