@@ -290,17 +290,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [state]);
 
   // Helpers
-  const calcTotals = (items: Array<{ quantity: number; unitPrice: number }>, applyGST: boolean, additionalCharges: Array<{ amount: number }> = []) => {
+  const calcTotals = (items: Array<{ quantity: number; unitPrice: number }>, applyGST: boolean, additionalCharges: Array<{ amount: number }> = [], customGstRate?: number) => {
     const subtotal = items.reduce((sum, it) => sum + it.quantity * it.unitPrice, 0);
     const chargesTotal = additionalCharges.reduce((sum, charge) => sum + charge.amount, 0);
-    const sgst = applyGST && state.gstSettings.enabled ? parseFloat((((subtotal + chargesTotal) * state.gstSettings.sgstRate) / 100).toFixed(2)) : 0;
-    const cgst = applyGST && state.gstSettings.enabled ? parseFloat((((subtotal + chargesTotal) * state.gstSettings.cgstRate) / 100).toFixed(2)) : 0;
+
+    let sgst = 0;
+    let cgst = 0;
+
+    if (applyGST) {
+      if (customGstRate !== undefined) {
+        // Use custom GST rate (divide by 200 to get half for SGST and CGST)
+        sgst = parseFloat((((subtotal + chargesTotal) * customGstRate) / 200).toFixed(2));
+        cgst = parseFloat((((subtotal + chargesTotal) * customGstRate) / 200).toFixed(2));
+      } else if (state.gstSettings.enabled) {
+        // Use global GST settings
+        sgst = parseFloat((((subtotal + chargesTotal) * state.gstSettings.sgstRate) / 100).toFixed(2));
+        cgst = parseFloat((((subtotal + chargesTotal) * state.gstSettings.cgstRate) / 100).toFixed(2));
+      }
+    }
+
     const total = subtotal + chargesTotal + sgst + cgst;
-    return { 
-      subtotal: parseFloat(subtotal.toFixed(2)), 
-      sgst: parseFloat(sgst.toFixed(2)), 
-      cgst: parseFloat(cgst.toFixed(2)), 
-      total: parseFloat(total.toFixed(2)) 
+    return {
+      subtotal: parseFloat(subtotal.toFixed(2)),
+      sgst: parseFloat(sgst.toFixed(2)),
+      cgst: parseFloat(cgst.toFixed(2)),
+      total: parseFloat(total.toFixed(2))
     };
   };
 
