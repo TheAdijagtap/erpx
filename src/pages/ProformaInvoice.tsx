@@ -1652,8 +1652,10 @@ const PrintProformaButton = ({ id }: { id: string }) => {
           <tbody>
             <tr><td class="label">Subtotal</td><td class="value">${formatINR(invoice.subtotal)}</td></tr>
             ${(invoice.additionalCharges ?? []).map(charge => `<tr><td class="label">${charge.name}</td><td class="value">${formatINR(charge.amount)}</td></tr>`).join('')}
-            <tr><td class="label">SGST</td><td class="value">${formatINR(invoice.sgst)}</td></tr>
-            <tr><td class="label">CGST</td><td class="value">${formatINR(invoice.cgst)}</td></tr>
+            ${invoice.sgst > 0 || invoice.cgst > 0 ? `
+              <tr><td class="label">SGST (${((invoice.sgst / (invoice.subtotal + (invoice.additionalCharges?.reduce((sum, c) => sum + c.amount, 0) ?? 0))) * 100).toFixed(2)}%)</td><td class="value">${formatINR(invoice.sgst)}</td></tr>
+              <tr><td class="label">CGST (${((invoice.cgst / (invoice.subtotal + (invoice.additionalCharges?.reduce((sum, c) => sum + c.amount, 0) ?? 0))) * 100).toFixed(2)}%)</td><td class="value">${formatINR(invoice.cgst)}</td></tr>
+            ` : `<tr><td class="label">GST</td><td class="value">Not Applied</td></tr>`}
             <tr><td class="label"><strong>Total Amount</strong></td><td class="value"><strong>${formatINR(invoice.total)}</strong></td></tr>
           </tbody>
         </table>
