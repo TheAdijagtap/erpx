@@ -158,6 +158,13 @@ const ProformaInvoicesTab = ({ proformaProducts }: { proformaProducts: ProformaP
                 </div>
               </div>
 
+              <div className="grid grid-cols-4 gap-2 mb-2">
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Status</p>
+                  <QuickStatusChangeButton invoice={invoice} />
+                </div>
+              </div>
+
               <div className="flex gap-1.5 flex-wrap">
                 <ViewProformaDialog invoice={invoice} />
                 <EditProformaDialog invoice={invoice} proformaProducts={proformaProducts} />
