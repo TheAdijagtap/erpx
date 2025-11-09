@@ -593,7 +593,6 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
   const handleSubmit = () => {
     if (!buyerInfo.name || items.length === 0) return;
 
-    const { subtotal, sgst, cgst, total } = calcTotals();
     const proformaNumber = `PI-${Date.now()}`;
 
     addProformaInvoice({
@@ -610,6 +609,8 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
       validUntil: validUntil ? new Date(validUntil) : undefined,
       paymentTerms,
       notes,
+      applyGST,
+      gstRate: applyGST ? gstRate : undefined,
     });
 
     setOpen(false);
