@@ -53,21 +53,21 @@ interface AppContextValue extends AppState {
 
   // Purchase Orders
   addPurchaseOrder: (
-    po: Omit<PurchaseOrder, "id" | "subtotal" | "sgst" | "cgst" | "total"> & { applyGST?: boolean }
+    po: Omit<PurchaseOrder, "id" | "subtotal" | "sgst" | "cgst" | "total"> & { applyGST?: boolean; gstRate?: number }
   ) => string;
   updatePurchaseOrder: (id: string, patch: Partial<PurchaseOrder>) => void;
   removePurchaseOrder: (id: string) => void;
 
   // Goods Receipts
   addGoodsReceipt: (
-    gr: Omit<GoodsReceipt, "id" | "subtotal" | "sgst" | "cgst" | "total"> & { applyGST?: boolean }
+    gr: Omit<GoodsReceipt, "id" | "subtotal" | "sgst" | "cgst" | "total"> & { applyGST?: boolean; gstRate?: number }
   ) => string;
   updateGoodsReceipt: (id: string, patch: Partial<GoodsReceipt>) => void;
   removeGoodsReceipt: (id: string) => void;
 
   // Proforma Invoices
   addProformaInvoice: (
-    pi: Omit<ProformaInvoice, "id" | "subtotal" | "sgst" | "cgst" | "total"> & { applyGST?: boolean }
+    pi: Omit<ProformaInvoice, "id" | "subtotal" | "sgst" | "cgst" | "total"> & { applyGST?: boolean; gstRate?: number }
   ) => string;
   updateProformaInvoice: (id: string, patch: Partial<ProformaInvoice>) => void;
   removeProformaInvoice: (id: string) => void;
