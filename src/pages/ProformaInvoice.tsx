@@ -1061,8 +1061,15 @@ const ViewProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
                 {(invoice.additionalCharges ?? []).map((charge) => (
                   <tr key={charge.id}><td className="label">{charge.name}</td><td className="value">{formatINR(charge.amount)}</td></tr>
                 ))}
-                <tr><td className="label">SGST</td><td className="value">{formatINR(invoice.sgst)}</td></tr>
-                <tr><td className="label">CGST</td><td className="value">{formatINR(invoice.cgst)}</td></tr>
+                {(invoice.sgst > 0 || invoice.cgst > 0) && (
+                  <>
+                    <tr><td className="label">SGST ({((invoice.sgst / (invoice.subtotal + (invoice.additionalCharges?.reduce((sum, c) => sum + c.amount, 0) ?? 0))) * 100).toFixed(2)}%)</td><td className="value">{formatINR(invoice.sgst)}</td></tr>
+                    <tr><td className="label">CGST ({((invoice.cgst / (invoice.subtotal + (invoice.additionalCharges?.reduce((sum, c) => sum + c.amount, 0) ?? 0))) * 100).toFixed(2)}%)</td><td className="value">{formatINR(invoice.cgst)}</td></tr>
+                  </>
+                )}
+                {invoice.sgst === 0 && invoice.cgst === 0 && (
+                  <tr><td className="label">GST</td><td className="value">Not Applied</td></tr>
+                )}
                 <tr><td className="label"><strong>Total Amount</strong></td><td className="value"><strong>{formatINR(invoice.total)}</strong></td></tr>
               </tbody>
             </table>
