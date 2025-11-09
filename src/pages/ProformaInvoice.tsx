@@ -489,6 +489,35 @@ const getStatusBadge = (status: ProformaInvoiceType['status']) => {
   return <Badge variant={variant}>{label}</Badge>;
 };
 
+const QuickStatusChangeButton = ({ invoice }: { invoice: ProformaInvoiceType }) => {
+  const { updateProformaInvoice } = useApp();
+
+  const statusOptions: Array<{ value: ProformaInvoiceType['status']; label: string; icon: React.ReactNode }> = [
+    { value: 'DRAFT', label: 'Draft', icon: null },
+    { value: 'SENT', label: 'Send', icon: <Send className="w-4 h-4" /> },
+    { value: 'ACCEPTED', label: 'Accepted', icon: <CheckCircle className="w-4 h-4" /> },
+    { value: 'CANCELLED', label: 'Cancel', icon: null },
+  ];
+
+  return (
+    <Select value={invoice.status} onValueChange={(value: any) => updateProformaInvoice(invoice.id, { status: value })}>
+      <SelectTrigger className="w-full text-xs h-8 px-2">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent className="z-50">
+        {statusOptions.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            <div className="flex items-center gap-2">
+              {option.icon}
+              {option.label}
+            </div>
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+};
+
 const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: ProformaProduct[] }) => {
   const { addProformaInvoice, businessInfo } = useApp();
   const [open, setOpen] = useState(false);
