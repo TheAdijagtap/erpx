@@ -12,21 +12,39 @@ Deno.serve(async (req) => {
 
   try {
     const { passkey } = await req.json();
-    const storedPasskeys = Deno.env.get('APP_PASSKEY');
 
     console.log('Validating passkey...');
 
-    if (!passkey || !storedPasskeys) {
+    if (!passkey) {
       return new Response(
         JSON.stringify({ valid: false, message: 'Invalid request' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
 
-    // Support multiple passkeys separated by commas
-    const validPasskeys = storedPasskeys.split(',').map(key => key.trim());
-    
-    if (validPasskeys.includes(passkey)) {
+    // Create admin Supabase client using service role key
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Check if passkey exists in database and is active
+    const { data, error } = await supabaseAdmin
+      .from('passkeys')
+      .select('id')
+      .eq('passkey', passkey)
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Database error:', error);
+      return new Response(
+        JSON.stringify({ valid: false, message: 'Server error' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      );
+    }
+
+    if (data) {
       // Generate a simple session token
       const sessionToken = crypto.randomUUID();
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours

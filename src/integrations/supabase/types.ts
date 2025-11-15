@@ -327,6 +327,27 @@ export type Database = {
           },
         ]
       }
+      passkeys: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          passkey: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          passkey: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          passkey?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           address: string | null
