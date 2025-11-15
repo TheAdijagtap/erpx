@@ -14,7 +14,9 @@ import BusinessSetup from "./pages/BusinessSetup";
 import ProformaInvoice from "./pages/ProformaInvoice";
 import ScrapNote from "./pages/ScrapNote";
 import PriceTracker from "./pages/PriceTracker";
+import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
 import { AppProvider } from "./store/AppContext";
 
 const queryClient = new QueryClient();
@@ -27,9 +29,10 @@ const App = () => (
       <AppProvider>
         <BrowserRouter>
           <Routes>
+            <Route path="/login" element={<Login />} />
             <Route index element={<Dashboard />} />
             
-            <Route path="/" element={<Layout />}>
+            <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
               <Route path="dashboard" element={<AppDashboard />} />
               <Route path="inventory" element={<Inventory />} />
               <Route path="purchase-orders" element={<PurchaseOrders />} />

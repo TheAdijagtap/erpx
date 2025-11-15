@@ -1,3 +1,5 @@
+import { useNavigate, Link } from "react-router-dom";
+import { useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,9 +24,28 @@ import {
   Truck,
   FileCheck
 } from "lucide-react";
-import { Link } from "react-router-dom";
+
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = sessionStorage.getItem('auth_token');
+    const expires = sessionStorage.getItem('auth_expires');
+    
+    if (!token || !expires) {
+      navigate("/login");
+      return;
+    }
+
+    const expiresDate = new Date(expires);
+    if (new Date() > expiresDate) {
+      sessionStorage.removeItem('auth_token');
+      sessionStorage.removeItem('auth_expires');
+      navigate("/login");
+    }
+  }, [navigate]);
+
   const features = [
     {
       icon: Package,
