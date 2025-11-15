@@ -29,23 +29,6 @@ import {
 const Dashboard = () => {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const token = sessionStorage.getItem('auth_token');
-    const expires = sessionStorage.getItem('auth_expires');
-    
-    if (!token || !expires) {
-      navigate("/login");
-      return;
-    }
-
-    const expiresDate = new Date(expires);
-    if (new Date() > expiresDate) {
-      sessionStorage.removeItem('auth_token');
-      sessionStorage.removeItem('auth_expires');
-      navigate("/login");
-    }
-  }, [navigate]);
-
   const features = [
     {
       icon: Package,
@@ -212,13 +195,13 @@ const Dashboard = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Button asChild size="lg" className="text-lg px-8 group">
-                <Link to="/inventory">
+                <Link to="/login">
                   Get Started
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="text-lg px-8">
-                <Link to="/business">Configure Business</Link>
+                <a href="#features">Learn More</a>
               </Button>
             </div>
           </div>
@@ -267,7 +250,7 @@ const Dashboard = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-6 bg-muted/30">
+      <section id="features" className="py-20 px-6 bg-muted/30">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -644,16 +627,13 @@ const Dashboard = () => {
                 Join hundreds of businesses using CORS to streamline their inventory management, reduce costs, and scale efficiently.
               </p>
               <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">Get started in three easy steps:</p>
+                <p className="text-sm text-muted-foreground">Get started today:</p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                  <Button asChild size="lg" className="text-base px-8">
-                    <Link to="/business">1. Configure Business</Link>
-                  </Button>
-                  <Button asChild size="lg" className="text-base px-8">
-                    <Link to="/suppliers">2. Add Suppliers</Link>
-                  </Button>
-                  <Button asChild size="lg" className="text-base px-8">
-                    <Link to="/inventory">3. Manage Inventory</Link>
+                  <Button asChild size="lg" className="text-base px-8 group">
+                    <Link to="/login">
+                      Start Free Now
+                      <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    </Link>
                   </Button>
                 </div>
               </div>
