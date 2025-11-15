@@ -12,19 +12,22 @@ Deno.serve(async (req) => {
 
   try {
     const { passkey } = await req.json();
-    const storedPasskey = Deno.env.get('APP_PASSKEY');
+    const storedPasskeys = Deno.env.get('APP_PASSKEY');
 
     console.log('Validating passkey...');
 
-    if (!passkey || !storedPasskey) {
+    if (!passkey || !storedPasskeys) {
       return new Response(
         JSON.stringify({ valid: false, message: 'Invalid request' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
 
-    if (passkey === storedPasskey) {
-      // Generate a simple session token (in production, use JWT)
+    // Support multiple passkeys separated by commas
+    const validPasskeys = storedPasskeys.split(',').map(key => key.trim());
+    
+    if (validPasskeys.includes(passkey)) {
+      // Generate a simple session token
       const sessionToken = crypto.randomUUID();
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours
 
