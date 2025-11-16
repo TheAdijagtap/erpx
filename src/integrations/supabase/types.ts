@@ -329,19 +329,25 @@ export type Database = {
       }
       passkeys: {
         Row: {
+          company_name: string | null
           created_at: string
+          email: string | null
           id: string
           is_active: boolean
           passkey: string
         }
         Insert: {
+          company_name?: string | null
           created_at?: string
+          email?: string | null
           id?: string
           is_active?: boolean
           passkey: string
         }
         Update: {
+          company_name?: string | null
           created_at?: string
+          email?: string | null
           id?: string
           is_active?: boolean
           passkey?: string
