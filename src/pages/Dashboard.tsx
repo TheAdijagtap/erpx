@@ -1,5 +1,3 @@
-import { useNavigate, Link } from "react-router-dom";
-import { useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,11 +22,9 @@ import {
   Truck,
   FileCheck
 } from "lucide-react";
-
+import { Link } from "react-router-dom";
 
 const Dashboard = () => {
-  const navigate = useNavigate();
-
   const features = [
     {
       icon: Package,
@@ -195,13 +191,13 @@ const Dashboard = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Button asChild size="lg" className="text-lg px-8 group">
-                <Link to="/login">
+                <Link to="/inventory">
                   Get Started
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="text-lg px-8">
-                <a href="#features">Learn More</a>
+                <Link to="/business">Configure Business</Link>
               </Button>
             </div>
           </div>
@@ -250,7 +246,7 @@ const Dashboard = () => {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 px-6 bg-muted/30">
+      <section className="py-20 px-6 bg-muted/30">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
@@ -540,99 +536,6 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section className="py-20 px-6 bg-muted/30">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Simple, Transparent Pricing</h2>
-            <p className="text-lg text-muted-foreground">
-              Choose the plan that works best for your business
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Monthly Plan */}
-            <Card className="p-8 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)] border-2 hover:border-primary/50">
-              <div className="text-center mb-6">
-                <h3 className="text-2xl font-bold text-foreground mb-2">Monthly</h3>
-                <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-4xl font-bold text-primary">₹199</span>
-                  <span className="text-muted-foreground">/month</span>
-                </div>
-              </div>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
-                  <span className="text-muted-foreground">Full inventory management</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
-                  <span className="text-muted-foreground">Unlimited purchase orders</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
-                  <span className="text-muted-foreground">GST compliant invoicing</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
-                  <span className="text-muted-foreground">Real-time analytics</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
-                  <span className="text-muted-foreground">Email support</span>
-                </li>
-              </ul>
-              <Button className="w-full" size="lg" onClick={() => navigate("/login")}>
-                Get Started
-              </Button>
-            </Card>
-
-            {/* Yearly Plan */}
-            <Card className="p-8 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)] border-2 border-primary relative">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-semibold">
-                Save ₹200
-              </div>
-              <div className="text-center mb-6">
-                <h3 className="text-2xl font-bold text-foreground mb-2">Yearly</h3>
-                <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-4xl font-bold text-primary">₹2,188</span>
-                  <span className="text-muted-foreground">/year</span>
-                </div>
-                <p className="text-sm text-muted-foreground mt-1">₹182/month billed annually</p>
-              </div>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
-                  <span className="text-muted-foreground">Full inventory management</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
-                  <span className="text-muted-foreground">Unlimited purchase orders</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
-                  <span className="text-muted-foreground">GST compliant invoicing</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
-                  <span className="text-muted-foreground">Real-time analytics</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
-                  <span className="text-muted-foreground">Priority support</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
-                  <span className="text-muted-foreground font-semibold text-foreground">Save ₹200 annually</span>
-                </li>
-              </ul>
-              <Button className="w-full" size="lg" onClick={() => navigate("/login")}>
-                Get Started
-              </Button>
-            </Card>
-          </div>
-        </div>
-      </section>
-
       {/* FAQ Section */}
       <section className="py-20 px-6">
         <div className="max-w-4xl mx-auto">
@@ -720,13 +623,16 @@ const Dashboard = () => {
                 Join hundreds of businesses using CORS to streamline their inventory management, reduce costs, and scale efficiently.
               </p>
               <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">Get started today:</p>
+                <p className="text-sm text-muted-foreground">Get started in three easy steps:</p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                  <Button asChild size="lg" className="text-base px-8 group">
-                    <Link to="/login">
-                      Start Free Now
-                      <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                    </Link>
+                  <Button asChild size="lg" className="text-base px-8">
+                    <Link to="/business">1. Configure Business</Link>
+                  </Button>
+                  <Button asChild size="lg" className="text-base px-8">
+                    <Link to="/suppliers">2. Add Suppliers</Link>
+                  </Button>
+                  <Button asChild size="lg" className="text-base px-8">
+                    <Link to="/inventory">3. Manage Inventory</Link>
                   </Button>
                 </div>
               </div>
