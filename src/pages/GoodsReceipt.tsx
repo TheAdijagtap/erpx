@@ -147,6 +147,7 @@ function CreateGRDialog() {
   ]);
   const [additionalCharges, setAdditionalCharges] = useState<Array<{ name: string; amount: number }>>([]);
   const [itemSearch, setItemSearch] = useState("");
+  const [supplierSearch, setSupplierSearch] = useState("");
 
   const filteredItems = useMemo(() => 
     items.filter(i => 
@@ -154,6 +155,11 @@ function CreateGRDialog() {
       (i.description && i.description.toLowerCase().includes(itemSearch.toLowerCase()))
     ),
     [items, itemSearch]
+  );
+
+  const filteredSuppliers = useMemo(() => 
+    suppliers.filter(s => s.name.toLowerCase().includes(supplierSearch.toLowerCase())),
+    [suppliers, supplierSearch]
   );
 
   const availablePOs = purchaseOrders.filter(po => po.status !== 'CANCELLED' && po.status !== 'RECEIVED');
@@ -248,14 +254,32 @@ function CreateGRDialog() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <div className="mb-1">Supplier</div>
-              <Select value={supplierId || undefined} onValueChange={setSupplierId} disabled={!!selectedPoId}>
-                <SelectTrigger><SelectValue placeholder="Select supplier" /></SelectTrigger>
-                <SelectContent className="z-50">
-                  {suppliers.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+                <Select value={supplierId || undefined} onValueChange={setSupplierId} disabled={!!selectedPoId}>
+                  <SelectTrigger className="pl-10"><SelectValue placeholder="Select supplier" /></SelectTrigger>
+                  <SelectContent className="z-50">
+                    <div className="px-2 pb-2">
+                      <Input
+                        placeholder="Search suppliers..."
+                        value={supplierSearch}
+                        onChange={(e) => setSupplierSearch(e.target.value)}
+                        className="h-8"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                    {filteredSuppliers.length === 0 ? (
+                      <div className="px-2 py-4 text-sm text-muted-foreground text-center">
+                        No suppliers found
+                      </div>
+                    ) : (
+                      filteredSuppliers.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <div className="flex items-end gap-2">
               <input id="applyGSTgr" type="checkbox" checked={applyGST} onChange={(e) => setApplyGST(e.target.checked)} />
