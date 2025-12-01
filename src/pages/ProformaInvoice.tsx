@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,13 +9,35 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Receipt, Eye, Edit, Printer, Trash2, Calendar, CheckCircle, Send } from "lucide-react";
+import { Plus, Search, Receipt, Eye, Edit, Printer, Trash2, Calendar, CheckCircle, Send, TrendingUp, Download } from "lucide-react";
 import { useApp } from "@/store/AppContext";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
 import { numberToWords } from "@/lib/numberToWords";
 import { ProformaInvoice as ProformaInvoiceType, ProformaInvoiceItem, BuyerInfo } from "@/types/inventory";
 import React from "react";
+
+interface ProformaAggregateRow {
+  key: string;
+  label: string;
+  total: number;
+  count: number;
+}
+
+interface ProformaStatsSummary {
+  totalInvoices: number;
+  totalValue: number;
+  averageValue: number;
+  draftCount: number;
+  draftValue: number;
+  sentCount: number;
+  sentValue: number;
+  acceptedCount: number;
+  acceptedValue: number;
+  uniqueCustomers: number;
+  monthlyTotals: ProformaAggregateRow[];
+  yearlyTotals: ProformaAggregateRow[];
+}
 
 // Define ProformaProduct type locally since it's not in the main types
 interface ProformaProduct {
@@ -30,7 +53,9 @@ interface ProformaProduct {
 const PROFORMA_PRODUCTS_STORAGE_KEY = "stockflow_proforma_products";
 
 const ProformaInvoice = () => {
-  const [activeTab, setActiveTab] = useState<"invoices" | "products">("invoices");
+  const { proformaInvoices } = useApp();
+  const [activeTab, setActiveTab] = useState<"invoices" | "insights" | "products">("invoices");
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [proformaProducts, setProformaProducts] = useState<ProformaProduct[]>(() => {
     const stored = localStorage.getItem(PROFORMA_PRODUCTS_STORAGE_KEY);
     if (stored) {
@@ -51,6 +76,92 @@ const ProformaInvoice = () => {
   React.useEffect(() => {
     localStorage.setItem(PROFORMA_PRODUCTS_STORAGE_KEY, JSON.stringify(proformaProducts));
   }, [proformaProducts]);
+
+  // Calculate stats
+  const stats = useMemo<ProformaStatsSummary>(() => {
+    const base: ProformaStatsSummary = {
+      totalInvoices: proformaInvoices.length,
+      totalValue: 0,
+      averageValue: 0,
+      draftCount: 0,
+      draftValue: 0,
+      sentCount: 0,
+      sentValue: 0,
+      acceptedCount: 0,
+      acceptedValue: 0,
+      uniqueCustomers: 0,
+      monthlyTotals: [],
+      yearlyTotals: [],
+    };
+
+    if (proformaInvoices.length === 0) return base;
+
+    const customerNames = new Set<string>();
+    const monthlyMap = new Map<string, { year: number; month: number; total: number; count: number }>();
+    const yearlyMap = new Map<number, { total: number; count: number }>();
+
+    proformaInvoices.forEach((invoice) => {
+      const invoiceTotal = invoice.total ?? 0;
+      base.totalValue += invoiceTotal;
+      customerNames.add(invoice.buyerInfo.name.toLowerCase());
+
+      if (invoice.status === "DRAFT") {
+        base.draftCount += 1;
+        base.draftValue += invoiceTotal;
+      } else if (invoice.status === "SENT") {
+        base.sentCount += 1;
+        base.sentValue += invoiceTotal;
+      } else if (invoice.status === "ACCEPTED") {
+        base.acceptedCount += 1;
+        base.acceptedValue += invoiceTotal;
+      }
+
+      const invoiceDate = invoice.date instanceof Date ? invoice.date : new Date(invoice.date);
+      if (Number.isNaN(invoiceDate.getTime())) return;
+
+      const monthKey = `${invoiceDate.getFullYear()}-${invoiceDate.getMonth()}`;
+      const monthEntry = monthlyMap.get(monthKey) ?? {
+        year: invoiceDate.getFullYear(),
+        month: invoiceDate.getMonth(),
+        total: 0,
+        count: 0,
+      };
+      monthEntry.total += invoiceTotal;
+      monthEntry.count += 1;
+      monthlyMap.set(monthKey, monthEntry);
+
+      const yearEntry = yearlyMap.get(invoiceDate.getFullYear()) ?? { total: 0, count: 0 };
+      yearEntry.total += invoiceTotal;
+      yearEntry.count += 1;
+      yearlyMap.set(invoiceDate.getFullYear(), yearEntry);
+    });
+
+    base.uniqueCustomers = customerNames.size;
+    base.averageValue = base.totalInvoices ? base.totalValue / base.totalInvoices : 0;
+
+    base.monthlyTotals = Array.from(monthlyMap.values())
+      .sort((a, b) => new Date(b.year, b.month, 1).getTime() - new Date(a.year, a.month, 1).getTime())
+      .map((entry) => ({
+        key: `${entry.year}-${entry.month}`,
+        label: format(new Date(entry.year, entry.month, 1), "MMM yyyy"),
+        total: entry.total,
+        count: entry.count,
+      }));
+
+    base.yearlyTotals = Array.from(yearlyMap.entries())
+      .sort((a, b) => b[0] - a[0])
+      .map(([year, entry]) => ({
+        key: String(year),
+        label: String(year),
+        total: entry.total,
+        count: entry.count,
+      }));
+
+    return base;
+  }, [proformaInvoices]);
+
+  const monthlyInsights = stats.monthlyTotals.slice(0, 12);
+  const yearlyInsights = stats.yearlyTotals;
 
   return (
     <div className="space-y-6">
@@ -76,6 +187,16 @@ const ProformaInvoice = () => {
           Proforma Invoices
         </button>
         <button
+          onClick={() => setActiveTab("insights")}
+          className={`pb-2 px-1 border-b-2 transition-colors ${
+            activeTab === "insights"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Insights
+        </button>
+        <button
           onClick={() => setActiveTab("products")}
           className={`pb-2 px-1 border-b-2 transition-colors ${
             activeTab === "products"
@@ -89,12 +210,249 @@ const ProformaInvoice = () => {
 
       {activeTab === "invoices" ? (
         <ProformaInvoicesTab proformaProducts={proformaProducts} />
+      ) : activeTab === "insights" ? (
+        <ProformaInsightsTab 
+          stats={stats} 
+          monthlyInsights={monthlyInsights} 
+          yearlyInsights={yearlyInsights}
+          selectedMonth={selectedMonth}
+          setSelectedMonth={setSelectedMonth}
+        />
       ) : (
         <ProductsTab proformaProducts={proformaProducts} setProformaProducts={setProformaProducts} />
       )}
     </div>
   );
 };
+
+// Insights Tab Component
+interface ProformaInsightsTabProps {
+  stats: ProformaStatsSummary;
+  monthlyInsights: ProformaAggregateRow[];
+  yearlyInsights: ProformaAggregateRow[];
+  selectedMonth: string | null;
+  setSelectedMonth: (month: string | null) => void;
+}
+
+function ProformaInsightsTab({ stats, monthlyInsights, yearlyInsights, selectedMonth, setSelectedMonth }: ProformaInsightsTabProps) {
+  const { proformaInvoices } = useApp();
+
+  const selectedMonthStats = useMemo(() => {
+    if (!selectedMonth || monthlyInsights.length === 0) return null;
+    return monthlyInsights.find((m) => m.key === selectedMonth) ?? null;
+  }, [selectedMonth, monthlyInsights]);
+
+  const monthlyInvoicesFiltered = useMemo(() => {
+    if (!selectedMonth) return proformaInvoices;
+    const [yearStr, monthStr] = selectedMonth.split("-");
+    const targetYear = parseInt(yearStr, 10);
+    const targetMonth = parseInt(monthStr, 10);
+    return proformaInvoices.filter((invoice) => {
+      const invoiceDate = invoice.date instanceof Date ? invoice.date : new Date(invoice.date);
+      return invoiceDate.getFullYear() === targetYear && invoiceDate.getMonth() === targetMonth;
+    });
+  }, [selectedMonth, proformaInvoices]);
+
+  const summaryTiles = useMemo(() => {
+    if (!selectedMonthStats) {
+      return [
+        {
+          label: "Total Revenue",
+          value: formatINR(stats.totalValue),
+          description: `${stats.totalInvoices} ${stats.totalInvoices === 1 ? "invoice" : "invoices"} to ${stats.uniqueCustomers} ${stats.uniqueCustomers === 1 ? "customer" : "customers"}`,
+        },
+        {
+          label: "Average Invoice Value",
+          value: formatINR(stats.averageValue),
+          description: stats.totalInvoices ? "Based on all proforma invoices" : "Add invoices to calculate averages",
+        },
+        {
+          label: "Accepted Value",
+          value: formatINR(stats.acceptedValue),
+          description: `${stats.acceptedCount} ${stats.acceptedCount === 1 ? "invoice" : "invoices"} accepted`,
+        },
+        {
+          label: "Pending Value",
+          value: formatINR(stats.sentValue + stats.draftValue),
+          description: `${stats.sentCount + stats.draftCount} ${(stats.sentCount + stats.draftCount) === 1 ? "invoice" : "invoices"} pending`,
+        },
+      ];
+    }
+
+    const monthlyAccepted = monthlyInvoicesFiltered.filter((i) => i.status === "ACCEPTED").reduce((sum, i) => sum + i.total, 0);
+    const monthlyPending = monthlyInvoicesFiltered.filter((i) => ["DRAFT", "SENT"].includes(i.status)).reduce((sum, i) => sum + i.total, 0);
+    const monthlyAvg = monthlyInvoicesFiltered.length ? selectedMonthStats.total / monthlyInvoicesFiltered.length : 0;
+
+    return [
+      {
+        label: "Total Revenue",
+        value: formatINR(selectedMonthStats.total),
+        description: `${selectedMonthStats.count} ${selectedMonthStats.count === 1 ? "invoice" : "invoices"} in ${selectedMonthStats.label}`,
+      },
+      {
+        label: "Average Invoice Value",
+        value: formatINR(monthlyAvg),
+        description: monthlyInvoicesFiltered.length ? `Based on ${selectedMonthStats.label} invoices` : "No invoices this month",
+      },
+      {
+        label: "Accepted Value",
+        value: formatINR(monthlyAccepted),
+        description: `${monthlyInvoicesFiltered.filter((i) => i.status === "ACCEPTED").length} invoices accepted`,
+      },
+      {
+        label: "Pending Value",
+        value: formatINR(monthlyPending),
+        description: `${monthlyInvoicesFiltered.filter((i) => ["DRAFT", "SENT"].includes(i.status)).length} invoices pending`,
+      },
+    ];
+  }, [selectedMonthStats, monthlyInvoicesFiltered, stats]);
+
+  const exportToCSV = () => {
+    const data = proformaInvoices.map(inv => ({
+      "Invoice Number": inv.proformaNumber,
+      "Customer": inv.buyerInfo.name,
+      "Date": formatDateIN(inv.date),
+      "Status": inv.status,
+      "Items": inv.items.length,
+      "Total": inv.total,
+    }));
+    
+    const headers = Object.keys(data[0] || {});
+    const csvContent = [
+      headers.join(","),
+      ...data.map(row => headers.map(h => `"${row[h as keyof typeof row]}"`).join(","))
+    ].join("\n");
+    
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `proforma-invoices-${format(new Date(), "yyyy-MM-dd")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <Card className="p-6 space-y-6">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+            <TrendingUp className="w-5 h-5" /> Proforma Insights
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Track your proforma invoice activity with totals, averages, and trend breakdowns.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="sm" onClick={exportToCSV} className="gap-2">
+            <Download className="w-4 h-4" /> Export CSV
+          </Button>
+          {monthlyInsights.length > 0 && (
+            <div className="flex items-center gap-3 ml-auto">
+              <label className="text-sm font-medium text-muted-foreground">View by Month:</label>
+              <Select value={selectedMonth || "all"} onValueChange={(value) => setSelectedMonth(value === "all" ? null : value)}>
+                <SelectTrigger className="w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="z-50">
+                  <SelectItem value="all">All Time</SelectItem>
+                  {monthlyInsights.map((month) => (
+                    <SelectItem key={month.key} value={month.key}>
+                      {month.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Summary Tiles */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {summaryTiles.map((tile) => (
+          <div key={tile.label} className="rounded-lg border border-border/60 bg-muted/10 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{tile.label}</p>
+            <p className="mt-2 text-lg font-semibold text-foreground">{tile.value}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{tile.description}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Status Breakdown */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="rounded-lg border border-border/60 bg-background p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Badge className="bg-gray-400 text-gray-900">Draft</Badge>
+          </div>
+          <p className="text-lg font-semibold">{formatINR(stats.draftValue)}</p>
+          <p className="text-xs text-muted-foreground">{stats.draftCount} invoices</p>
+        </div>
+        <div className="rounded-lg border border-border/60 bg-background p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Badge className="bg-blue-400 text-blue-900">Sent</Badge>
+          </div>
+          <p className="text-lg font-semibold">{formatINR(stats.sentValue)}</p>
+          <p className="text-xs text-muted-foreground">{stats.sentCount} invoices</p>
+        </div>
+        <div className="rounded-lg border border-border/60 bg-background p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Badge className="bg-green-500 text-white">Accepted</Badge>
+          </div>
+          <p className="text-lg font-semibold">{formatINR(stats.acceptedValue)}</p>
+          <p className="text-xs text-muted-foreground">{stats.acceptedCount} invoices</p>
+        </div>
+      </div>
+
+      {/* Monthly & Yearly Breakdown */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Monthly Revenue</h3>
+            {monthlyInsights.length > 0 && (
+              <span className="text-xs text-muted-foreground">Latest {monthlyInsights.length} months</span>
+            )}
+          </div>
+          {monthlyInsights.length ? (
+            <div className="mt-4 space-y-3">
+              {monthlyInsights.map((month) => (
+                <div key={month.key} className="flex items-center justify-between rounded-md border border-border/60 bg-background px-4 py-3">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{month.label}</p>
+                    <p className="text-xs text-muted-foreground">{month.count} {month.count === 1 ? "invoice" : "invoices"}</p>
+                  </div>
+                  <div className="text-sm font-semibold text-foreground">{formatINR(month.total)}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-3 text-sm text-muted-foreground">Add proforma invoices to see monthly trends.</p>
+          )}
+        </div>
+        <div>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Yearly Revenue</h3>
+          </div>
+          {yearlyInsights.length ? (
+            <div className="mt-4 space-y-3">
+              {yearlyInsights.map((year) => (
+                <div key={year.key} className="flex items-center justify-between rounded-md border border-border/60 bg-background px-4 py-3">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{year.label}</p>
+                    <p className="text-xs text-muted-foreground">{year.count} {year.count === 1 ? "invoice" : "invoices"}</p>
+                  </div>
+                  <div className="text-sm font-semibold text-foreground">{formatINR(year.total)}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-3 text-sm text-muted-foreground">Add proforma invoices to see yearly trends.</p>
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+}
 
 const ProformaInvoicesTab = ({ proformaProducts }: { proformaProducts: ProformaProduct[] }) => {
   const { proformaInvoices } = useApp();
