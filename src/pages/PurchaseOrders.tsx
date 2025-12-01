@@ -513,7 +513,10 @@ function CreatePODialog() {
   );
 
   const filteredItems = useMemo(() => 
-    items.filter(i => i.name.toLowerCase().includes(itemSearch.toLowerCase())),
+    items.filter(i => 
+      i.name.toLowerCase().includes(itemSearch.toLowerCase()) ||
+      (i.description && i.description.toLowerCase().includes(itemSearch.toLowerCase()))
+    ),
     [items, itemSearch]
   );
 
@@ -686,7 +689,14 @@ function CreatePODialog() {
                               </div>
                             ) : (
                               filteredItems.map((i) => (
-                                <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
+                                <SelectItem key={i.id} value={i.id}>
+                                  <div className="flex flex-col">
+                                    <span>{i.name}</span>
+                                    {i.description && (
+                                      <span className="text-xs text-muted-foreground">{i.description}</span>
+                                    )}
+                                  </div>
+                                </SelectItem>
                               ))
                             )}
                           </SelectContent>
