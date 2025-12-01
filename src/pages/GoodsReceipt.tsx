@@ -146,6 +146,15 @@ function CreateGRDialog() {
     { itemId: items[0]?.id || "", receivedQuantity: 1, unitPrice: items[0]?.unitPrice || 0 },
   ]);
   const [additionalCharges, setAdditionalCharges] = useState<Array<{ name: string; amount: number }>>([]);
+  const [itemSearch, setItemSearch] = useState("");
+
+  const filteredItems = useMemo(() => 
+    items.filter(i => 
+      i.name.toLowerCase().includes(itemSearch.toLowerCase()) ||
+      (i.description && i.description.toLowerCase().includes(itemSearch.toLowerCase()))
+    ),
+    [items, itemSearch]
+  );
 
   const availablePOs = purchaseOrders.filter(po => po.status !== 'CANCELLED' && po.status !== 'RECEIVED');
 
@@ -269,19 +278,44 @@ function CreateGRDialog() {
                 {rows.map((row, idx) => (
                   <TableRow key={idx}>
                     <TableCell className="min-w-[220px]">
-                      <Select value={row.itemId} onValueChange={(v) => {
-                        const it = items.find(i => i.id === v)!;
-                        const next = [...rows];
-                        next[idx] = { ...row, itemId: v, unitPrice: it.unitPrice };
-                        setRows(next);
-                      }}>
-                        <SelectTrigger className="w-full"><SelectValue placeholder="Select item" /></SelectTrigger>
-                        <SelectContent className="z-50 max-h-64">
-                          {items.map((i) => (
-                            <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+                        <Select value={row.itemId} onValueChange={(v) => {
+                          const it = items.find(i => i.id === v)!;
+                          const next = [...rows];
+                          next[idx] = { ...row, itemId: v, unitPrice: it.unitPrice };
+                          setRows(next);
+                        }}>
+                          <SelectTrigger className="w-full pl-10"><SelectValue placeholder="Select item" /></SelectTrigger>
+                          <SelectContent className="z-50 max-h-64">
+                            <div className="px-2 pb-2 sticky top-0 bg-background">
+                              <Input
+                                placeholder="Search items..."
+                                value={itemSearch}
+                                onChange={(e) => setItemSearch(e.target.value)}
+                                className="h-8"
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
+                            {filteredItems.length === 0 ? (
+                              <div className="px-2 py-4 text-sm text-muted-foreground text-center">
+                                No items found
+                              </div>
+                            ) : (
+                              filteredItems.map((i) => (
+                                <SelectItem key={i.id} value={i.id}>
+                                  <div className="flex flex-col">
+                                    <span>{i.name}</span>
+                                    {i.description && (
+                                      <span className="text-xs text-muted-foreground">{i.description}</span>
+                                    )}
+                                  </div>
+                                </SelectItem>
+                              ))
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Input type="number" min={0} value={row.orderedQuantity || 0} onChange={(e) => {
