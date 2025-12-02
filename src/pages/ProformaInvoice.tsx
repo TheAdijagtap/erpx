@@ -1535,7 +1535,19 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
   const [notes, setNotes] = useState(invoice.notes || "");
   const [status, setStatus] = useState(invoice.status);
   const [applyGST, setApplyGST] = useState<boolean>(invoice.sgst > 0 || invoice.cgst > 0);
-  const [gstRate, setGstRate] = useState<number>(invoice.sgst > 0 || invoice.cgst > 0 ? (invoice.sgst + invoice.cgst) : 18);
+  
+  // Calculate GST rate percentage from the stored SGST/CGST amounts
+  const initialGstRate = useMemo(() => {
+    if (invoice.sgst > 0 || invoice.cgst > 0) {
+      const chargesTotal = (invoice.additionalCharges || []).reduce((sum, charge) => sum + charge.amount, 0);
+      const taxableAmount = invoice.subtotal + chargesTotal;
+      // Calculate percentage: (total tax / taxable amount) * 100
+      return taxableAmount > 0 ? ((invoice.sgst + invoice.cgst) / taxableAmount) * 100 : 18;
+    }
+    return 18;
+  }, [invoice.sgst, invoice.cgst, invoice.subtotal, invoice.additionalCharges]);
+  
+  const [gstRate, setGstRate] = useState<number>(initialGstRate);
 
   const addRow = () => {
     if (!proformaProducts || proformaProducts.length === 0) return;
