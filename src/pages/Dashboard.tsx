@@ -20,11 +20,50 @@ import {
   RefreshCw,
   Eye,
   Truck,
-  FileCheck
+  FileCheck,
+  Receipt,
+  AlertTriangle
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useApp } from "@/store/AppContext";
+import { formatINR } from "@/lib/format";
+import { useMemo } from "react";
 
 const Dashboard = () => {
+  const { inventoryItems, purchaseOrders, goodsReceipts, proformaInvoices, suppliers } = useApp();
+  
+  // Calculate real-time statistics
+  const stats = useMemo(() => {
+    const totalItems = inventoryItems.length;
+    const totalInventoryValue = inventoryItems.reduce((sum, item) => sum + (item.currentStock * (item.unitPrice || 0)), 0);
+    const lowStockItems = inventoryItems.filter(item => item.currentStock <= (item.minStock || 0)).length;
+    
+    const totalPurchaseOrders = purchaseOrders.length;
+    const pendingPOs = purchaseOrders.filter(po => po.status === 'SENT' || po.status === 'DRAFT').length;
+    const totalPOValue = purchaseOrders.reduce((sum, po) => sum + po.total, 0);
+    
+    const totalGoodsReceipts = goodsReceipts.length;
+    const pendingGRs = goodsReceipts.filter(gr => gr.status === 'QUALITY_CHECK').length;
+    
+    const totalProformaInvoices = proformaInvoices.length;
+    const totalProformaValue = proformaInvoices.reduce((sum, pi) => sum + pi.total, 0);
+    const pendingProformas = proformaInvoices.filter(pi => pi.status === 'DRAFT' || pi.status === 'SENT').length;
+    
+    return {
+      totalItems,
+      totalInventoryValue,
+      lowStockItems,
+      totalPurchaseOrders,
+      pendingPOs,
+      totalPOValue,
+      totalGoodsReceipts,
+      pendingGRs,
+      totalProformaInvoices,
+      totalProformaValue,
+      pendingProformas
+    };
+  }, [inventoryItems, purchaseOrders, goodsReceipts, proformaInvoices]);
+  
   const features = [
     {
       icon: Package,
@@ -201,6 +240,138 @@ const Dashboard = () => {
               </Button>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Real-Time Statistics Section */}
+      <section className="py-16 px-6 bg-gradient-to-br from-primary/5 via-background to-accent/5">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Your Business at a Glance
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Real-time statistics from your inventory management system
+            </p>
+          </div>
+          
+          {/* Main Stats Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card className="p-6 hover:shadow-lg transition-shadow border-l-4 border-l-primary">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Total Inventory Items</p>
+                  <p className="text-3xl font-bold text-foreground">{stats.totalItems}</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Value: {formatINR(stats.totalInventoryValue)}
+                  </p>
+                </div>
+                <div className="p-3 bg-primary/10 rounded-lg">
+                  <Package className="w-6 h-6 text-primary" />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6 hover:shadow-lg transition-shadow border-l-4 border-l-blue-500">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Purchase Orders</p>
+                  <p className="text-3xl font-bold text-foreground">{stats.totalPurchaseOrders}</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {stats.pendingPOs} pending
+                  </p>
+                </div>
+                <div className="p-3 bg-blue-500/10 rounded-lg">
+                  <ShoppingCart className="w-6 h-6 text-blue-500" />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6 hover:shadow-lg transition-shadow border-l-4 border-l-green-500">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Goods Receipts</p>
+                  <p className="text-3xl font-bold text-foreground">{stats.totalGoodsReceipts}</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {stats.pendingGRs} in quality check
+                  </p>
+                </div>
+                <div className="p-3 bg-green-500/10 rounded-lg">
+                  <Receipt className="w-6 h-6 text-green-500" />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6 hover:shadow-lg transition-shadow border-l-4 border-l-purple-500">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Proforma Invoices</p>
+                  <p className="text-3xl font-bold text-foreground">{stats.totalProformaInvoices}</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {stats.pendingProformas} pending
+                  </p>
+                </div>
+                <div className="p-3 bg-purple-500/10 rounded-lg">
+                  <FileText className="w-6 h-6 text-purple-500" />
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Financial Overview */}
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <Card className="p-6 hover:shadow-lg transition-shadow">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Total Purchase Value</p>
+                  <p className="text-2xl font-bold text-foreground">{formatINR(stats.totalPOValue)}</p>
+                </div>
+                <div className="p-3 bg-blue-500/10 rounded-lg">
+                  <DollarSign className="w-6 h-6 text-blue-500" />
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <TrendingUp className="w-4 h-4 text-green-500" />
+                <span className="text-muted-foreground">Across {stats.totalPurchaseOrders} orders</span>
+              </div>
+            </Card>
+
+            <Card className="p-6 hover:shadow-lg transition-shadow">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Total Proforma Value</p>
+                  <p className="text-2xl font-bold text-foreground">{formatINR(stats.totalProformaValue)}</p>
+                </div>
+                <div className="p-3 bg-purple-500/10 rounded-lg">
+                  <BarChart3 className="w-6 h-6 text-purple-500" />
+                </div>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <TrendingUp className="w-4 h-4 text-green-500" />
+                <span className="text-muted-foreground">Across {stats.totalProformaInvoices} invoices</span>
+              </div>
+            </Card>
+          </div>
+
+          {/* Alert Section */}
+          {stats.lowStockItems > 0 && (
+            <Card className="p-6 bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-amber-500/10 rounded-lg">
+                  <AlertTriangle className="w-6 h-6 text-amber-500" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-foreground mb-1">Low Stock Alert</h3>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    {stats.lowStockItems} {stats.lowStockItems === 1 ? 'item is' : 'items are'} below minimum stock level
+                  </p>
+                  <Button asChild size="sm" variant="outline">
+                    <Link to="/inventory">View Inventory</Link>
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          )}
         </div>
       </section>
 
