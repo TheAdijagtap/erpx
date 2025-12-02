@@ -1401,7 +1401,7 @@ const ViewProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
           </div>
           
           <div className="section">
-            <h2>Proforma Invoice {invoice.proformaNumber}</h2>
+            <h2>Quotation Cum Proforma {invoice.proformaNumber}</h2>
           </div>
           
           <div className="section">
