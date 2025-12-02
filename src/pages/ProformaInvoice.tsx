@@ -1370,7 +1370,7 @@ const ViewProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
 
   const handlePrint = () => {
     if (printRef.current) {
-      printElementById(`proforma-print-${invoice.id}`, `Proforma Invoice ${invoice.proformaNumber}`);
+      printElementById(`proforma-print-${invoice.id}`, `Quotation Cum Proforma ${invoice.proformaNumber}`);
     }
   };
 
@@ -1384,7 +1384,7 @@ const ViewProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Proforma Invoice Details</DialogTitle>
+          <DialogTitle>Quotation Cum Proforma Details</DialogTitle>
         </DialogHeader>
         
         <div id={`proforma-print-${invoice.id}`} ref={printRef}>
