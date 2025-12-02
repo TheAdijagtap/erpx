@@ -15,6 +15,8 @@ export function printElementById(id: string, title = "Document") {
       .brand { font-size: 20px; font-weight: 700; }
       .muted { color: #64748b; font-size: 13px; }
       .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 8px 0; }
+      h2 { font-size: 18px; font-weight: 700; margin: 0; padding: 0; text-align: center; }
+      strong { font-weight: 600; }
       table { width: 100%; border-collapse: collapse; margin-top: 8px; }
       th, td { border: 1px solid #e2e8f0; padding: 6px 8px; text-align: left; font-size: 13px; }
       th { background: #f8fafc; font-weight: 600; }
@@ -34,6 +36,7 @@ export function printElementById(id: string, title = "Document") {
         body { margin: 0; font-size: 13px; }
         .doc { border: 2px solid #0f172a; padding: 12px; }
         .section { margin: 4px 0; padding: 8px; }
+        h2 { font-size: 16px; }
       }
     </style>
   </head><body><div class="doc">${content}</div></body></html>`);
