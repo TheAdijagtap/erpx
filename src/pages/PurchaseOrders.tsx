@@ -493,7 +493,7 @@ function getStatusBadge(status: string) {
 }
 
 function CreatePODialog() {
-  const { suppliers, items, addPurchaseOrder } = useApp();
+  const { suppliers, items, addPurchaseOrder, addItem } = useApp();
   const [open, setOpen] = useState(false);
   const [supplierId, setSupplierId] = useState<string | null>(suppliers[0]?.id || null);
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
@@ -504,6 +504,33 @@ function CreatePODialog() {
     { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0, unit: items[0]?.unit || "PCS" },
   ]);
   const [additionalCharges, setAdditionalCharges] = useState<Array<{ name: string; amount: number }>>([]);
+  
+  // Quick-add item state
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [newItemName, setNewItemName] = useState("");
+  const [newItemUnit, setNewItemUnit] = useState("PCS");
+  const [newItemPrice, setNewItemPrice] = useState<number>(0);
+  const [newItemCategory, setNewItemCategory] = useState("");
+
+  const handleQuickAddItem = () => {
+    if (!newItemName.trim()) return;
+    addItem({
+      name: newItemName.trim(),
+      sku: `SKU-${Date.now()}`,
+      description: "",
+      unit: newItemUnit,
+      unitPrice: newItemPrice,
+      category: newItemCategory || "General",
+      currentStock: 0,
+      minStock: 0,
+      maxStock: 1000,
+    });
+    setNewItemName("");
+    setNewItemUnit("PCS");
+    setNewItemPrice(0);
+    setNewItemCategory("");
+    setQuickAddOpen(false);
+  };
   const [supplierSearch, setSupplierSearch] = useState("");
   const [itemSearch, setItemSearch] = useState("");
 
@@ -647,6 +674,71 @@ function CreatePODialog() {
             </div>
           )}
 
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-medium text-sm">Items</span>
+            <Dialog open={quickAddOpen} onOpenChange={setQuickAddOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1 h-7 text-xs">
+                  <Plus className="w-3 h-3" /> Quick Add Item
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Quick Add Inventory Item</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium">Item Name *</label>
+                    <Input 
+                      value={newItemName} 
+                      onChange={(e) => setNewItemName(e.target.value)} 
+                      placeholder="Enter item name"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-sm font-medium">Unit</label>
+                      <Select value={newItemUnit} onValueChange={setNewItemUnit}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="PCS">PCS</SelectItem>
+                          <SelectItem value="KG">KG</SelectItem>
+                          <SelectItem value="LTR">LTR</SelectItem>
+                          <SelectItem value="MTR">MTR</SelectItem>
+                          <SelectItem value="BOX">BOX</SelectItem>
+                          <SelectItem value="SET">SET</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Unit Price</label>
+                      <Input 
+                        type="number" 
+                        min="0"
+                        value={newItemPrice} 
+                        onChange={(e) => setNewItemPrice(parseFloat(e.target.value) || 0)} 
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Category</label>
+                    <Input 
+                      value={newItemCategory} 
+                      onChange={(e) => setNewItemCategory(e.target.value)} 
+                      placeholder="e.g., Raw Materials"
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setQuickAddOpen(false)}>Cancel</Button>
+                  <Button onClick={handleQuickAddItem} disabled={!newItemName.trim()}>Add Item</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
           <div className="rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
