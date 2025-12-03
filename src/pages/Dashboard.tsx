@@ -25,44 +25,23 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useApp } from "@/store/AppContext";
 import { formatINR } from "@/lib/format";
-import { useMemo } from "react";
 
 const Dashboard = () => {
-  const { inventoryItems, purchaseOrders, goodsReceipts, proformaInvoices, suppliers } = useApp();
-  
-  // Calculate real-time statistics
-  const stats = useMemo(() => {
-    const totalItems = inventoryItems.length;
-    const totalInventoryValue = inventoryItems.reduce((sum, item) => sum + (item.currentStock * (item.unitPrice || 0)), 0);
-    const lowStockItems = inventoryItems.filter(item => item.currentStock <= (item.minStock || 0)).length;
-    
-    const totalPurchaseOrders = purchaseOrders.length;
-    const pendingPOs = purchaseOrders.filter(po => po.status === 'SENT' || po.status === 'DRAFT').length;
-    const totalPOValue = purchaseOrders.reduce((sum, po) => sum + po.total, 0);
-    
-    const totalGoodsReceipts = goodsReceipts.length;
-    const pendingGRs = goodsReceipts.filter(gr => gr.status === 'QUALITY_CHECK').length;
-    
-    const totalProformaInvoices = proformaInvoices.length;
-    const totalProformaValue = proformaInvoices.reduce((sum, pi) => sum + pi.total, 0);
-    const pendingProformas = proformaInvoices.filter(pi => pi.status === 'DRAFT' || pi.status === 'SENT').length;
-    
-    return {
-      totalItems,
-      totalInventoryValue,
-      lowStockItems,
-      totalPurchaseOrders,
-      pendingPOs,
-      totalPOValue,
-      totalGoodsReceipts,
-      pendingGRs,
-      totalProformaInvoices,
-      totalProformaValue,
-      pendingProformas
-    };
-  }, [inventoryItems, purchaseOrders, goodsReceipts, proformaInvoices]);
+  // Demo statistics for showcase
+  const stats = {
+    totalItems: 156,
+    totalInventoryValue: 2450000,
+    lowStockItems: 8,
+    totalPurchaseOrders: 47,
+    pendingPOs: 12,
+    totalPOValue: 1875000,
+    totalGoodsReceipts: 38,
+    pendingGRs: 3,
+    totalProformaInvoices: 29,
+    totalProformaValue: 980000,
+    pendingProformas: 5
+  };
   
   const features = [
     {
@@ -251,7 +230,7 @@ const Dashboard = () => {
               Your Business at a Glance
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Real-time statistics from your inventory management system
+              Sample statistics showcasing system capabilities
             </p>
           </div>
           
