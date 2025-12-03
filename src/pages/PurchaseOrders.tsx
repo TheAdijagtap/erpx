@@ -539,13 +539,16 @@ function CreatePODialog() {
     [suppliers, supplierSearch]
   );
 
-  const filteredItems = useMemo(() => 
-    items.filter(i => 
-      i.name.toLowerCase().includes(itemSearch.toLowerCase()) ||
-      (i.description && i.description.toLowerCase().includes(itemSearch.toLowerCase()))
-    ),
-    [items, itemSearch]
-  );
+  const filteredItems = useMemo(() => {
+    const search = itemSearch.toLowerCase().trim();
+    if (!search) return items;
+    return items.filter(i => 
+      i.name.toLowerCase().includes(search) ||
+      (i.description && i.description.toLowerCase().includes(search)) ||
+      (i.category && i.category.toLowerCase().includes(search)) ||
+      (i.sku && i.sku.toLowerCase().includes(search))
+    );
+  }, [items, itemSearch]);
 
   const onAddRow = () => setRows([...rows, { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0, unit: items[0]?.unit || "PCS" }]);
   const onSubmit = () => {

@@ -207,9 +207,17 @@ const derivePurchaseOrderStatusFromReceipts = (po: PurchaseOrder, receipts: Good
   return allItemsFulfilled ? 'RECEIVED' : 'PARTIAL';
 };
 
-const reconcilePurchaseOrdersWithReceipts = (purchaseOrders: PurchaseOrder[], receipts: GoodsReceipt[]): PurchaseOrder[] =>
+const reconcilePurchaseOrdersWithReceipts = (purchaseOrders: PurchaseOrder[], receipts: GoodsReceipt[], affectedPoId?: string): PurchaseOrder[] =>
   purchaseOrders.map((po) => {
     if (po.status === 'CANCELLED') {
+      return po;
+    }
+
+    // Only reconcile the affected PO when deleting a GR, or all POs when adding/updating
+    const hasAnyLinkedReceipts = receipts.some((r) => r.poId === po.id);
+    const shouldReconcile = affectedPoId ? po.id === affectedPoId : true;
+    
+    if (!shouldReconcile) {
       return po;
     }
 
@@ -218,7 +226,8 @@ const reconcilePurchaseOrdersWithReceipts = (purchaseOrders: PurchaseOrder[], re
       return { ...po, status: derivedStatus };
     }
 
-    if (!derivedStatus && (po.status === 'RECEIVED' || po.status === 'PARTIAL')) {
+    // Only revert to SENT if this PO had linked receipts that were deleted
+    if (!derivedStatus && (po.status === 'RECEIVED' || po.status === 'PARTIAL') && !hasAnyLinkedReceipts && affectedPoId === po.id) {
       return { ...po, status: 'SENT' };
     }
 
@@ -496,8 +505,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     },
     removeGoodsReceipt: (id) => {
       setState((s) => {
+        const deletedGR = s.goodsReceipts.find((g) => g.id === id);
+        const affectedPoId = deletedGR?.poId;
         const nextGoodsReceipts = s.goodsReceipts.filter((g) => g.id !== id);
-        const nextPurchaseOrders = reconcilePurchaseOrdersWithReceipts(s.purchaseOrders, nextGoodsReceipts);
+        const nextPurchaseOrders = reconcilePurchaseOrdersWithReceipts(s.purchaseOrders, nextGoodsReceipts, affectedPoId);
 
         return {
           ...s,
