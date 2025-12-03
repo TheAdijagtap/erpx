@@ -149,13 +149,16 @@ function CreateGRDialog() {
   const [itemSearch, setItemSearch] = useState("");
   const [supplierSearch, setSupplierSearch] = useState("");
 
-  const filteredItems = useMemo(() => 
-    items.filter(i => 
-      i.name.toLowerCase().includes(itemSearch.toLowerCase()) ||
-      (i.description && i.description.toLowerCase().includes(itemSearch.toLowerCase()))
-    ),
-    [items, itemSearch]
-  );
+  const filteredItems = useMemo(() => {
+    const search = itemSearch.toLowerCase().trim();
+    if (!search) return items;
+    return items.filter(i => 
+      i.name.toLowerCase().includes(search) ||
+      (i.description && i.description.toLowerCase().includes(search)) ||
+      (i.category && i.category.toLowerCase().includes(search)) ||
+      (i.sku && i.sku.toLowerCase().includes(search))
+    );
+  }, [items, itemSearch]);
 
   const filteredSuppliers = useMemo(() => 
     suppliers.filter(s => s.name.toLowerCase().includes(supplierSearch.toLowerCase())),
