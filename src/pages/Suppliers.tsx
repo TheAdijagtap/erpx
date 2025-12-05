@@ -9,13 +9,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Search, Users, Mail, Phone, MapPin, Edit, Eye, Trash2, FileText, Package, Download } from "lucide-react";
-import { useApp } from "@/store/AppContext";
+import { useData } from "@/store/SupabaseDataContext";
 import { toast } from "@/hooks/use-toast";
 import { formatINR, formatDateIN } from "@/lib/format";
 
 const Suppliers = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const { suppliers, removeSupplier, addSupplier } = useApp();
+  const { suppliers, removeSupplier, addSupplier } = useData();
 
   const filteredSuppliers = suppliers.filter(supplier =>
     supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -207,7 +207,7 @@ const Suppliers = () => {
 
 function ViewSupplierDialog({ supplier }: { supplier: any }) {
   const [open, setOpen] = useState(false);
-  const { purchaseOrders, goodsReceipts } = useApp();
+  const { purchaseOrders, goodsReceipts } = useData();
 
   const supplierData = useMemo(() => {
     const pos = purchaseOrders.filter(po => po.supplierId === supplier.id);
@@ -402,7 +402,7 @@ function ViewSupplierDialog({ supplier }: { supplier: any }) {
 }
 
 function EditSupplierDialog({ supplier }: { supplier: any }) {
-  const { updateSupplier } = useApp();
+  const { updateSupplier } = useData();
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: supplier.name,
@@ -511,7 +511,7 @@ function EditSupplierDialog({ supplier }: { supplier: any }) {
 }
 
 function CreateSupplierDialog({ children }: { children: React.ReactNode }) {
-  const { addSupplier } = useApp();
+  const { addSupplier } = useData();
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",

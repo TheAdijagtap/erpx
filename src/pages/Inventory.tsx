@@ -8,12 +8,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Plus, Search, Package, Eye, Edit, Minus, PlusCircle, Trash2 } from "lucide-react";
-import { useApp } from "@/store/AppContext";
+import { useData } from "@/store/SupabaseDataContext";
 import { toast } from "@/hooks/use-toast";
 import { formatINR } from "@/lib/format";
 
 const Inventory = () => {
-  const { items, transactions, transactItem, removeItem, addItem } = useApp();
+  const { inventoryItems: items, transactions, transactItem, removeItem, addItem } = useData();
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredItems = useMemo(() =>
@@ -145,7 +145,7 @@ const Inventory = () => {
 };
 
 function ItemViewDialog({ itemId, children }: { itemId: string; children: React.ReactNode }) {
-  const { items, transactions } = useApp();
+  const { inventoryItems: items, transactions } = useData();
   const item = items.find(i => i.id === itemId)!;
   const itemTx = transactions.filter(t => t.itemId === itemId);
 
@@ -223,7 +223,7 @@ function ItemViewDialog({ itemId, children }: { itemId: string; children: React.
 }
 
 function ItemTransactDialog({ itemId, type, children }: { itemId: string; type: 'IN' | 'OUT'; children: React.ReactNode }) {
-  const { items, transactItem } = useApp();
+  const { inventoryItems: items, transactItem } = useData();
   const item = items.find(i => i.id === itemId)!;
   const [open, setOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -293,7 +293,7 @@ function ItemTransactDialog({ itemId, type, children }: { itemId: string; type: 
 }
 
 function CreateItemDialog({ children }: { children: React.ReactNode }) {
-  const { addItem } = useApp();
+  const { addItem } = useData();
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",

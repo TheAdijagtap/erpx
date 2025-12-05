@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Package, ShoppingCart, FileText, Users, TrendingUp, AlertCircle, Plus, ArrowRight, Download, DollarSign } from "lucide-react";
-import { useApp } from "@/store/AppContext";
+import { useData } from "@/store/SupabaseDataContext";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,7 +11,7 @@ import { formatINR } from "@/lib/format";
 
 const AppDashboard = () => {
   const navigate = useNavigate();
-  const { items, purchaseOrders, suppliers, goodsReceipts, proformaInvoices } = useApp();
+  const { inventoryItems: items, purchaseOrders, suppliers, goodsReceipts, proformaInvoices } = useData();
 
   const stats = useMemo(() => {
     const totalItems = items.length;

@@ -7,13 +7,13 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Search, Package, Eye, Edit, Printer, CheckCircle, XCircle, Trash2 } from "lucide-react";
-import { useApp } from "@/store/AppContext";
+import { useData } from "@/store/SupabaseDataContext";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
 import { numberToWords } from "@/lib/numberToWords";
 
 const GoodsReceiptPage = () => {
-  const { goodsReceipts } = useApp();
+  const { goodsReceipts } = useData();
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredReceipts = useMemo(() => goodsReceipts.filter(receipt =>
@@ -136,7 +136,7 @@ function getStatusBadge(status: string) {
 }
 
 function CreateGRDialog() {
-  const { suppliers, items, addGoodsReceipt, gstSettings, purchaseOrders } = useApp();
+  const { suppliers, inventoryItems: items, addGoodsReceipt, gstSettings, purchaseOrders } = useData();
   const [open, setOpen] = useState(false);
   const [selectedPoId, setSelectedPoId] = useState<string | null>(null);
   const [supplierId, setSupplierId] = useState<string | null>(suppliers[0]?.id || null);
@@ -430,7 +430,7 @@ function CreateGRDialog() {
 }
 
 function ViewGRDialog({ id }: { id: string }) {
-  const { goodsReceipts, businessInfo, gstSettings } = useApp();
+  const { goodsReceipts, businessInfo, gstSettings } = useData();
   const receipt = goodsReceipts.find(g => g.id === id)!;
   const elId = `gr-print-${id}`;
   return (
@@ -546,7 +546,7 @@ function ViewGRDialog({ id }: { id: string }) {
 }
 
 function EditGRDialog({ id }: { id: string }) {
-  const { goodsReceipts, updateGoodsReceipt } = useApp();
+  const { goodsReceipts, updateGoodsReceipt } = useData();
   const receipt = goodsReceipts.find(g => g.id === id)!;
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState(receipt.status);
@@ -589,7 +589,7 @@ function EditGRDialog({ id }: { id: string }) {
 }
 
 function UpdateStatusButton({ id, status, label, destructive }: { id: string; status: any; label: string; destructive?: boolean }) {
-  const { updateGoodsReceipt } = useApp();
+  const { updateGoodsReceipt } = useData();
   return (
     <Button variant={destructive ? 'destructive' : 'default'} size="sm" onClick={() => updateGoodsReceipt(id, { status })}>
       {label}
@@ -598,7 +598,7 @@ function UpdateStatusButton({ id, status, label, destructive }: { id: string; st
 }
 
 function PrintGRButton({ id }: { id: string }) {
-  const { goodsReceipts, businessInfo, gstSettings } = useApp();
+  const { goodsReceipts, businessInfo, gstSettings } = useData();
   const receipt = goodsReceipts.find(g => g.id === id)!;
   const elId = `gr-print-standalone-${id}`;
   
@@ -709,7 +709,7 @@ function PrintGRButton({ id }: { id: string }) {
 }
 
 function DeleteGRDialog({ id }: { id: string }) {
-  const { goodsReceipts, removeGoodsReceipt } = useApp();
+  const { goodsReceipts, removeGoodsReceipt } = useData();
   const receipt = goodsReceipts.find(g => g.id === id)!;
   
   const handleDelete = () => {
