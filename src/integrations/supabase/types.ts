@@ -357,6 +357,9 @@ export type Database = {
       profiles: {
         Row: {
           address: string | null
+          bank_account_number: string | null
+          bank_ifsc_code: string | null
+          bank_name: string | null
           business_name: string | null
           contact_number: string | null
           created_at: string
@@ -369,6 +372,9 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          bank_account_number?: string | null
+          bank_ifsc_code?: string | null
+          bank_name?: string | null
           business_name?: string | null
           contact_number?: string | null
           created_at?: string
@@ -381,6 +387,9 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          bank_account_number?: string | null
+          bank_ifsc_code?: string | null
+          bank_name?: string | null
           business_name?: string | null
           contact_number?: string | null
           created_at?: string

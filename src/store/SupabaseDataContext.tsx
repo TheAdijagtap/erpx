@@ -313,6 +313,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       // Fetch business profile
       const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
       if (profile) {
+        const profileAny = profile as any;
         setBusinessInfoState({
           id: profile.id,
           name: profile.business_name || defaultBusinessInfo.name,
@@ -320,8 +321,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           phone: profile.contact_number || defaultBusinessInfo.phone,
           email: profile.email || user.email || defaultBusinessInfo.email,
           gstNumber: profile.gst_number || "",
-          logo: (profile as any).logo || undefined,
-          signature: (profile as any).signature || undefined,
+          logo: profileAny.logo || undefined,
+          signature: profileAny.signature || undefined,
+          bankDetails: profileAny.bank_name ? {
+            bankName: profileAny.bank_name || "",
+            accountNumber: profileAny.bank_account_number || "",
+            ifscCode: profileAny.bank_ifsc_code || "",
+          } : undefined,
         });
       }
 
@@ -674,6 +680,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       gst_number: info.gstNumber,
       logo: info.logo || null,
       signature: info.signature || null,
+      bank_name: info.bankDetails?.bankName || null,
+      bank_account_number: info.bankDetails?.accountNumber || null,
+      bank_ifsc_code: info.bankDetails?.ifscCode || null,
     }).eq("id", user.id);
 
     if (error) throw error;
