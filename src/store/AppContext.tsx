@@ -12,7 +12,6 @@ import type {
   ProformaInvoice,
   Customer,
   CustomerActivity,
-  ScrapNote,
 } from "@/types/inventory";
 
 const STORAGE_KEY = "stockflow_app_state_v1";
@@ -23,7 +22,6 @@ interface AppState {
   purchaseOrders: PurchaseOrder[];
   goodsReceipts: GoodsReceipt[];
   proformaInvoices: ProformaInvoice[];
-  scrapNotes: ScrapNote[];
   transactions: Transaction[];
   customers: Customer[];
   customerActivities: CustomerActivity[];
@@ -78,11 +76,6 @@ interface AppContextValue extends AppState {
   removeCustomer: (id: string) => void;
   addCustomerActivity: (activity: Omit<CustomerActivity, "id" | "date">) => void;
   syncCustomerFromPI: (proformaInvoice: ProformaInvoice) => void;
-
-  // Scrap Notes
-  addScrapNote: (note: Omit<ScrapNote, "id" | "noteNumber" | "createdAt" | "updatedAt">) => string;
-  updateScrapNote: (id: string, patch: Partial<ScrapNote>) => void;
-  removeScrapNote: (id: string) => void;
 
   // Business
   setBusinessInfo: (info: BusinessInfo) => void;
@@ -165,11 +158,10 @@ const initialState = (): AppState => {
   const purchaseOrders: PurchaseOrder[] = [];
   const goodsReceipts: GoodsReceipt[] = [];
   const proformaInvoices: ProformaInvoice[] = [];
-  const scrapNotes: ScrapNote[] = [];
   const customers: Customer[] = [];
   const customerActivities: CustomerActivity[] = [];
 
-  return { items, suppliers, purchaseOrders, goodsReceipts, proformaInvoices, scrapNotes, transactions, customers, customerActivities, businessInfo, gstSettings };
+  return { items, suppliers, purchaseOrders, goodsReceipts, proformaInvoices, transactions, customers, customerActivities, businessInfo, gstSettings };
 };
 
 const derivePurchaseOrderStatusFromReceipts = (po: PurchaseOrder, receipts: GoodsReceipt[]): PurchaseOrder['status'] | null => {
@@ -273,11 +265,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           if (p.validUntil) p.validUntil = new Date(p.validUntil);
           p.items = p.items?.map((it: any) => reviveDates(it)) ?? [];
           return p;
-        }) ?? [];
-        parsed.scrapNotes = parsed.scrapNotes?.map((s: any) => {
-          reviveDates(s);
-          s.items = s.items?.map((it: any) => reviveDates(it)) ?? [];
-          return s;
         }) ?? [];
         parsed.transactions = parsed.transactions?.map((t: any) => reviveDates(t)) ?? [];
         parsed.customers = parsed.customers?.map((c: any) => {
@@ -646,30 +633,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           return { ...s, customers: [...s.customers, newCustomer] };
         }
       });
-    },
-
-    // Scrap Notes
-    addScrapNote: (note) => {
-      const id = crypto.randomUUID();
-      const now = new Date();
-      const noteNumber = `SCRAP-${Date.now()}`;
-      setState((s) => ({
-        ...s,
-        scrapNotes: [...s.scrapNotes, { ...note, id, noteNumber, createdAt: now, updatedAt: now }],
-      }));
-      return id;
-    },
-    updateScrapNote: (id, patch) => {
-      setState((s) => ({
-        ...s,
-        scrapNotes: s.scrapNotes.map((n) => (n.id === id ? { ...n, ...patch, updatedAt: new Date() } : n)),
-      }));
-    },
-    removeScrapNote: (id) => {
-      setState((s) => ({
-        ...s,
-        scrapNotes: s.scrapNotes.filter((n) => n.id !== id),
-      }));
     },
 
     // Business
