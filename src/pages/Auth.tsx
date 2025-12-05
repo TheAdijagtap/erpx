@@ -10,9 +10,15 @@ import { toast } from "sonner";
 import { Loader2, Package } from "lucide-react";
 import { z } from "zod";
 
-const authSchema = z.object({
+const signInSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+const signUpSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  phone: z.string().min(10, "Please enter a valid phone number").max(15, "Phone number is too long"),
 });
 
 const Auth = () => {
@@ -20,6 +26,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState("signin");
 
@@ -29,9 +36,21 @@ const Auth = () => {
     }
   }, [user, loading, navigate]);
 
-  const validateForm = () => {
+  const validateSignIn = () => {
     try {
-      authSchema.parse({ email, password });
+      signInSchema.parse({ email, password });
+      return true;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+      }
+      return false;
+    }
+  };
+
+  const validateSignUp = () => {
+    try {
+      signUpSchema.parse({ email, password, phone });
       return true;
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -43,7 +62,7 @@ const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validateSignIn()) return;
 
     setIsSubmitting(true);
     const { error } = await signIn(email, password);
@@ -65,10 +84,10 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validateSignUp()) return;
 
     setIsSubmitting(true);
-    const { error } = await signUp(email, password);
+    const { error } = await signUp(email, password, phone);
     setIsSubmitting(false);
 
     if (error) {
@@ -162,6 +181,18 @@ const Auth = () => {
                     placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={isSubmitting}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-phone">Phone Number</Label>
+                  <Input
+                    id="signup-phone"
+                    type="tel"
+                    placeholder="+91 98765 43210"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
                     required
                     disabled={isSubmitting}
                   />
