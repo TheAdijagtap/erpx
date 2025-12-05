@@ -4,11 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Building, Upload, Save, Settings } from "lucide-react";
-import { useApp } from "@/store/AppContext";
+import { useData } from "@/store/SupabaseDataContext";
 import { toast } from "@/hooks/use-toast";
 
 const BusinessSetup = () => {
-  const { businessInfo, setBusinessInfo } = useApp();
+  const { businessInfo, setBusinessInfo } = useData();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

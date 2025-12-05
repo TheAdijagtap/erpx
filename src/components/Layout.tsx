@@ -1,19 +1,28 @@
 import { Outlet, NavLink } from "react-router-dom";
-import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt, LineChart } from "lucide-react";
+import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt, LineChart, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const Layout = () => {
+  const { user, signOut } = useAuth();
+
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
     { name: "Inventory", href: "/inventory", icon: Package },
     { name: "Purchase Orders", href: "/purchase-orders", icon: ShoppingCart },
     { name: "Goods Receipt", href: "/goods-receipt", icon: FileText },
     { name: "Proforma Invoice", href: "/proforma", icon: Receipt },
-    
     { name: "Price Tracker", href: "/price-tracker", icon: LineChart },
     { name: "Suppliers", href: "/suppliers", icon: Users },
     { name: "Business Setup", href: "/business", icon: Building },
   ];
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("Signed out successfully");
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -48,6 +57,22 @@ const Layout = () => {
               );
             })}
           </nav>
+          
+          {/* User section */}
+          <div className="px-3 pb-4 border-t border-sidebar-border pt-4">
+            <div className="px-3 mb-3">
+              <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSignOut}
+              className="w-full justify-start text-muted-foreground hover:text-foreground"
+            >
+              <LogOut className="mr-3 h-4 w-4" />
+              Sign Out
+            </Button>
+          </div>
         </div>
       </div>
 

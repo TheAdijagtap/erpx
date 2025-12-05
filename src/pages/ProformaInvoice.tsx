@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Plus, Search, Receipt, Eye, Edit, Printer, Trash2, Calendar, CheckCircle, Send, TrendingUp, Download } from "lucide-react";
-import { useApp } from "@/store/AppContext";
+import { useData } from "@/store/SupabaseDataContext";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
 import { numberToWords } from "@/lib/numberToWords";
@@ -53,7 +53,7 @@ interface ProformaProduct {
 const PROFORMA_PRODUCTS_STORAGE_KEY = "stockflow_proforma_products";
 
 const ProformaInvoice = () => {
-  const { proformaInvoices } = useApp();
+  const { proformaInvoices } = useData();
   const [activeTab, setActiveTab] = useState<"invoices" | "insights" | "products">("invoices");
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [proformaProducts, setProformaProducts] = useState<ProformaProduct[]>(() => {
@@ -235,7 +235,7 @@ interface ProformaInsightsTabProps {
 }
 
 function ProformaInsightsTab({ stats, monthlyInsights, yearlyInsights, selectedMonth, setSelectedMonth }: ProformaInsightsTabProps) {
-  const { proformaInvoices } = useApp();
+  const { proformaInvoices } = useData();
 
   const selectedMonthStats = useMemo(() => {
     if (!selectedMonth || monthlyInsights.length === 0) return null;
@@ -455,7 +455,7 @@ function ProformaInsightsTab({ stats, monthlyInsights, yearlyInsights, selectedM
 }
 
 const ProformaInvoicesTab = ({ proformaProducts }: { proformaProducts: ProformaProduct[] }) => {
-  const { proformaInvoices } = useApp();
+  const { proformaInvoices } = useData();
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredInvoices = useMemo(() => proformaInvoices.filter(invoice =>
@@ -855,7 +855,7 @@ const getStatusBadge = (status: ProformaInvoiceType['status']) => {
 };
 
 const QuickStatusChangeButton = ({ invoice }: { invoice: ProformaInvoiceType }) => {
-  const { updateProformaInvoice } = useApp();
+  const { updateProformaInvoice } = useData();
 
   const statusOptions: Array<{ value: ProformaInvoiceType['status']; label: string; icon: React.ReactNode }> = [
     { value: 'DRAFT', label: 'Draft', icon: null },
@@ -884,7 +884,7 @@ const QuickStatusChangeButton = ({ invoice }: { invoice: ProformaInvoiceType }) 
 };
 
 const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: ProformaProduct[] }) => {
-  const { addProformaInvoice, businessInfo } = useApp();
+  const { addProformaInvoice, businessInfo } = useData();
   const [open, setOpen] = useState(false);
   const [buyerInfo, setBuyerInfo] = useState<BuyerInfo>({
     name: "",
@@ -1364,7 +1364,7 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
 };
 
 const ViewProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
-  const { businessInfo } = useApp();
+  const { businessInfo } = useData();
   const [open, setOpen] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -1522,7 +1522,7 @@ const ViewProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
 };
 
 const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaInvoiceType; proformaProducts?: ProformaProduct[] }) => {
-  const { updateProformaInvoice } = useApp();
+  const { updateProformaInvoice } = useData();
   const [open, setOpen] = useState(false);
   const [buyerInfo, setBuyerInfo] = useState<BuyerInfo>(invoice.buyerInfo);
   const [date, setDate] = useState(invoice.date instanceof Date ? invoice.date.toISOString().split('T')[0] : new Date(invoice.date).toISOString().split('T')[0]);
@@ -1987,7 +1987,7 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
 };
 
 const PrintProformaButton = ({ id }: { id: string }) => {
-  const { proformaInvoices, businessInfo } = useApp();
+  const { proformaInvoices, businessInfo } = useData();
   const invoice = proformaInvoices.find(p => p.id === id)!;
   const elId = `proforma-print-standalone-${id}`;
   
@@ -2112,7 +2112,7 @@ const PrintProformaButton = ({ id }: { id: string }) => {
 };
 
 const DeleteProformaDialog = ({ id }: { id: string }) => {
-  const { removeProformaInvoice } = useApp();
+  const { removeProformaInvoice } = useData();
   const [open, setOpen] = useState(false);
 
   const handleDelete = () => {

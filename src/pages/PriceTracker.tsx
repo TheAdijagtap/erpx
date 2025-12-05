@@ -7,7 +7,7 @@ import { formatINR, formatDateIN } from "@/lib/format";
 import { ArrowUp, ArrowDown, Search, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useApp } from "@/store/AppContext";
+import { useData } from "@/store/SupabaseDataContext";
 
 interface PriceRecord {
   id: string;
@@ -23,7 +23,7 @@ const PriceTracker = () => {
   const [priceHistory, setPriceHistory] = useState<PriceRecord[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
-  const { items } = useApp();
+  const { inventoryItems: items } = useData();
 
   useEffect(() => {
     const stored = localStorage.getItem("priceHistory");

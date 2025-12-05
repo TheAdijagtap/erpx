@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Search, FileText, Eye, Edit, Printer, Trash2, Download } from "lucide-react";
-import { useApp } from "@/store/AppContext";
+import { useData } from "@/store/SupabaseDataContext";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
 import { numberToWords } from "@/lib/numberToWords";
@@ -34,7 +34,7 @@ interface PurchaseOrderStatsSummary {
 }
 
 const PurchaseOrders = () => {
-  const { purchaseOrders } = useApp();
+  const { purchaseOrders } = useData();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"orders" | "insights">("orders");
@@ -493,7 +493,7 @@ function getStatusBadge(status: string) {
 }
 
 function CreatePODialog() {
-  const { suppliers, items, addPurchaseOrder, addItem } = useApp();
+  const { suppliers, inventoryItems: items, addPurchaseOrder, addItem } = useData();
   const [open, setOpen] = useState(false);
   const [supplierId, setSupplierId] = useState<string | null>(suppliers[0]?.id || null);
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
@@ -884,7 +884,7 @@ function CreatePODialog() {
 }
 
 function ViewPODialog({ id }: { id: string }) {
-  const { purchaseOrders, businessInfo, gstSettings } = useApp();
+  const { purchaseOrders, businessInfo, gstSettings } = useData();
   const order = purchaseOrders.find(p => p.id === id)!;
   const elId = `po-print-${id}`;
   return (
@@ -1004,7 +1004,7 @@ function ViewPODialog({ id }: { id: string }) {
 }
 
 function EditPODialog({ id }: { id: string }) {
-  const { purchaseOrders, updatePurchaseOrder } = useApp();
+  const { purchaseOrders, updatePurchaseOrder } = useData();
   const order = purchaseOrders.find(p => p.id === id)!;
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState(order.status);
@@ -1047,7 +1047,7 @@ function EditPODialog({ id }: { id: string }) {
 }
 
 function PrintPOButton({ id }: { id: string }) {
-  const { purchaseOrders, businessInfo, gstSettings } = useApp();
+  const { purchaseOrders, businessInfo, gstSettings } = useData();
   const order = purchaseOrders.find(p => p.id === id)!;
   const elId = `po-print-standalone-${id}`;
   
@@ -1156,7 +1156,7 @@ function PrintPOButton({ id }: { id: string }) {
 }
 
 function DeletePODialog({ id }: { id: string }) {
-  const { purchaseOrders, removePurchaseOrder } = useApp();
+  const { purchaseOrders, removePurchaseOrder } = useData();
   const order = purchaseOrders.find(p => p.id === id)!;
 
   const handleDelete = () => {
