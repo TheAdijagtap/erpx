@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from "react-router-dom";
-import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt, Trash2, LineChart } from "lucide-react";
+import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt, LineChart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const Layout = () => {
@@ -9,7 +9,7 @@ const Layout = () => {
     { name: "Purchase Orders", href: "/purchase-orders", icon: ShoppingCart },
     { name: "Goods Receipt", href: "/goods-receipt", icon: FileText },
     { name: "Proforma Invoice", href: "/proforma", icon: Receipt },
-    { name: "Scrap Notes", href: "/scrap-notes", icon: Trash2 },
+    
     { name: "Price Tracker", href: "/price-tracker", icon: LineChart },
     { name: "Suppliers", href: "/suppliers", icon: Users },
     { name: "Business Setup", href: "/business", icon: Building },
