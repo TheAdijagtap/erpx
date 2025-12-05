@@ -363,6 +363,8 @@ export type Database = {
           email: string | null
           gst_number: string | null
           id: string
+          logo: string | null
+          signature: string | null
           updated_at: string
         }
         Insert: {
@@ -373,6 +375,8 @@ export type Database = {
           email?: string | null
           gst_number?: string | null
           id: string
+          logo?: string | null
+          signature?: string | null
           updated_at?: string
         }
         Update: {
@@ -383,6 +387,8 @@ export type Database = {
           email?: string | null
           gst_number?: string | null
           id?: string
+          logo?: string | null
+          signature?: string | null
           updated_at?: string
         }
         Relationships: []

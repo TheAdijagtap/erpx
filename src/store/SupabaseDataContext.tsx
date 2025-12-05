@@ -162,14 +162,30 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           poNumber: po.po_number,
           supplierId: po.supplier_id || "",
           supplier: supplier ? { id: supplier.id, name: supplier.name, contactPerson: supplier.contact_person || "", email: supplier.email || "", phone: supplier.phone || "", address: supplier.address || "", gstNumber: supplier.gst_number || "", createdAt: new Date(supplier.created_at) } : {} as Supplier,
-          items: (po.purchase_order_items || []).map((item: any) => ({
-            id: item.id,
-            itemId: item.item_id || "",
-            item: {} as InventoryItem,
-            quantity: Number(item.quantity),
-            unitPrice: Number(item.rate),
-            total: Number(item.amount),
-          })),
+          items: (po.purchase_order_items || []).map((item: any) => {
+            const invItem = items?.find(i => i.id === item.item_id);
+            return {
+              id: item.id,
+              itemId: item.item_id || "",
+              item: invItem ? {
+                id: invItem.id,
+                name: invItem.name,
+                sku: invItem.hsn_code || "",
+                description: invItem.description || "",
+                category: invItem.category || "",
+                currentStock: Number(invItem.current_stock),
+                minStock: Number(invItem.reorder_level) || 0,
+                maxStock: 1000,
+                unitPrice: Number(invItem.unit_price) || 0,
+                unit: invItem.unit,
+                createdAt: new Date(invItem.created_at),
+                updatedAt: new Date(invItem.updated_at),
+              } : { id: "", name: item.item_name || "Item", sku: "", description: item.description || "", category: "", currentStock: 0, minStock: 0, maxStock: 0, unitPrice: Number(item.rate), unit: item.unit || "piece", createdAt: new Date(), updatedAt: new Date() } as InventoryItem,
+              quantity: Number(item.quantity),
+              unitPrice: Number(item.rate),
+              total: Number(item.amount),
+            };
+          }),
           additionalCharges: [],
           subtotal: Number(po.subtotal),
           sgst: Number(po.tax_amount) / 2,
@@ -193,15 +209,31 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           poId: gr.purchase_order_id || undefined,
           supplierId: gr.supplier_id || "",
           supplier: supplier ? { id: supplier.id, name: supplier.name, contactPerson: supplier.contact_person || "", email: supplier.email || "", phone: supplier.phone || "", address: supplier.address || "", gstNumber: supplier.gst_number || "", createdAt: new Date(supplier.created_at) } : {} as Supplier,
-          items: (gr.goods_receipt_items || []).map((item: any) => ({
-            id: item.id,
-            itemId: item.item_id || "",
-            item: {} as InventoryItem,
-            orderedQuantity: Number(item.quantity_ordered),
-            receivedQuantity: Number(item.quantity_received),
-            unitPrice: Number(item.unit_price),
-            total: Number(item.amount),
-          })),
+          items: (gr.goods_receipt_items || []).map((item: any) => {
+            const invItem = items?.find(i => i.id === item.item_id);
+            return {
+              id: item.id,
+              itemId: item.item_id || "",
+              item: invItem ? {
+                id: invItem.id,
+                name: invItem.name,
+                sku: invItem.hsn_code || "",
+                description: invItem.description || "",
+                category: invItem.category || "",
+                currentStock: Number(invItem.current_stock),
+                minStock: Number(invItem.reorder_level) || 0,
+                maxStock: 1000,
+                unitPrice: Number(invItem.unit_price) || 0,
+                unit: invItem.unit,
+                createdAt: new Date(invItem.created_at),
+                updatedAt: new Date(invItem.updated_at),
+              } : { id: "", name: item.item_name || "Item", sku: "", description: item.notes || "", category: "", currentStock: 0, minStock: 0, maxStock: 0, unitPrice: Number(item.unit_price), unit: item.unit || "piece", createdAt: new Date(), updatedAt: new Date() } as InventoryItem,
+              orderedQuantity: Number(item.quantity_ordered),
+              receivedQuantity: Number(item.quantity_received),
+              unitPrice: Number(item.unit_price),
+              total: Number(item.amount),
+            };
+          }),
           additionalCharges: [],
           subtotal: Number(gr.subtotal),
           sgst: Number(gr.tax_amount) / 2,
@@ -230,7 +262,20 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         items: (pi.proforma_invoice_items || []).map((item: any) => ({
           id: item.id,
           itemId: "",
-          item: {} as InventoryItem,
+          item: { 
+            id: "", 
+            name: item.item_name || "Item", 
+            sku: item.hsn_code || "", 
+            description: item.description || "", 
+            category: "", 
+            currentStock: 0, 
+            minStock: 0, 
+            maxStock: 0, 
+            unitPrice: Number(item.rate), 
+            unit: item.unit || "piece", 
+            createdAt: new Date(), 
+            updatedAt: new Date() 
+          } as InventoryItem,
           quantity: Number(item.quantity),
           unitPrice: Number(item.rate),
           total: Number(item.amount),
@@ -275,6 +320,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           phone: profile.contact_number || defaultBusinessInfo.phone,
           email: profile.email || user.email || defaultBusinessInfo.email,
           gstNumber: profile.gst_number || "",
+          logo: (profile as any).logo || undefined,
+          signature: (profile as any).signature || undefined,
         });
       }
 
@@ -625,6 +672,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       contact_number: info.phone,
       email: info.email,
       gst_number: info.gstNumber,
+      logo: info.logo || null,
+      signature: info.signature || null,
     }).eq("id", user.id);
 
     if (error) throw error;

@@ -2010,7 +2010,7 @@ const PrintProformaButton = ({ id }: { id: string }) => {
           </div>
         </div>
       </div>
-      <div class="section"><h2>Proforma Invoice ${invoice.proformaNumber}</h2></div>
+      <div class="section"><h2>Quotation Cum Proforma ${invoice.proformaNumber}</h2></div>
       <div class="section">
         <div class="grid">
           <div>
@@ -2099,7 +2099,7 @@ const PrintProformaButton = ({ id }: { id: string }) => {
       ${invoice.notes ? `<div class="footer">Notes: ${invoice.notes}</div>` : ''}
     `;
     
-    printElementById(elId, `Proforma Invoice ${invoice.proformaNumber}`);
+    printElementById(elId, `Quotation Cum Proforma ${invoice.proformaNumber}`);
     setTimeout(() => document.body.removeChild(tempDiv), 500);
   };
 
