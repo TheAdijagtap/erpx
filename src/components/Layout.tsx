@@ -2,11 +2,17 @@ import { Outlet, NavLink } from "react-router-dom";
 import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt, LineChart, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { useData } from "@/store/SupabaseDataContext";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { TrialBanner, TrialStatusBadge, TrialExpiredOverlay, calculateTrialStatus } from "@/components/TrialBanner";
+
+const WHATSAPP_NUMBER = "919373751128";
 
 const Layout = () => {
   const { user, signOut } = useAuth();
+  const { trialStartDate } = useData();
+  const { isExpired } = calculateTrialStatus(trialStartDate);
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
@@ -24,8 +30,18 @@ const Layout = () => {
     toast.success("Signed out successfully");
   };
 
+  const handleSubscribe = () => {
+    const message = encodeURIComponent(
+      "Hi! I would like to subscribe to CORS Inventory app. Please share the subscription details."
+    );
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, "_blank");
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Trial expired overlay */}
+      {isExpired && <TrialExpiredOverlay />}
+      
       {/* Sidebar */}
       <div className="fixed inset-y-0 left-0 z-50 w-64 bg-sidebar border-r border-sidebar-border shadow-[0_1px_3px_hsl(217_33%_17%_/_0.08)]">
         <div className="flex h-full flex-col">
@@ -60,8 +76,9 @@ const Layout = () => {
           
           {/* User section */}
           <div className="px-3 pb-4 border-t border-sidebar-border pt-4">
-            <div className="px-3 mb-3">
+            <div className="px-3 mb-3 space-y-2">
               <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+              <TrialStatusBadge trialStartDate={trialStartDate} />
             </div>
             <Button
               variant="ghost"
@@ -78,6 +95,9 @@ const Layout = () => {
 
       {/* Main content */}
       <div className="pl-64">
+        {/* Trial warning banner */}
+        <TrialBanner trialStartDate={trialStartDate} onSubscribe={handleSubscribe} />
+        
         <main className="p-8 bg-background min-h-screen">
           <Outlet />
         </main>
