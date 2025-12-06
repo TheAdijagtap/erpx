@@ -28,6 +28,7 @@ interface DataContextValue {
   businessInfo: BusinessInfo;
   gstSettings: GSTSettings;
   trialStartDate: Date | null;
+  subscriptionEndDate: Date | null;
   loading: boolean;
 
   // Inventory
@@ -97,6 +98,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [businessInfo, setBusinessInfoState] = useState<BusinessInfo>(defaultBusinessInfo);
   const [gstSettings, setGstSettingsState] = useState<GSTSettings>(defaultGstSettings);
   const [trialStartDate, setTrialStartDate] = useState<Date | null>(null);
+  const [subscriptionEndDate, setSubscriptionEndDate] = useState<Date | null>(null);
 
   // Helper to calculate totals
   const calcTotals = (items: Array<{ quantity: number; unitPrice: number }>, applyGST: boolean, additionalCharges: Array<{ amount: number }> = [], customGstRate?: number) => {
@@ -360,8 +362,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             ifscCode: profileAny.bank_ifsc_code || "",
           } : undefined,
         });
-        // Set trial start date
+        // Set trial start date and subscription end date
         setTrialStartDate(profileAny.trial_start_date ? new Date(profileAny.trial_start_date) : new Date());
+        setSubscriptionEndDate(profileAny.subscription_end_date ? new Date(profileAny.subscription_end_date) : null);
       }
 
     } catch (error) {
@@ -814,6 +817,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     businessInfo,
     gstSettings,
     trialStartDate,
+    subscriptionEndDate,
     loading,
     addItem,
     updateItem,

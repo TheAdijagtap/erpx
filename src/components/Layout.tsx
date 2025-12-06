@@ -11,8 +11,8 @@ const WHATSAPP_NUMBER = "919373751128";
 
 const Layout = () => {
   const { user, signOut } = useAuth();
-  const { trialStartDate } = useData();
-  const { isExpired } = calculateTrialStatus(trialStartDate);
+  const { trialStartDate, subscriptionEndDate } = useData();
+  const { isExpired } = calculateTrialStatus(trialStartDate, subscriptionEndDate);
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
@@ -78,7 +78,7 @@ const Layout = () => {
           <div className="px-3 pb-4 border-t border-sidebar-border pt-4">
             <div className="px-3 mb-3 space-y-2">
               <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-              <TrialStatusBadge trialStartDate={trialStartDate} />
+              <TrialStatusBadge trialStartDate={trialStartDate} subscriptionEndDate={subscriptionEndDate} />
             </div>
             <Button
               variant="ghost"
@@ -96,7 +96,7 @@ const Layout = () => {
       {/* Main content */}
       <div className="pl-64">
         {/* Trial warning banner */}
-        <TrialBanner trialStartDate={trialStartDate} onSubscribe={handleSubscribe} />
+        <TrialBanner trialStartDate={trialStartDate} subscriptionEndDate={subscriptionEndDate} onSubscribe={handleSubscribe} />
         
         <main className="p-8 bg-background min-h-screen">
           <Outlet />
