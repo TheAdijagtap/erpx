@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from "react-router-dom";
-import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt, LineChart, LogOut, Shield } from "lucide-react";
+import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt, LineChart, LogOut, Shield, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useData } from "@/store/SupabaseDataContext";
@@ -83,15 +83,26 @@ const Layout = () => {
               <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
               <TrialStatusBadge trialStartDate={trialStartDate} subscriptionEndDate={subscriptionEndDate} />
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSignOut}
-              className="w-full justify-start text-muted-foreground hover:text-foreground"
-            >
-              <LogOut className="mr-3 h-4 w-4" />
-              Sign Out
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => window.open("mailto:necrus@yahoo.com?subject=Help Request - CORS Inventory", "_blank")}
+                className="flex-1 justify-start text-muted-foreground hover:text-foreground"
+              >
+                <HelpCircle className="mr-3 h-4 w-4" />
+                Help
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className="flex-1 justify-start text-muted-foreground hover:text-foreground"
+              >
+                <LogOut className="mr-3 h-4 w-4" />
+                Sign Out
+              </Button>
+            </div>
           </div>
         </div>
       </div>
