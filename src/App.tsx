@@ -13,6 +13,7 @@ import Suppliers from "./pages/Suppliers";
 import BusinessSetup from "./pages/BusinessSetup";
 import ProformaInvoice from "./pages/ProformaInvoice";
 import PriceTracker from "./pages/PriceTracker";
+import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -47,6 +48,7 @@ const App = () => (
               <Route path="proforma" element={<ProformaInvoice />} />
               <Route path="price-tracker" element={<PriceTracker />} />
               <Route path="business" element={<BusinessSetup />} />
+              <Route path="admin" element={<AdminPanel />} />
             </Route>
             
             <Route path="*" element={<NotFound />} />
