@@ -761,6 +761,86 @@ const Dashboard = () => {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      <section className="py-20 px-6 bg-gradient-to-br from-primary/5 via-background to-accent/5">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              Simple, Transparent Pricing
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Choose the plan that works best for your business
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+            {/* Monthly Plan */}
+            <Card className="p-8 hover:shadow-lg transition-shadow border-2 border-border">
+              <div className="text-center">
+                <h3 className="text-xl font-semibold text-foreground mb-2">Monthly</h3>
+                <p className="text-sm text-muted-foreground mb-6">Pay as you go</p>
+                <div className="mb-6">
+                  <span className="text-4xl font-bold text-foreground">₹250</span>
+                  <span className="text-muted-foreground">/month</span>
+                </div>
+                <ul className="space-y-3 text-sm text-muted-foreground mb-8">
+                  <li className="flex items-center gap-2 justify-center">
+                    <CheckCircle2 className="w-4 h-4 text-success" />
+                    All features included
+                  </li>
+                  <li className="flex items-center gap-2 justify-center">
+                    <CheckCircle2 className="w-4 h-4 text-success" />
+                    Unlimited transactions
+                  </li>
+                  <li className="flex items-center gap-2 justify-center">
+                    <CheckCircle2 className="w-4 h-4 text-success" />
+                    Priority support
+                  </li>
+                </ul>
+                <Button asChild className="w-full" size="lg">
+                  <Link to="/auth">Get Started</Link>
+                </Button>
+              </div>
+            </Card>
+
+            {/* Yearly Plan */}
+            <Card className="p-8 hover:shadow-lg transition-shadow border-2 border-primary relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-bl-lg">
+                SAVE ₹500
+              </div>
+              <div className="text-center">
+                <h3 className="text-xl font-semibold text-foreground mb-2">Yearly</h3>
+                <p className="text-sm text-muted-foreground mb-6">Best value</p>
+                <div className="mb-2">
+                  <span className="text-4xl font-bold text-foreground">₹2,500</span>
+                  <span className="text-muted-foreground">/year</span>
+                </div>
+                <p className="text-sm text-primary font-medium mb-6">
+                  ₹208/month • Save ₹500
+                </p>
+                <ul className="space-y-3 text-sm text-muted-foreground mb-8">
+                  <li className="flex items-center gap-2 justify-center">
+                    <CheckCircle2 className="w-4 h-4 text-success" />
+                    All features included
+                  </li>
+                  <li className="flex items-center gap-2 justify-center">
+                    <CheckCircle2 className="w-4 h-4 text-success" />
+                    Unlimited transactions
+                  </li>
+                  <li className="flex items-center gap-2 justify-center">
+                    <CheckCircle2 className="w-4 h-4 text-success" />
+                    Priority support
+                  </li>
+                </ul>
+                <Button asChild className="w-full" size="lg">
+                  <Link to="/auth">Get Started</Link>
+                </Button>
+              </div>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 px-6 bg-muted/30">
         <div className="max-w-4xl mx-auto">
