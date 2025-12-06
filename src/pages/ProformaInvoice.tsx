@@ -14,7 +14,7 @@ import { useData } from "@/store/SupabaseDataContext";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
 import { numberToWords } from "@/lib/numberToWords";
-import { ProformaInvoice as ProformaInvoiceType, ProformaInvoiceItem, BuyerInfo } from "@/types/inventory";
+import { ProformaInvoice as ProformaInvoiceType, ProformaInvoiceItem, BuyerInfo, ProformaProduct } from "@/types/inventory";
 import React from "react";
 
 interface ProformaAggregateRow {
@@ -39,43 +39,10 @@ interface ProformaStatsSummary {
   yearlyTotals: ProformaAggregateRow[];
 }
 
-// Define ProformaProduct type locally since it's not in the main types
-interface ProformaProduct {
-  id: string;
-  name: string;
-  description: string;
-  unit: string;
-  price: number;
-  createdAt: Date;
-}
-
-// Storage key for proforma products
-const PROFORMA_PRODUCTS_STORAGE_KEY = "stockflow_proforma_products";
-
 const ProformaInvoice = () => {
-  const { proformaInvoices } = useData();
+  const { proformaInvoices, proformaProducts } = useData();
   const [activeTab, setActiveTab] = useState<"invoices" | "insights" | "products">("invoices");
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
-  const [proformaProducts, setProformaProducts] = useState<ProformaProduct[]>(() => {
-    const stored = localStorage.getItem(PROFORMA_PRODUCTS_STORAGE_KEY);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        return parsed.map((p: any) => ({
-          ...p,
-          createdAt: new Date(p.createdAt)
-        }));
-      } catch (e) {
-        console.warn("Failed to parse stored proforma products", e);
-      }
-    }
-    return [];
-  });
-
-  // Save products to localStorage whenever they change
-  React.useEffect(() => {
-    localStorage.setItem(PROFORMA_PRODUCTS_STORAGE_KEY, JSON.stringify(proformaProducts));
-  }, [proformaProducts]);
 
   // Calculate stats
   const stats = useMemo<ProformaStatsSummary>(() => {
@@ -219,7 +186,7 @@ const ProformaInvoice = () => {
           setSelectedMonth={setSelectedMonth}
         />
       ) : (
-        <ProductsTab proformaProducts={proformaProducts} setProformaProducts={setProformaProducts} />
+        <ProductsTab proformaProducts={proformaProducts} />
       )}
     </div>
   );
@@ -549,11 +516,9 @@ const ProformaInvoicesTab = ({ proformaProducts }: { proformaProducts: ProformaP
 };
 
 const ProductsTab = ({ 
-  proformaProducts, 
-  setProformaProducts 
+  proformaProducts,
 }: { 
   proformaProducts: ProformaProduct[];
-  setProformaProducts: React.Dispatch<React.SetStateAction<ProformaProduct[]>>;
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -577,7 +542,7 @@ const ProductsTab = ({
               className="pl-10"
             />
           </div>
-          <CreateProductDialog products={proformaProducts} setProducts={setProformaProducts} />
+          <CreateProductDialog />
         </div>
       </Card>
 
@@ -603,8 +568,8 @@ const ProductsTab = ({
                 </div>
               </div>
               <div className="flex gap-2">
-                <EditProductDialog product={product} products={proformaProducts} setProducts={setProformaProducts} />
-                <DeleteProductDialog productId={product.id} products={proformaProducts} setProducts={setProformaProducts} />
+                <EditProductDialog product={product} />
+                <DeleteProductDialog productId={product.id} />
               </div>
             </div>
           </Card>
@@ -618,41 +583,39 @@ const ProductsTab = ({
           <p className="text-muted-foreground mb-4">
             {searchTerm ? "Try adjusting your search terms" : "Create your first product for proforma invoices"}
           </p>
-          <CreateProductDialog products={proformaProducts} setProducts={setProformaProducts} />
+          <CreateProductDialog />
         </Card>
       )}
     </div>
   );
 };
 
-function CreateProductDialog({ products, setProducts }: {
-  products: ProformaProduct[];
-  setProducts: React.Dispatch<React.SetStateAction<ProformaProduct[]>>;
-}) {
+function CreateProductDialog() {
+  const { addProformaProduct } = useData();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [unit, setUnit] = useState("PCS");
   const [price, setPrice] = useState(0);
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     if (!name.trim() || price <= 0) return;
     
-    const newProduct = {
-      id: crypto.randomUUID(),
-      name: name.trim(),
-      description: description.trim(),
-      unit,
-      price,
-      createdAt: new Date(),
-    };
-    
-    setProducts([...products, newProduct]);
-    setOpen(false);
-    setName("");
-    setDescription("");
-    setUnit("PCS");
-    setPrice(0);
+    try {
+      await addProformaProduct({
+        name: name.trim(),
+        description: description.trim(),
+        unit,
+        price,
+      });
+      setOpen(false);
+      setName("");
+      setDescription("");
+      setUnit("PCS");
+      setPrice(0);
+    } catch (error) {
+      console.error("Failed to add product:", error);
+    }
   };
 
   return (
@@ -720,26 +683,30 @@ function CreateProductDialog({ products, setProducts }: {
   );
 }
 
-function EditProductDialog({ product, products, setProducts }: {
+function EditProductDialog({ product }: {
   product: ProformaProduct;
-  products: ProformaProduct[];
-  setProducts: React.Dispatch<React.SetStateAction<ProformaProduct[]>>;
 }) {
+  const { updateProformaProduct } = useData();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(product.name);
   const [description, setDescription] = useState(product.description);
   const [unit, setUnit] = useState(product.unit);
   const [price, setPrice] = useState(product.price);
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     if (!name.trim() || price <= 0) return;
     
-    setProducts(products.map(p => 
-      p.id === product.id 
-        ? { ...p, name: name.trim(), description: description.trim(), unit, price }
-        : p
-    ));
-    setOpen(false);
+    try {
+      await updateProformaProduct(product.id, {
+        name: name.trim(),
+        description: description.trim(),
+        unit,
+        price,
+      });
+      setOpen(false);
+    } catch (error) {
+      console.error("Failed to update product:", error);
+    }
   };
 
   return (
@@ -807,16 +774,19 @@ function EditProductDialog({ product, products, setProducts }: {
   );
 }
 
-function DeleteProductDialog({ productId, products, setProducts }: {
+function DeleteProductDialog({ productId }: {
   productId: string;
-  products: ProformaProduct[];
-  setProducts: React.Dispatch<React.SetStateAction<ProformaProduct[]>>;
 }) {
+  const { removeProformaProduct } = useData();
   const [open, setOpen] = useState(false);
   
-  const onDelete = () => {
-    setProducts(products.filter(p => p.id !== productId));
-    setOpen(false);
+  const onDelete = async () => {
+    try {
+      await removeProformaProduct(productId);
+      setOpen(false);
+    } catch (error) {
+      console.error("Failed to delete product:", error);
+    }
   };
 
   return (
