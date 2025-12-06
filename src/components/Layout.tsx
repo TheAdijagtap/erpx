@@ -1,8 +1,9 @@
 import { Outlet, NavLink } from "react-router-dom";
-import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt, LineChart, LogOut } from "lucide-react";
+import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt, LineChart, LogOut, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useData } from "@/store/SupabaseDataContext";
+import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { TrialBanner, TrialStatusBadge, TrialExpiredOverlay, calculateTrialStatus } from "@/components/TrialBanner";
@@ -13,6 +14,7 @@ const Layout = () => {
   const { user, signOut } = useAuth();
   const { trialStartDate, subscriptionEndDate } = useData();
   const { isExpired } = calculateTrialStatus(trialStartDate, subscriptionEndDate);
+  const { isAdmin } = useAdminCheck();
 
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
@@ -23,6 +25,7 @@ const Layout = () => {
     { name: "Price Tracker", href: "/price-tracker", icon: LineChart },
     { name: "Suppliers", href: "/suppliers", icon: Users },
     { name: "Business Setup", href: "/business", icon: Building },
+    ...(isAdmin ? [{ name: "Admin Panel", href: "/admin", icon: Shield }] : []),
   ];
 
   const handleSignOut = async () => {
