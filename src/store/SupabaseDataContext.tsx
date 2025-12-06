@@ -124,8 +124,26 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     setLoading(true);
     try {
-      // Fetch inventory items
-      const { data: items } = await supabase.from("inventory_items").select("*").order("created_at", { ascending: false });
+      // Fetch all data in parallel for speed
+      const [
+        { data: items },
+        { data: sups },
+        { data: pos },
+        { data: grs },
+        { data: pis },
+        { data: custs },
+        { data: profile },
+      ] = await Promise.all([
+        supabase.from("inventory_items").select("*").order("created_at", { ascending: false }),
+        supabase.from("suppliers").select("*").order("created_at", { ascending: false }),
+        supabase.from("purchase_orders").select("*, purchase_order_items(*), purchase_order_additional_charges(*)").order("created_at", { ascending: false }),
+        supabase.from("goods_receipts").select("*, goods_receipt_items(*), goods_receipt_additional_charges(*)").order("created_at", { ascending: false }),
+        supabase.from("proforma_invoices").select("*, proforma_invoice_items(*), proforma_invoice_additional_charges(*)").order("created_at", { ascending: false }),
+        supabase.from("customers").select("*").order("created_at", { ascending: false }),
+        supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
+      ]);
+
+      // Map inventory items
       setInventoryItems((items || []).map(i => ({
         id: i.id,
         name: i.name,
@@ -142,8 +160,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         updatedAt: new Date(i.updated_at),
       })));
 
-      // Fetch suppliers
-      const { data: sups } = await supabase.from("suppliers").select("*").order("created_at", { ascending: false });
+      // Map suppliers
       setSuppliers((sups || []).map(s => ({
         id: s.id,
         name: s.name,
@@ -155,8 +172,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         createdAt: new Date(s.created_at),
       })));
 
-      // Fetch purchase orders with items and additional charges
-      const { data: pos } = await supabase.from("purchase_orders").select("*, purchase_order_items(*), purchase_order_additional_charges(*)").order("created_at", { ascending: false });
+      // Map purchase orders
       const mappedPOs: PurchaseOrder[] = (pos || []).map(po => {
         const supplier = sups?.find(s => s.id === po.supplier_id);
         const poAny = po as any;
@@ -206,8 +222,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       });
       setPurchaseOrders(mappedPOs);
 
-      // Fetch goods receipts with items and additional charges
-      const { data: grs } = await supabase.from("goods_receipts").select("*, goods_receipt_items(*), goods_receipt_additional_charges(*)").order("created_at", { ascending: false });
+      // Map goods receipts
       const mappedGRs: GoodsReceipt[] = (grs || []).map(gr => {
         const supplier = sups?.find(s => s.id === gr.supplier_id);
         const grAny = gr as any;
@@ -258,8 +273,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       });
       setGoodsReceipts(mappedGRs);
 
-      // Fetch proforma invoices with items and additional charges
-      const { data: pis } = await supabase.from("proforma_invoices").select("*, proforma_invoice_items(*), proforma_invoice_additional_charges(*)").order("created_at", { ascending: false });
+      // Map proforma invoices
       const mappedPIs: ProformaInvoice[] = (pis || []).map(pi => {
         const piAny = pi as any;
         return {
@@ -311,8 +325,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       });
       setProformaInvoices(mappedPIs);
 
-      // Fetch customers
-      const { data: custs } = await supabase.from("customers").select("*").order("created_at", { ascending: false });
+      // Map customers
       setCustomers((custs || []).map(c => ({
         id: c.id,
         name: c.name,
@@ -329,8 +342,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         updatedAt: new Date(c.updated_at),
       })));
 
-      // Fetch business profile
-      const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+      // Map business profile
       if (profile) {
         const profileAny = profile as any;
         setBusinessInfoState({
