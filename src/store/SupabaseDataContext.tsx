@@ -155,10 +155,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         createdAt: new Date(s.created_at),
       })));
 
-      // Fetch purchase orders with items
-      const { data: pos } = await supabase.from("purchase_orders").select("*, purchase_order_items(*)").order("created_at", { ascending: false });
+      // Fetch purchase orders with items and additional charges
+      const { data: pos } = await supabase.from("purchase_orders").select("*, purchase_order_items(*), purchase_order_additional_charges(*)").order("created_at", { ascending: false });
       const mappedPOs: PurchaseOrder[] = (pos || []).map(po => {
         const supplier = sups?.find(s => s.id === po.supplier_id);
+        const poAny = po as any;
         return {
           id: po.id,
           poNumber: po.po_number,
@@ -188,7 +189,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               total: Number(item.amount),
             };
           }),
-          additionalCharges: [],
+          additionalCharges: (poAny.purchase_order_additional_charges || []).map((charge: any) => ({
+            id: charge.id,
+            name: charge.name,
+            amount: Number(charge.amount),
+          })),
           subtotal: Number(po.subtotal),
           sgst: Number(po.tax_amount) / 2,
           cgst: Number(po.tax_amount) / 2,
@@ -201,10 +206,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       });
       setPurchaseOrders(mappedPOs);
 
-      // Fetch goods receipts with items
-      const { data: grs } = await supabase.from("goods_receipts").select("*, goods_receipt_items(*)").order("created_at", { ascending: false });
+      // Fetch goods receipts with items and additional charges
+      const { data: grs } = await supabase.from("goods_receipts").select("*, goods_receipt_items(*), goods_receipt_additional_charges(*)").order("created_at", { ascending: false });
       const mappedGRs: GoodsReceipt[] = (grs || []).map(gr => {
         const supplier = sups?.find(s => s.id === gr.supplier_id);
+        const grAny = gr as any;
         return {
           id: gr.id,
           grNumber: gr.gr_number,
@@ -236,7 +242,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               total: Number(item.amount),
             };
           }),
-          additionalCharges: [],
+          additionalCharges: (grAny.goods_receipt_additional_charges || []).map((charge: any) => ({
+            id: charge.id,
+            name: charge.name,
+            amount: Number(charge.amount),
+          })),
           subtotal: Number(gr.subtotal),
           sgst: Number(gr.tax_amount) / 2,
           cgst: Number(gr.tax_amount) / 2,
@@ -248,50 +258,57 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       });
       setGoodsReceipts(mappedGRs);
 
-      // Fetch proforma invoices with items
-      const { data: pis } = await supabase.from("proforma_invoices").select("*, proforma_invoice_items(*)").order("created_at", { ascending: false });
-      const mappedPIs: ProformaInvoice[] = (pis || []).map(pi => ({
-        id: pi.id,
-        proformaNumber: pi.invoice_number,
-        buyerInfo: {
-          name: pi.customer_name,
-          contactPerson: "",
-          email: "",
-          phone: "",
-          address: pi.customer_address || "",
-          gstNumber: pi.customer_gst || "",
-        },
-        items: (pi.proforma_invoice_items || []).map((item: any) => ({
-          id: item.id,
-          itemId: "",
-          item: { 
-            id: "", 
-            name: item.item_name || "Item", 
-            sku: item.hsn_code || "", 
-            description: item.description || "", 
-            category: "", 
-            currentStock: 0, 
-            minStock: 0, 
-            maxStock: 0, 
-            unitPrice: Number(item.rate), 
-            unit: item.unit || "piece", 
-            createdAt: new Date(), 
-            updatedAt: new Date() 
-          } as InventoryItem,
-          quantity: Number(item.quantity),
-          unitPrice: Number(item.rate),
-          total: Number(item.amount),
-        })),
-        additionalCharges: [],
-        subtotal: Number(pi.subtotal),
-        sgst: Number(pi.tax_amount) / 2,
-        cgst: Number(pi.tax_amount) / 2,
-        total: Number(pi.total),
-        status: "SENT" as ProformaInvoice["status"],
-        date: new Date(pi.date),
-        notes: pi.notes || undefined,
-        paymentTerms: pi.payment_terms || undefined,
-      }));
+      // Fetch proforma invoices with items and additional charges
+      const { data: pis } = await supabase.from("proforma_invoices").select("*, proforma_invoice_items(*), proforma_invoice_additional_charges(*)").order("created_at", { ascending: false });
+      const mappedPIs: ProformaInvoice[] = (pis || []).map(pi => {
+        const piAny = pi as any;
+        return {
+          id: pi.id,
+          proformaNumber: pi.invoice_number,
+          buyerInfo: {
+            name: pi.customer_name,
+            contactPerson: "",
+            email: "",
+            phone: "",
+            address: pi.customer_address || "",
+            gstNumber: pi.customer_gst || "",
+          },
+          items: (pi.proforma_invoice_items || []).map((item: any) => ({
+            id: item.id,
+            itemId: "",
+            item: { 
+              id: "", 
+              name: item.item_name || "Item", 
+              sku: item.hsn_code || "", 
+              description: item.description || "", 
+              category: "", 
+              currentStock: 0, 
+              minStock: 0, 
+              maxStock: 0, 
+              unitPrice: Number(item.rate), 
+              unit: item.unit || "piece", 
+              createdAt: new Date(), 
+              updatedAt: new Date() 
+            } as InventoryItem,
+            quantity: Number(item.quantity),
+            unitPrice: Number(item.rate),
+            total: Number(item.amount),
+          })),
+          additionalCharges: (piAny.proforma_invoice_additional_charges || []).map((charge: any) => ({
+            id: charge.id,
+            name: charge.name,
+            amount: Number(charge.amount),
+          })),
+          subtotal: Number(pi.subtotal),
+          sgst: Number(pi.tax_amount) / 2,
+          cgst: Number(pi.tax_amount) / 2,
+          total: Number(pi.total),
+          status: "SENT" as ProformaInvoice["status"],
+          date: new Date(pi.date),
+          notes: pi.notes || undefined,
+          paymentTerms: pi.payment_terms || undefined,
+        };
+      });
       setProformaInvoices(mappedPIs);
 
       // Fetch customers
@@ -475,6 +492,17 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }));
 
     await supabase.from("purchase_order_items").insert(poItems);
+
+    // Insert additional charges
+    if (po.additionalCharges && po.additionalCharges.length > 0) {
+      const charges = po.additionalCharges.map(charge => ({
+        purchase_order_id: data.id,
+        name: charge.name,
+        amount: charge.amount,
+      }));
+      await supabase.from("purchase_order_additional_charges").insert(charges);
+    }
+
     await refreshData();
     return data.id;
   };
@@ -542,6 +570,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
+    // Insert additional charges
+    if (gr.additionalCharges && gr.additionalCharges.length > 0) {
+      const charges = gr.additionalCharges.map(charge => ({
+        goods_receipt_id: data.id,
+        name: charge.name,
+        amount: charge.amount,
+      }));
+      await supabase.from("goods_receipt_additional_charges").insert(charges);
+    }
+
     // Update PO status if linked
     if (gr.poId) {
       await updatePurchaseOrder(gr.poId, { status: "RECEIVED" });
@@ -601,6 +639,17 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }));
 
     await supabase.from("proforma_invoice_items").insert(piItems);
+
+    // Insert additional charges
+    if (pi.additionalCharges && pi.additionalCharges.length > 0) {
+      const charges = pi.additionalCharges.map(charge => ({
+        proforma_invoice_id: data.id,
+        name: charge.name,
+        amount: charge.amount,
+      }));
+      await supabase.from("proforma_invoice_additional_charges").insert(charges);
+    }
+
     await refreshData();
     return data.id;
   };
@@ -608,9 +657,53 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const updateProformaInvoice = async (id: string, patch: Partial<ProformaInvoice>) => {
     const updateData: any = {};
     if (patch.notes !== undefined) updateData.notes = patch.notes;
+    if (patch.subtotal !== undefined) updateData.subtotal = patch.subtotal;
+    if (patch.sgst !== undefined || patch.cgst !== undefined) {
+      updateData.tax_amount = (patch.sgst || 0) + (patch.cgst || 0);
+    }
+    if (patch.total !== undefined) updateData.total = patch.total;
+    if (patch.paymentTerms !== undefined) updateData.payment_terms = patch.paymentTerms;
+    if (patch.buyerInfo !== undefined) {
+      updateData.customer_name = patch.buyerInfo.name;
+      updateData.customer_address = patch.buyerInfo.address;
+      updateData.customer_gst = patch.buyerInfo.gstNumber;
+    }
+    if (patch.date !== undefined) {
+      updateData.date = patch.date.toISOString().split("T")[0];
+    }
 
     const { error } = await supabase.from("proforma_invoices").update(updateData).eq("id", id);
     if (error) throw error;
+
+    // Update items if provided
+    if (patch.items !== undefined) {
+      // Delete old items and insert new ones
+      await supabase.from("proforma_invoice_items").delete().eq("proforma_invoice_id", id);
+      const piItems = patch.items.map(item => ({
+        proforma_invoice_id: id,
+        item_name: item.item?.name || "Item",
+        quantity: item.quantity,
+        rate: item.unitPrice,
+        amount: item.total,
+        unit: item.item?.unit || "piece",
+      }));
+      await supabase.from("proforma_invoice_items").insert(piItems);
+    }
+
+    // Update additional charges if provided
+    if (patch.additionalCharges !== undefined) {
+      // Delete old charges and insert new ones
+      await supabase.from("proforma_invoice_additional_charges").delete().eq("proforma_invoice_id", id);
+      if (patch.additionalCharges.length > 0) {
+        const charges = patch.additionalCharges.map(charge => ({
+          proforma_invoice_id: id,
+          name: charge.name,
+          amount: charge.amount,
+        }));
+        await supabase.from("proforma_invoice_additional_charges").insert(charges);
+      }
+    }
+
     await refreshData();
   };
 
