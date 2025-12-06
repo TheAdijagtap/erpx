@@ -397,6 +397,7 @@ export type Database = {
           id: string
           logo: string | null
           signature: string | null
+          subscription_end_date: string | null
           trial_start_date: string | null
           updated_at: string
         }
@@ -413,6 +414,7 @@ export type Database = {
           id: string
           logo?: string | null
           signature?: string | null
+          subscription_end_date?: string | null
           trial_start_date?: string | null
           updated_at?: string
         }
@@ -429,6 +431,7 @@ export type Database = {
           id?: string
           logo?: string | null
           signature?: string | null
+          subscription_end_date?: string | null
           trial_start_date?: string | null
           updated_at?: string
         }
