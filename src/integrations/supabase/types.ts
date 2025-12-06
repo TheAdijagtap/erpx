@@ -100,6 +100,35 @@ export type Database = {
         }
         Relationships: []
       }
+      goods_receipt_additional_charges: {
+        Row: {
+          amount: number
+          goods_receipt_id: string
+          id: string
+          name: string
+        }
+        Insert: {
+          amount?: number
+          goods_receipt_id: string
+          id?: string
+          name: string
+        }
+        Update: {
+          amount?: number
+          goods_receipt_id?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goods_receipt_additional_charges_goods_receipt_id_fkey"
+            columns: ["goods_receipt_id"]
+            isOneToOne: false
+            referencedRelation: "goods_receipts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       goods_receipt_items: {
         Row: {
           amount: number
@@ -405,6 +434,35 @@ export type Database = {
         }
         Relationships: []
       }
+      proforma_invoice_additional_charges: {
+        Row: {
+          amount: number
+          id: string
+          name: string
+          proforma_invoice_id: string
+        }
+        Insert: {
+          amount?: number
+          id?: string
+          name: string
+          proforma_invoice_id: string
+        }
+        Update: {
+          amount?: number
+          id?: string
+          name?: string
+          proforma_invoice_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proforma_invoice_additional_charges_proforma_invoice_id_fkey"
+            columns: ["proforma_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "proforma_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       proforma_invoice_items: {
         Row: {
           amount: number
@@ -504,6 +562,35 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_order_additional_charges: {
+        Row: {
+          amount: number
+          id: string
+          name: string
+          purchase_order_id: string
+        }
+        Insert: {
+          amount?: number
+          id?: string
+          name: string
+          purchase_order_id: string
+        }
+        Update: {
+          amount?: number
+          id?: string
+          name?: string
+          purchase_order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_order_additional_charges_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
             referencedColumns: ["id"]
           },
         ]
