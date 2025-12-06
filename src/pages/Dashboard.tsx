@@ -798,7 +798,7 @@ const Dashboard = () => {
                   </li>
                 </ul>
                 <Button asChild className="w-full" size="lg">
-                  <Link to="/auth">Get Started</Link>
+                  <a href="mailto:necrus@yahoo.com?subject=CORS%20Inventory%20Monthly%20Subscription&body=Hi%2C%20I%20would%20like%20to%20subscribe%20to%20the%20CORS%20Inventory%20Monthly%20Plan%20(%E2%82%B9250%2Fmonth).%20Please%20share%20the%20payment%20details.">Get Started</a>
                 </Button>
               </div>
             </Card>
@@ -833,7 +833,7 @@ const Dashboard = () => {
                   </li>
                 </ul>
                 <Button asChild className="w-full" size="lg">
-                  <Link to="/auth">Get Started</Link>
+                  <a href="mailto:necrus@yahoo.com?subject=CORS%20Inventory%20Yearly%20Subscription&body=Hi%2C%20I%20would%20like%20to%20subscribe%20to%20the%20CORS%20Inventory%20Yearly%20Plan%20(%E2%82%B92%2C500%2Fyear).%20Please%20share%20the%20payment%20details.">Get Started</a>
                 </Button>
               </div>
             </Card>
