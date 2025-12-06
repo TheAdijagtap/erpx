@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,20 +8,84 @@ import { Building, Upload, Save, Settings } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
 import { toast } from "@/hooks/use-toast";
 
+interface LocalBusinessInfo {
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+  gstNumber: string;
+  logo: string;
+  signature: string;
+  bankName: string;
+  accountNumber: string;
+  ifscCode: string;
+}
+
 const BusinessSetup = () => {
   const { businessInfo, setBusinessInfo } = useData();
+  
+  // Local state for form inputs to prevent lag
+  const [localInfo, setLocalInfo] = useState<LocalBusinessInfo>({
+    name: "",
+    address: "",
+    phone: "",
+    email: "",
+    gstNumber: "",
+    logo: "",
+    signature: "",
+    bankName: "",
+    accountNumber: "",
+    ifscCode: "",
+  });
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Sync local state with context on mount
+  useEffect(() => {
+    setLocalInfo({
+      name: businessInfo.name || "",
+      address: businessInfo.address || "",
+      phone: businessInfo.phone || "",
+      email: businessInfo.email || "",
+      gstNumber: businessInfo.gstNumber || "",
+      logo: businessInfo.logo || "",
+      signature: businessInfo.signature || "",
+      bankName: businessInfo.bankDetails?.bankName || "",
+      accountNumber: businessInfo.bankDetails?.accountNumber || "",
+      ifscCode: businessInfo.bankDetails?.ifscCode || "",
+    });
+  }, [businessInfo]);
+
+  const handleLocalChange = (field: keyof LocalBusinessInfo, value: string) => {
+    setLocalInfo(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, field: 'logo' | 'signature') => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
-      setBusinessInfo({ ...businessInfo, logo: reader.result as string });
+      const result = reader.result as string;
+      setLocalInfo(prev => ({ ...prev, [field]: result }));
     };
     reader.readAsDataURL(file);
   };
 
   const handleSave = () => {
+    // Update context with all local changes
+    setBusinessInfo({
+      ...businessInfo,
+      name: localInfo.name,
+      address: localInfo.address,
+      phone: localInfo.phone,
+      email: localInfo.email,
+      gstNumber: localInfo.gstNumber,
+      logo: localInfo.logo,
+      signature: localInfo.signature,
+      bankDetails: {
+        bankName: localInfo.bankName,
+        accountNumber: localInfo.accountNumber,
+        ifscCode: localInfo.ifscCode,
+      }
+    });
     toast({ title: "Saved", description: "Business settings updated." });
   };
 
@@ -53,14 +118,14 @@ const BusinessSetup = () => {
               <Label htmlFor="logo">Business Logo</Label>
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center overflow-hidden">
-                  {businessInfo.logo ? (
-                    <img src={businessInfo.logo} alt="Business Logo" className="w-full h-full object-cover" />
+                  {localInfo.logo ? (
+                    <img src={localInfo.logo} alt="Business Logo" className="w-full h-full object-cover" />
                   ) : (
                     <Building className="w-8 h-8 text-muted-foreground" />
                   )}
                 </div>
                 <div>
-                  <input id="logo" type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+                  <input id="logo" type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'logo')} className="hidden" />
                   <Button asChild variant="outline" size="sm" className="gap-2">
                     <label htmlFor="logo" className="cursor-pointer">
                       <Upload className="w-4 h-4 inline mr-1" /> Upload Logo
@@ -74,8 +139,8 @@ const BusinessSetup = () => {
               <Label htmlFor="name">Business Name</Label>
               <Input
                 id="name"
-                value={businessInfo.name}
-                onChange={(e) => setBusinessInfo({ ...businessInfo, name: e.target.value })}
+                value={localInfo.name}
+                onChange={(e) => handleLocalChange('name', e.target.value)}
                 placeholder="Enter your business name"
               />
             </div>
@@ -84,8 +149,8 @@ const BusinessSetup = () => {
               <Label htmlFor="address">Business Address</Label>
               <Textarea
                 id="address"
-                value={businessInfo.address}
-                onChange={(e) => setBusinessInfo({ ...businessInfo, address: e.target.value })}
+                value={localInfo.address}
+                onChange={(e) => handleLocalChange('address', e.target.value)}
                 placeholder="Enter your complete business address"
                 rows={3}
               />
@@ -96,8 +161,8 @@ const BusinessSetup = () => {
                 <Label htmlFor="phone">Phone Number</Label>
                 <Input
                   id="phone"
-                  value={businessInfo.phone}
-                  onChange={(e) => setBusinessInfo({ ...businessInfo, phone: e.target.value })}
+                  value={localInfo.phone}
+                  onChange={(e) => handleLocalChange('phone', e.target.value)}
                   placeholder="+91 00000 00000"
                 />
               </div>
@@ -106,8 +171,8 @@ const BusinessSetup = () => {
                 <Input
                   id="email"
                   type="email"
-                  value={businessInfo.email}
-                  onChange={(e) => setBusinessInfo({ ...businessInfo, email: e.target.value })}
+                  value={localInfo.email}
+                  onChange={(e) => handleLocalChange('email', e.target.value)}
                   placeholder="your-email@company.com"
                 />
               </div>
@@ -117,8 +182,8 @@ const BusinessSetup = () => {
               <Label htmlFor="gstNumber">GST Number (Optional)</Label>
               <Input
                 id="gstNumber"
-                value={businessInfo.gstNumber || ""}
-                onChange={(e) => setBusinessInfo({ ...businessInfo, gstNumber: e.target.value })}
+                value={localInfo.gstNumber}
+                onChange={(e) => handleLocalChange('gstNumber', e.target.value)}
                 placeholder="22AAAAA0000A1Z5"
               />
             </div>
@@ -127,8 +192,8 @@ const BusinessSetup = () => {
               <Label htmlFor="signature">Authorized Signature</Label>
               <div className="flex items-center gap-4">
                 <div className="w-20 h-12 bg-muted rounded-lg flex items-center justify-center overflow-hidden">
-                  {businessInfo.signature ? (
-                    <img src={businessInfo.signature} alt="Signature" className="w-full h-full object-contain" />
+                  {localInfo.signature ? (
+                    <img src={localInfo.signature} alt="Signature" className="w-full h-full object-contain" />
                   ) : (
                     <div className="text-xs text-muted-foreground">No signature</div>
                   )}
@@ -138,15 +203,7 @@ const BusinessSetup = () => {
                     id="signature" 
                     type="file" 
                     accept="image/*" 
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      const reader = new FileReader();
-                      reader.onload = () => {
-                        setBusinessInfo({ ...businessInfo, signature: reader.result as string });
-                      };
-                      reader.readAsDataURL(file);
-                    }} 
+                    onChange={(e) => handleFileChange(e, 'signature')} 
                     className="hidden" 
                   />
                   <Button asChild variant="outline" size="sm" className="gap-2">
@@ -174,16 +231,8 @@ const BusinessSetup = () => {
                 <Label htmlFor="bankName">Bank Name</Label>
                 <Input
                   id="bankName"
-                  value={businessInfo.bankDetails?.bankName || ""}
-                  onChange={(e) => setBusinessInfo({ 
-                    ...businessInfo, 
-                    bankDetails: { 
-                      ...businessInfo.bankDetails,
-                      bankName: e.target.value,
-                      accountNumber: businessInfo.bankDetails?.accountNumber || "",
-                      ifscCode: businessInfo.bankDetails?.ifscCode || ""
-                    }
-                  })}
+                  value={localInfo.bankName}
+                  onChange={(e) => handleLocalChange('bankName', e.target.value)}
                   placeholder="Enter bank name"
                 />
               </div>
@@ -192,16 +241,8 @@ const BusinessSetup = () => {
                 <Label htmlFor="accountNumber">Account Number</Label>
                 <Input
                   id="accountNumber"
-                  value={businessInfo.bankDetails?.accountNumber || ""}
-                  onChange={(e) => setBusinessInfo({ 
-                    ...businessInfo, 
-                    bankDetails: { 
-                      ...businessInfo.bankDetails,
-                      accountNumber: e.target.value,
-                      bankName: businessInfo.bankDetails?.bankName || "",
-                      ifscCode: businessInfo.bankDetails?.ifscCode || ""
-                    }
-                  })}
+                  value={localInfo.accountNumber}
+                  onChange={(e) => handleLocalChange('accountNumber', e.target.value)}
                   placeholder="Enter account number"
                 />
               </div>
@@ -210,16 +251,8 @@ const BusinessSetup = () => {
                 <Label htmlFor="ifscCode">IFSC Code</Label>
                 <Input
                   id="ifscCode"
-                  value={businessInfo.bankDetails?.ifscCode || ""}
-                  onChange={(e) => setBusinessInfo({ 
-                    ...businessInfo, 
-                    bankDetails: { 
-                      ...businessInfo.bankDetails,
-                      ifscCode: e.target.value,
-                      bankName: businessInfo.bankDetails?.bankName || "",
-                      accountNumber: businessInfo.bankDetails?.accountNumber || ""
-                    }
-                  })}
+                  value={localInfo.ifscCode}
+                  onChange={(e) => handleLocalChange('ifscCode', e.target.value)}
                   placeholder="Enter IFSC code"
                 />
               </div>
