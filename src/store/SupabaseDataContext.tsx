@@ -13,6 +13,7 @@ import type {
   ProformaInvoice,
   Customer,
   CustomerActivity,
+  ProformaProduct,
 } from "@/types/inventory";
 
 interface DataContextValue {
@@ -22,6 +23,7 @@ interface DataContextValue {
   purchaseOrders: PurchaseOrder[];
   goodsReceipts: GoodsReceipt[];
   proformaInvoices: ProformaInvoice[];
+  proformaProducts: ProformaProduct[];
   transactions: Transaction[];
   customers: Customer[];
   customerActivities: CustomerActivity[];
@@ -56,6 +58,11 @@ interface DataContextValue {
   addProformaInvoice: (pi: Omit<ProformaInvoice, "id" | "subtotal" | "sgst" | "cgst" | "total"> & { applyGST?: boolean; gstRate?: number }) => Promise<string>;
   updateProformaInvoice: (id: string, patch: Partial<ProformaInvoice>) => Promise<void>;
   removeProformaInvoice: (id: string) => Promise<void>;
+
+  // Proforma Products
+  addProformaProduct: (product: Omit<ProformaProduct, "id" | "createdAt">) => Promise<string>;
+  updateProformaProduct: (id: string, patch: Partial<ProformaProduct>) => Promise<void>;
+  removeProformaProduct: (id: string) => Promise<void>;
 
   // Customers
   addCustomer: (customer: Omit<Customer, "id" | "createdAt" | "updatedAt" | "totalProformas" | "totalValue">) => Promise<string>;
@@ -92,6 +99,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
   const [goodsReceipts, setGoodsReceipts] = useState<GoodsReceipt[]>([]);
   const [proformaInvoices, setProformaInvoices] = useState<ProformaInvoice[]>([]);
+  const [proformaProducts, setProformaProducts] = useState<ProformaProduct[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [customerActivities, setCustomerActivities] = useState<CustomerActivity[]>([]);
@@ -133,6 +141,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         { data: pos },
         { data: grs },
         { data: pis },
+        { data: prods },
         { data: custs },
         { data: profile },
       ] = await Promise.all([
@@ -141,6 +150,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         supabase.from("purchase_orders").select("*, purchase_order_items(*), purchase_order_additional_charges(*)").order("created_at", { ascending: false }),
         supabase.from("goods_receipts").select("*, goods_receipt_items(*), goods_receipt_additional_charges(*)").order("created_at", { ascending: false }),
         supabase.from("proforma_invoices").select("*, proforma_invoice_items(*), proforma_invoice_additional_charges(*)").order("created_at", { ascending: false }),
+        supabase.from("proforma_products").select("*").order("created_at", { ascending: false }),
         supabase.from("customers").select("*").order("created_at", { ascending: false }),
         supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
       ]);
@@ -326,6 +336,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         };
       });
       setProformaInvoices(mappedPIs);
+
+      // Map proforma products
+      setProformaProducts((prods || []).map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        description: p.description || "",
+        unit: p.unit || "PCS",
+        price: Number(p.price) || 0,
+        createdAt: new Date(p.created_at),
+      })));
 
       // Map customers
       setCustomers((custs || []).map(c => ({
@@ -729,6 +749,41 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     await refreshData();
   };
 
+  // Proforma Products operations
+  const addProformaProduct = async (product: Omit<ProformaProduct, "id" | "createdAt">) => {
+    if (!user) throw new Error("Not authenticated");
+
+    const { data, error } = await supabase.from("proforma_products").insert({
+      user_id: user.id,
+      name: product.name,
+      description: product.description,
+      unit: product.unit,
+      price: product.price,
+    }).select().single();
+
+    if (error) throw error;
+    await refreshData();
+    return data.id;
+  };
+
+  const updateProformaProduct = async (id: string, patch: Partial<ProformaProduct>) => {
+    const updateData: any = {};
+    if (patch.name !== undefined) updateData.name = patch.name;
+    if (patch.description !== undefined) updateData.description = patch.description;
+    if (patch.unit !== undefined) updateData.unit = patch.unit;
+    if (patch.price !== undefined) updateData.price = patch.price;
+
+    const { error } = await supabase.from("proforma_products").update(updateData).eq("id", id);
+    if (error) throw error;
+    await refreshData();
+  };
+
+  const removeProformaProduct = async (id: string) => {
+    const { error } = await supabase.from("proforma_products").delete().eq("id", id);
+    if (error) throw error;
+    await refreshData();
+  };
+
   // Customer operations
   const addCustomer = async (customer: Omit<Customer, "id" | "createdAt" | "updatedAt" | "totalProformas" | "totalValue">) => {
     if (!user) throw new Error("Not authenticated");
@@ -811,6 +866,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     purchaseOrders,
     goodsReceipts,
     proformaInvoices,
+    proformaProducts,
     transactions,
     customers,
     customerActivities,
@@ -835,6 +891,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     addProformaInvoice,
     updateProformaInvoice,
     removeProformaInvoice,
+    addProformaProduct,
+    updateProformaProduct,
+    removeProformaProduct,
     addCustomer,
     updateCustomer,
     removeCustomer,
