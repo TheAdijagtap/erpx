@@ -143,6 +143,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         { data: pis },
         { data: prods },
         { data: custs },
+        { data: trans },
         { data: profile },
       ] = await Promise.all([
         supabase.from("inventory_items").select("*").order("created_at", { ascending: false }).limit(500),
@@ -152,8 +153,23 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         supabase.from("proforma_invoices").select("*, proforma_invoice_items(*), proforma_invoice_additional_charges(*)").order("created_at", { ascending: false }).limit(200),
         supabase.from("proforma_products").select("*").order("created_at", { ascending: false }).limit(200),
         supabase.from("customers").select("*").order("created_at", { ascending: false }).limit(200),
+        supabase.from("inventory_transactions").select("*").order("created_at", { ascending: false }).limit(500),
         supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
       ]);
+
+      // Map transactions
+      setTransactions((trans || []).map((t: any) => ({
+        id: t.id,
+        itemId: t.item_id || "",
+        type: t.type as "IN" | "OUT",
+        quantity: Number(t.quantity),
+        unitPrice: Number(t.unit_price) || 0,
+        totalValue: Number(t.total_value) || 0,
+        reason: t.reason,
+        reference: t.reference || undefined,
+        date: new Date(t.created_at),
+        notes: t.notes || undefined,
+      })));
 
       // Map inventory items
       setInventoryItems((items || []).map(i => ({
@@ -441,10 +457,34 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   };
 
   const transactItem = async (itemId: string, type: "IN" | "OUT", quantity: number, reason: string, reference?: string, unitPriceOverride?: number) => {
+    if (!user) throw new Error("Not authenticated");
+    
     const item = inventoryItems.find(i => i.id === itemId);
     if (!item) return;
 
+    const unitPrice = unitPriceOverride ?? item.unitPrice;
+    const totalValue = quantity * unitPrice;
     const newStock = type === "IN" ? item.currentStock + quantity : Math.max(0, item.currentStock - quantity);
+    
+    // Record the transaction in database
+    const { error: transError } = await supabase.from("inventory_transactions").insert({
+      user_id: user.id,
+      item_id: itemId,
+      item_name: item.name,
+      type,
+      quantity,
+      unit_price: unitPrice,
+      total_value: totalValue,
+      reason,
+      reference: reference || null,
+    });
+    
+    if (transError) {
+      console.error("Failed to record transaction:", transError);
+      throw transError;
+    }
+    
+    // Update the stock
     await updateItem(itemId, { currentStock: newStock });
   };
 

@@ -302,6 +302,59 @@ export type Database = {
           },
         ]
       }
+      inventory_transactions: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string | null
+          item_name: string
+          notes: string | null
+          quantity: number
+          reason: string
+          reference: string | null
+          total_value: number | null
+          type: string
+          unit_price: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id?: string | null
+          item_name: string
+          notes?: string | null
+          quantity: number
+          reason: string
+          reference?: string | null
+          total_value?: number | null
+          type: string
+          unit_price?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string | null
+          item_name?: string
+          notes?: string | null
+          quantity?: number
+          reason?: string
+          reference?: string | null
+          total_value?: number | null
+          type?: string
+          unit_price?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_transactions_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       item_price_history: {
         Row: {
           created_at: string
