@@ -437,7 +437,24 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }).select().single();
 
     if (error) throw error;
-    await refreshData();
+    
+    // Optimistic update
+    const newItem: InventoryItem = {
+      id: data.id,
+      name: item.name,
+      sku: item.sku || "",
+      description: item.description || "",
+      category: item.category || "",
+      currentStock: item.currentStock,
+      minStock: item.minStock,
+      maxStock: 1000,
+      unitPrice: item.unitPrice,
+      unit: item.unit,
+      supplier: item.supplier,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    setInventoryItems(prev => [newItem, ...prev]);
     return data.id;
   };
 
@@ -453,7 +470,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     const { error } = await supabase.from("inventory_items").update(updateData).eq("id", id);
     if (error) throw error;
-    await refreshData();
+    
+    // Optimistic update
+    setInventoryItems(prev => prev.map(item => 
+      item.id === id ? { ...item, ...patch, updatedAt: new Date() } : item
+    ));
   };
 
   const transactItem = async (itemId: string, type: "IN" | "OUT", quantity: number, reason: string, reference?: string, unitPriceOverride?: number) => {
@@ -467,7 +488,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     const newStock = type === "IN" ? item.currentStock + quantity : Math.max(0, item.currentStock - quantity);
     
     // Record the transaction in database
-    const { error: transError } = await supabase.from("inventory_transactions").insert({
+    const { data: transData, error: transError } = await supabase.from("inventory_transactions").insert({
       user_id: user.id,
       item_id: itemId,
       item_name: item.name,
@@ -477,21 +498,38 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       total_value: totalValue,
       reason,
       reference: reference || null,
-    });
+    }).select().single();
     
-    if (transError) {
-      console.error("Failed to record transaction:", transError);
-      throw transError;
-    }
+    if (transError) throw transError;
     
-    // Update the stock
-    await updateItem(itemId, { currentStock: newStock });
+    // Update the stock in database
+    await supabase.from("inventory_items").update({ current_stock: newStock }).eq("id", itemId);
+    
+    // Optimistic update for inventory
+    setInventoryItems(prev => prev.map(i => 
+      i.id === itemId ? { ...i, currentStock: newStock, updatedAt: new Date() } : i
+    ));
+    
+    // Optimistic update for transactions
+    const newTransaction: Transaction = {
+      id: transData.id,
+      itemId,
+      type,
+      quantity,
+      unitPrice,
+      totalValue,
+      reason,
+      reference,
+      date: new Date(),
+    };
+    setTransactions(prev => [newTransaction, ...prev]);
   };
 
   const removeItem = async (id: string) => {
     const { error } = await supabase.from("inventory_items").delete().eq("id", id);
     if (error) throw error;
-    await refreshData();
+    // Optimistic update
+    setInventoryItems(prev => prev.filter(item => item.id !== id));
   };
 
   // Supplier operations
@@ -509,7 +547,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }).select().single();
 
     if (error) throw error;
-    await refreshData();
+    
+    // Optimistic update
+    const newSupplier: Supplier = {
+      id: data.id,
+      ...supplier,
+      createdAt: new Date(),
+    };
+    setSuppliers(prev => [newSupplier, ...prev]);
     return data.id;
   };
 
@@ -524,13 +569,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     const { error } = await supabase.from("suppliers").update(updateData).eq("id", id);
     if (error) throw error;
-    await refreshData();
+    
+    // Optimistic update
+    setSuppliers(prev => prev.map(s => s.id === id ? { ...s, ...patch } : s));
   };
 
   const removeSupplier = async (id: string) => {
     const { error } = await supabase.from("suppliers").delete().eq("id", id);
     if (error) throw error;
-    await refreshData();
+    // Optimistic update
+    setSuppliers(prev => prev.filter(s => s.id !== id));
   };
 
   // Purchase Order operations
@@ -555,7 +603,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     if (error) throw error;
 
-    // Insert PO items
+    // Insert PO items in parallel
     const poItems = po.items.map(item => ({
       purchase_order_id: data.id,
       item_id: item.itemId || null,
@@ -578,7 +626,21 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       await supabase.from("purchase_order_additional_charges").insert(charges);
     }
 
-    await refreshData();
+    // Optimistic update
+    const newPO: PurchaseOrder = {
+      id: data.id,
+      poNumber: po.poNumber,
+      supplierId: po.supplierId,
+      supplier: po.supplier,
+      items: po.items,
+      additionalCharges: po.additionalCharges || [],
+      ...totals,
+      status: po.status,
+      date: po.date,
+      expectedDelivery: po.expectedDelivery,
+      notes: po.notes,
+    };
+    setPurchaseOrders(prev => [newPO, ...prev]);
     return data.id;
   };
 
@@ -589,14 +651,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     const { error } = await supabase.from("purchase_orders").update(updateData).eq("id", id);
     if (error) throw error;
-    await refreshData();
+    
+    // Optimistic update
+    setPurchaseOrders(prev => prev.map(po => po.id === id ? { ...po, ...patch } : po));
   };
 
   const removePurchaseOrder = async (id: string) => {
     await supabase.from("purchase_order_items").delete().eq("purchase_order_id", id);
+    await supabase.from("purchase_order_additional_charges").delete().eq("purchase_order_id", id);
     const { error } = await supabase.from("purchase_orders").delete().eq("id", id);
     if (error) throw error;
-    await refreshData();
+    // Optimistic update
+    setPurchaseOrders(prev => prev.filter(po => po.id !== id));
   };
 
   // Goods Receipt operations
@@ -621,38 +687,35 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     if (error) throw error;
 
-    // Insert GR items and update inventory
-    for (const item of gr.items) {
-      await supabase.from("goods_receipt_items").insert({
-        goods_receipt_id: data.id,
-        item_id: item.itemId || null,
-        item_name: item.item?.name || "Item",
-        quantity_ordered: item.orderedQuantity || item.receivedQuantity,
-        quantity_received: item.receivedQuantity,
-        unit_price: item.unitPrice,
-        amount: item.total,
-        unit: item.item?.unit || "piece",
-      });
+    // Prepare all insert operations for GR items
+    const grItemsToInsert = gr.items.map(item => ({
+      goods_receipt_id: data.id,
+      item_id: item.itemId || null,
+      item_name: item.item?.name || "Item",
+      quantity_ordered: item.orderedQuantity || item.receivedQuantity,
+      quantity_received: item.receivedQuantity,
+      unit_price: item.unitPrice,
+      amount: item.total,
+      unit: item.item?.unit || "piece",
+    }));
+    
+    await supabase.from("goods_receipt_items").insert(grItemsToInsert);
 
-      // Update inventory stock and record transaction
+    // Process inventory updates and transactions
+    const transactionInserts: any[] = [];
+    const stockUpdates: { itemId: string; newStock: number }[] = [];
+
+    for (const item of gr.items) {
       if (item.itemId) {
-        // Fetch current item from database to get accurate stock
-        const { data: currentItem } = await supabase
-          .from("inventory_items")
-          .select("*")
-          .eq("id", item.itemId)
-          .single();
-        
+        const currentItem = inventoryItems.find(i => i.id === item.itemId);
         if (currentItem) {
-          const newStock = Number(currentItem.current_stock) + item.receivedQuantity;
+          const newStock = currentItem.currentStock + item.receivedQuantity;
+          stockUpdates.push({ itemId: item.itemId, newStock });
           
-          // Update stock
-          await supabase.from("inventory_items").update({
-            current_stock: newStock,
-          }).eq("id", item.itemId);
+          // Update stock in database
+          await supabase.from("inventory_items").update({ current_stock: newStock }).eq("id", item.itemId);
           
-          // Record transaction for goods receipt
-          await supabase.from("inventory_transactions").insert({
+          transactionInserts.push({
             user_id: user.id,
             item_id: item.itemId,
             item_name: currentItem.name,
@@ -667,6 +730,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
+    // Insert all transactions at once
+    if (transactionInserts.length > 0) {
+      await supabase.from("inventory_transactions").insert(transactionInserts);
+    }
+
     // Insert additional charges
     if (gr.additionalCharges && gr.additionalCharges.length > 0) {
       const charges = gr.additionalCharges.map(charge => ({
@@ -677,12 +745,50 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       await supabase.from("goods_receipt_additional_charges").insert(charges);
     }
 
-    // Update PO status if linked
-    if (gr.poId) {
-      await updatePurchaseOrder(gr.poId, { status: "RECEIVED" });
+    // Optimistic updates
+    const newGR: GoodsReceipt = {
+      id: data.id,
+      grNumber: gr.grNumber,
+      poId: gr.poId,
+      supplierId: gr.supplierId,
+      supplier: gr.supplier,
+      items: gr.items,
+      additionalCharges: gr.additionalCharges || [],
+      ...totals,
+      status: gr.status,
+      date: gr.date,
+      notes: gr.notes,
+    };
+    setGoodsReceipts(prev => [newGR, ...prev]);
+    
+    // Update inventory items optimistically
+    if (stockUpdates.length > 0) {
+      setInventoryItems(prev => prev.map(item => {
+        const update = stockUpdates.find(u => u.itemId === item.id);
+        return update ? { ...item, currentStock: update.newStock, updatedAt: new Date() } : item;
+      }));
+      
+      // Add transactions optimistically
+      const newTransactions: Transaction[] = transactionInserts.map((t, idx) => ({
+        id: `temp-${Date.now()}-${idx}`,
+        itemId: t.item_id,
+        type: "IN" as const,
+        quantity: t.quantity,
+        unitPrice: t.unit_price,
+        totalValue: t.total_value,
+        reason: t.reason,
+        reference: t.reference,
+        date: new Date(),
+      }));
+      setTransactions(prev => [...newTransactions, ...prev]);
     }
 
-    await refreshData();
+    // Update PO status if linked
+    if (gr.poId) {
+      await supabase.from("purchase_orders").update({ status: "received" }).eq("id", gr.poId);
+      setPurchaseOrders(prev => prev.map(po => po.id === gr.poId ? { ...po, status: "RECEIVED" } : po));
+    }
+
     return data.id;
   };
 
@@ -693,14 +799,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     const { error } = await supabase.from("goods_receipts").update(updateData).eq("id", id);
     if (error) throw error;
-    await refreshData();
+    
+    // Optimistic update
+    setGoodsReceipts(prev => prev.map(gr => gr.id === id ? { ...gr, ...patch } : gr));
   };
 
   const removeGoodsReceipt = async (id: string) => {
     await supabase.from("goods_receipt_items").delete().eq("goods_receipt_id", id);
+    await supabase.from("goods_receipt_additional_charges").delete().eq("goods_receipt_id", id);
     const { error } = await supabase.from("goods_receipts").delete().eq("id", id);
     if (error) throw error;
-    await refreshData();
+    // Optimistic update
+    setGoodsReceipts(prev => prev.filter(gr => gr.id !== id));
   };
 
   // Proforma Invoice operations
@@ -749,7 +859,20 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       await supabase.from("proforma_invoice_additional_charges").insert(charges);
     }
 
-    await refreshData();
+    // Optimistic update
+    const newPI: ProformaInvoice = {
+      id: data.id,
+      proformaNumber: pi.proformaNumber,
+      buyerInfo: pi.buyerInfo,
+      items: pi.items,
+      additionalCharges: pi.additionalCharges || [],
+      ...totals,
+      status: "SENT",
+      date: pi.date,
+      notes: pi.notes,
+      paymentTerms: pi.paymentTerms,
+    };
+    setProformaInvoices(prev => [newPI, ...prev]);
     return data.id;
   };
 
@@ -805,14 +928,17 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    await refreshData();
+    // Optimistic update
+    setProformaInvoices(prev => prev.map(pi => pi.id === id ? { ...pi, ...patch } : pi));
   };
 
   const removeProformaInvoice = async (id: string) => {
     await supabase.from("proforma_invoice_items").delete().eq("proforma_invoice_id", id);
+    await supabase.from("proforma_invoice_additional_charges").delete().eq("proforma_invoice_id", id);
     const { error } = await supabase.from("proforma_invoices").delete().eq("id", id);
     if (error) throw error;
-    await refreshData();
+    // Optimistic update
+    setProformaInvoices(prev => prev.filter(pi => pi.id !== id));
   };
 
   // Proforma Products operations
@@ -828,7 +954,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }).select().single();
 
     if (error) throw error;
-    await refreshData();
+    
+    // Optimistic update
+    const newProduct: ProformaProduct = {
+      id: data.id,
+      ...product,
+      createdAt: new Date(),
+    };
+    setProformaProducts(prev => [newProduct, ...prev]);
     return data.id;
   };
 
@@ -841,13 +974,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     const { error } = await supabase.from("proforma_products").update(updateData).eq("id", id);
     if (error) throw error;
-    await refreshData();
+    
+    // Optimistic update
+    setProformaProducts(prev => prev.map(p => p.id === id ? { ...p, ...patch } : p));
   };
 
   const removeProformaProduct = async (id: string) => {
     const { error } = await supabase.from("proforma_products").delete().eq("id", id);
     if (error) throw error;
-    await refreshData();
+    // Optimistic update
+    setProformaProducts(prev => prev.filter(p => p.id !== id));
   };
 
   // Customer operations
@@ -865,7 +1001,17 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }).select().single();
 
     if (error) throw error;
-    await refreshData();
+    
+    // Optimistic update
+    const newCustomer: Customer = {
+      id: data.id,
+      ...customer,
+      totalProformas: 0,
+      totalValue: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    setCustomers(prev => [newCustomer, ...prev]);
     return data.id;
   };
 
@@ -880,25 +1026,39 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     const { error } = await supabase.from("customers").update(updateData).eq("id", id);
     if (error) throw error;
-    await refreshData();
+    
+    // Optimistic update
+    setCustomers(prev => prev.map(c => c.id === id ? { ...c, ...patch, updatedAt: new Date() } : c));
   };
 
   const removeCustomer = async (id: string) => {
     const { error } = await supabase.from("customers").delete().eq("id", id);
     if (error) throw error;
-    await refreshData();
+    // Optimistic update
+    setCustomers(prev => prev.filter(c => c.id !== id));
   };
 
   const addCustomerActivity = async (activity: Omit<CustomerActivity, "id" | "date">) => {
     if (!user) throw new Error("Not authenticated");
 
-    await supabase.from("customer_activities").insert({
+    const { data } = await supabase.from("customer_activities").insert({
       user_id: user.id,
       customer_id: activity.customerId,
       type: activity.type,
       description: activity.description,
-    });
-    await refreshData();
+    }).select().single();
+    
+    // Optimistic update
+    if (data) {
+      const newActivity: CustomerActivity = {
+        id: data.id,
+        customerId: activity.customerId,
+        type: activity.type,
+        description: activity.description,
+        date: new Date(),
+      };
+      setCustomerActivities(prev => [newActivity, ...prev]);
+    }
   };
 
   // Business operations
