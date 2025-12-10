@@ -634,13 +634,27 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         unit: item.item?.unit || "piece",
       });
 
-      // Update inventory stock
+      // Update inventory stock and record transaction
       if (item.itemId) {
         const existingItem = inventoryItems.find(i => i.id === item.itemId);
         if (existingItem) {
+          // Update stock
           await supabase.from("inventory_items").update({
             current_stock: existingItem.currentStock + item.receivedQuantity,
           }).eq("id", item.itemId);
+          
+          // Record transaction for goods receipt
+          await supabase.from("inventory_transactions").insert({
+            user_id: user.id,
+            item_id: item.itemId,
+            item_name: existingItem.name,
+            type: "IN",
+            quantity: item.receivedQuantity,
+            unit_price: item.unitPrice,
+            total_value: item.receivedQuantity * item.unitPrice,
+            reason: "Goods Receipt",
+            reference: gr.grNumber,
+          });
         }
       }
     }
