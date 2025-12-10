@@ -134,7 +134,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     setLoading(true);
     try {
-      // Fetch all data in parallel for speed
+      // Fetch all data in parallel for speed - with limits for better performance
       const [
         { data: items },
         { data: sups },
@@ -145,13 +145,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         { data: custs },
         { data: profile },
       ] = await Promise.all([
-        supabase.from("inventory_items").select("*").order("created_at", { ascending: false }),
-        supabase.from("suppliers").select("*").order("created_at", { ascending: false }),
-        supabase.from("purchase_orders").select("*, purchase_order_items(*), purchase_order_additional_charges(*)").order("created_at", { ascending: false }),
-        supabase.from("goods_receipts").select("*, goods_receipt_items(*), goods_receipt_additional_charges(*)").order("created_at", { ascending: false }),
-        supabase.from("proforma_invoices").select("*, proforma_invoice_items(*), proforma_invoice_additional_charges(*)").order("created_at", { ascending: false }),
-        supabase.from("proforma_products").select("*").order("created_at", { ascending: false }),
-        supabase.from("customers").select("*").order("created_at", { ascending: false }),
+        supabase.from("inventory_items").select("*").order("created_at", { ascending: false }).limit(500),
+        supabase.from("suppliers").select("*").order("created_at", { ascending: false }).limit(200),
+        supabase.from("purchase_orders").select("*, purchase_order_items(*), purchase_order_additional_charges(*)").order("created_at", { ascending: false }).limit(200),
+        supabase.from("goods_receipts").select("*, goods_receipt_items(*), goods_receipt_additional_charges(*)").order("created_at", { ascending: false }).limit(200),
+        supabase.from("proforma_invoices").select("*, proforma_invoice_items(*), proforma_invoice_additional_charges(*)").order("created_at", { ascending: false }).limit(200),
+        supabase.from("proforma_products").select("*").order("created_at", { ascending: false }).limit(200),
+        supabase.from("customers").select("*").order("created_at", { ascending: false }).limit(200),
         supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
       ]);
 
