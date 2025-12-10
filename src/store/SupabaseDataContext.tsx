@@ -667,6 +667,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     const piItems = pi.items.map(item => ({
       proforma_invoice_id: data.id,
       item_name: item.item?.name || "Item",
+      description: item.item?.description || "",
+      hsn_code: item.item?.sku || "",
       quantity: item.quantity,
       rate: item.unitPrice,
       amount: item.total,
@@ -717,6 +719,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       const piItems = patch.items.map(item => ({
         proforma_invoice_id: id,
         item_name: item.item?.name || "Item",
+        description: item.item?.description || "",
+        hsn_code: item.item?.sku || "",
         quantity: item.quantity,
         rate: item.unitPrice,
         amount: item.total,
