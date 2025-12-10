@@ -636,18 +636,26 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
       // Update inventory stock and record transaction
       if (item.itemId) {
-        const existingItem = inventoryItems.find(i => i.id === item.itemId);
-        if (existingItem) {
+        // Fetch current item from database to get accurate stock
+        const { data: currentItem } = await supabase
+          .from("inventory_items")
+          .select("*")
+          .eq("id", item.itemId)
+          .single();
+        
+        if (currentItem) {
+          const newStock = Number(currentItem.current_stock) + item.receivedQuantity;
+          
           // Update stock
           await supabase.from("inventory_items").update({
-            current_stock: existingItem.currentStock + item.receivedQuantity,
+            current_stock: newStock,
           }).eq("id", item.itemId);
           
           // Record transaction for goods receipt
           await supabase.from("inventory_transactions").insert({
             user_id: user.id,
             item_id: item.itemId,
-            item_name: existingItem.name,
+            item_name: currentItem.name,
             type: "IN",
             quantity: item.receivedQuantity,
             unit_price: item.unitPrice,
