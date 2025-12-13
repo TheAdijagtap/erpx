@@ -110,17 +110,22 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   // Helper to calculate totals
   const calcTotals = (items: Array<{ quantity: number; unitPrice: number }>, applyGST: boolean, additionalCharges: Array<{ amount: number }> = [], customGstRate?: number) => {
-    const subtotal = items.reduce((sum, it) => sum + it.quantity * it.unitPrice, 0);
-    const chargesTotal = additionalCharges.reduce((sum, charge) => sum + charge.amount, 0);
+    const subtotal = items.reduce((sum, it) => {
+      const qty = Number(it.quantity) || 0;
+      const price = Number(it.unitPrice) || 0;
+      return sum + (qty * price);
+    }, 0);
+    const chargesTotal = (additionalCharges || []).reduce((sum, charge) => sum + (Number(charge.amount) || 0), 0);
     let sgst = 0, cgst = 0;
 
     if (applyGST) {
-      if (customGstRate !== undefined) {
-        sgst = parseFloat((((subtotal + chargesTotal) * customGstRate) / 200).toFixed(2));
-        cgst = parseFloat((((subtotal + chargesTotal) * customGstRate) / 200).toFixed(2));
+      const baseAmount = subtotal + chargesTotal;
+      if (customGstRate !== undefined && customGstRate > 0) {
+        sgst = parseFloat(((baseAmount * customGstRate) / 200).toFixed(2));
+        cgst = parseFloat(((baseAmount * customGstRate) / 200).toFixed(2));
       } else if (gstSettings.enabled) {
-        sgst = parseFloat((((subtotal + chargesTotal) * gstSettings.sgstRate) / 100).toFixed(2));
-        cgst = parseFloat((((subtotal + chargesTotal) * gstSettings.cgstRate) / 100).toFixed(2));
+        sgst = parseFloat(((baseAmount * gstSettings.sgstRate) / 100).toFixed(2));
+        cgst = parseFloat(((baseAmount * gstSettings.cgstRate) / 100).toFixed(2));
       }
     }
 
