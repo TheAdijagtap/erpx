@@ -555,14 +555,18 @@ function CreatePODialog() {
     if (!supplierId || rows.some(r => !r.itemId || r.quantity <= 0)) return;
     const poNumber = `PO-${new Date().getFullYear()}-${String(Math.floor(Math.random()*999)+1).padStart(3, '0')}`;
     const supplier = suppliers.find(s => s.id === supplierId)!;
-    const poItems = rows.map((r) => ({
-      id: crypto.randomUUID(),
-      itemId: r.itemId,
-      item: items.find(i => i.id === r.itemId)!,
-      quantity: r.quantity,
-      unitPrice: r.unitPrice,
-      total: r.quantity * r.unitPrice,
-    }));
+    const poItems = rows.map((r) => {
+      const qty = Number(r.quantity) || 0;
+      const price = Number(r.unitPrice) || 0;
+      return {
+        id: crypto.randomUUID(),
+        itemId: r.itemId,
+        item: items.find(i => i.id === r.itemId)!,
+        quantity: qty,
+        unitPrice: price,
+        total: qty * price,
+      };
+    });
     
     addPurchaseOrder({
       poNumber,
@@ -760,9 +764,10 @@ function CreatePODialog() {
                       <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
                         <Select value={row.itemId} onValueChange={(v) => {
-                          const it = items.find(i => i.id === v)!;
+                          const it = items.find(i => i.id === v);
+                          if (!it) return;
                           const next = [...rows];
-                          next[idx] = { ...row, itemId: v, unitPrice: it.unitPrice, unit: it.unit };
+                          next[idx] = { ...row, itemId: v, unitPrice: it.unitPrice || 0, unit: it.unit || "PCS" };
                           setRows(next);
                         }}>
                           <SelectTrigger className="w-full pl-10">
