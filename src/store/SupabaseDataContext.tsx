@@ -250,6 +250,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           status: (po.status?.toUpperCase() || "DRAFT") as PurchaseOrder["status"],
           date: new Date(po.date),
           expectedDelivery: po.expected_delivery ? new Date(po.expected_delivery) : undefined,
+          paymentTerms: (po as any).payment_terms || undefined,
           notes: po.notes || undefined,
         };
       });
@@ -599,6 +600,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       supplier_name: po.supplier.name,
       date: po.date.toISOString().split("T")[0],
       expected_delivery: po.expectedDelivery?.toISOString().split("T")[0] || null,
+      payment_terms: po.paymentTerms || null,
       subtotal: totals.subtotal,
       tax_amount: totals.sgst + totals.cgst,
       total: totals.total,
@@ -643,6 +645,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       status: po.status,
       date: po.date,
       expectedDelivery: po.expectedDelivery,
+      paymentTerms: po.paymentTerms,
       notes: po.notes,
     };
     setPurchaseOrders(prev => [newPO, ...prev]);
