@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Package, ShoppingCart, FileText, Users, TrendingUp, AlertCircle, Plus, ArrowRight, Download, DollarSign } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
-import { useMemo } from "react";
+import { useMemo, memo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -10,9 +10,9 @@ import { toast } from "@/hooks/use-toast";
 import { formatINR } from "@/lib/format";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
-const AppDashboard = () => {
+const AppDashboard = memo(() => {
   const navigate = useNavigate();
-  const { inventoryItems: items, purchaseOrders, suppliers, goodsReceipts, proformaInvoices } = useData();
+  const { inventoryItems: items, purchaseOrders, goodsReceipts, proformaInvoices } = useData();
 
   const stats = useMemo(() => {
     const totalItems = items.length;
@@ -117,7 +117,7 @@ const AppDashboard = () => {
       .slice(0, 5);
   }, [purchaseOrders, goodsReceipts, proformaInvoices]);
 
-  const exportLowStockItems = () => {
+  const exportLowStockItems = useCallback(() => {
     const csvContent = [
       ['Item Name', 'Description', 'Category', 'Current Stock', 'Min Stock', 'Stock %', 'Status'].join(','),
       ...stats.lowStockItems.map(item => {
@@ -141,7 +141,7 @@ const AppDashboard = () => {
     link.download = `low-stock-items-${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
     toast({ title: "Success", description: "Low stock items exported successfully!" });
-  };
+  }, [stats.lowStockItems]);
 
   return (
     <div className="space-y-6">
@@ -410,6 +410,8 @@ const AppDashboard = () => {
       </div>
     </div>
   );
-};
+});
+
+AppDashboard.displayName = "AppDashboard";
 
 export default AppDashboard;
