@@ -742,6 +742,7 @@ export type Database = {
           expected_delivery: string | null
           id: string
           notes: string | null
+          payment_terms: string | null
           po_number: string
           status: string | null
           subtotal: number
@@ -757,6 +758,7 @@ export type Database = {
           expected_delivery?: string | null
           id?: string
           notes?: string | null
+          payment_terms?: string | null
           po_number: string
           status?: string | null
           subtotal: number
@@ -772,6 +774,7 @@ export type Database = {
           expected_delivery?: string | null
           id?: string
           notes?: string | null
+          payment_terms?: string | null
           po_number?: string
           status?: string | null
           subtotal?: number
