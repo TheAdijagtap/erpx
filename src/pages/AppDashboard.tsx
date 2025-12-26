@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { formatINR } from "@/lib/format";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 const AppDashboard = () => {
   const navigate = useNavigate();
@@ -34,6 +35,40 @@ const AppDashboard = () => {
       lowStockItems: lowStockItems.slice(0, 10), // Top 10 low stock items
     };
   }, [items, purchaseOrders]);
+
+  // Generate monthly purchase vs sales data
+  const chartData = useMemo(() => {
+    const months: { [key: string]: { name: string; purchases: number; sales: number } } = {};
+    
+    // Get last 6 months
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const monthName = date.toLocaleString('en-IN', { month: 'short' });
+      months[key] = { name: monthName, purchases: 0, sales: 0 };
+    }
+
+    // Sum purchases from purchase orders
+    purchaseOrders.forEach(po => {
+      const date = new Date(po.date);
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      if (months[key]) {
+        months[key].purchases += po.total;
+      }
+    });
+
+    // Sum sales from proforma invoices
+    proformaInvoices.forEach(pi => {
+      const date = new Date(pi.date);
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      if (months[key]) {
+        months[key].sales += pi.total;
+      }
+    });
+
+    return Object.values(months);
+  }, [purchaseOrders, proformaInvoices]);
 
   const recentActivity = useMemo(() => {
     const activities = [];
@@ -119,7 +154,9 @@ const AppDashboard = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Items</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
+            <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+              <Package className="h-4 w-4 text-blue-600" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalItems}</div>
@@ -130,7 +167,9 @@ const AppDashboard = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Purchase Orders</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+            <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center">
+              <ShoppingCart className="h-4 w-4 text-orange-600" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.activePurchaseOrders}</div>
@@ -141,7 +180,9 @@ const AppDashboard = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Inventory Value</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+              <DollarSign className="h-4 w-4 text-green-600" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatINR(stats.totalInventoryValue)}</div>
@@ -152,7 +193,9 @@ const AppDashboard = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Low Stock Items</CardTitle>
-            <AlertCircle className="h-4 w-4 text-muted-foreground" />
+            <div className="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center">
+              <AlertCircle className="h-4 w-4 text-red-600" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.lowStockCount}</div>
@@ -160,6 +203,54 @@ const AppDashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Purchase vs Sales Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
+              <TrendingUp className="h-4 w-4 text-purple-600" />
+            </div>
+            Purchase vs Sales Trend
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis dataKey="name" className="text-xs" />
+                <YAxis className="text-xs" tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`} />
+                <Tooltip 
+                  formatter={(value: number) => formatINR(value)}
+                  contentStyle={{ 
+                    backgroundColor: 'hsl(var(--background))', 
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px'
+                  }}
+                />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  dataKey="purchases" 
+                  stroke="#f97316" 
+                  strokeWidth={2}
+                  dot={{ fill: '#f97316', strokeWidth: 2 }}
+                  name="Purchases"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="sales" 
+                  stroke="#22c55e" 
+                  strokeWidth={2}
+                  dot={{ fill: '#22c55e', strokeWidth: 2 }}
+                  name="Sales"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Low Stock Items Section */}
       {stats.lowStockItems.length > 0 && (
@@ -237,9 +328,21 @@ const AppDashboard = () => {
                       </p>
                     </div>
                     <div className="ml-2">
-                      {activity.type === 'PO' && <ShoppingCart className="h-4 w-4 text-muted-foreground" />}
-                      {activity.type === 'GR' && <FileText className="h-4 w-4 text-muted-foreground" />}
-                      {activity.type === 'PI' && <FileText className="h-4 w-4 text-muted-foreground" />}
+                      {activity.type === 'PO' && (
+                        <div className="h-6 w-6 rounded-full bg-orange-100 flex items-center justify-center">
+                          <ShoppingCart className="h-3 w-3 text-orange-600" />
+                        </div>
+                      )}
+                      {activity.type === 'GR' && (
+                        <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center">
+                          <FileText className="h-3 w-3 text-blue-600" />
+                        </div>
+                      )}
+                      {activity.type === 'PI' && (
+                        <div className="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center">
+                          <FileText className="h-3 w-3 text-green-600" />
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -258,7 +361,7 @@ const AppDashboard = () => {
               variant="outline"
               onClick={() => navigate('/inventory')}
             >
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="mr-2 h-4 w-4 text-blue-600" />
               Add New Inventory Item
               <ArrowRight className="ml-auto h-4 w-4" />
             </Button>
@@ -268,7 +371,7 @@ const AppDashboard = () => {
               variant="outline"
               onClick={() => navigate('/purchase-orders')}
             >
-              <ShoppingCart className="mr-2 h-4 w-4" />
+              <ShoppingCart className="mr-2 h-4 w-4 text-orange-600" />
               Create Purchase Order
               <ArrowRight className="ml-auto h-4 w-4" />
             </Button>
@@ -278,7 +381,7 @@ const AppDashboard = () => {
               variant="outline"
               onClick={() => navigate('/goods-receipt')}
             >
-              <FileText className="mr-2 h-4 w-4" />
+              <FileText className="mr-2 h-4 w-4 text-purple-600" />
               Record Goods Receipt
               <ArrowRight className="ml-auto h-4 w-4" />
             </Button>
@@ -288,7 +391,7 @@ const AppDashboard = () => {
               variant="outline"
               onClick={() => navigate('/proforma')}
             >
-              <FileText className="mr-2 h-4 w-4" />
+              <FileText className="mr-2 h-4 w-4 text-green-600" />
               Generate Proforma Invoice
               <ArrowRight className="ml-auto h-4 w-4" />
             </Button>
@@ -298,7 +401,7 @@ const AppDashboard = () => {
               variant="outline"
               onClick={() => navigate('/suppliers')}
             >
-              <Users className="mr-2 h-4 w-4" />
+              <Users className="mr-2 h-4 w-4 text-cyan-600" />
               Manage Suppliers
               <ArrowRight className="ml-auto h-4 w-4" />
             </Button>
