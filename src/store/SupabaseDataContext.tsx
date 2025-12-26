@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -1094,7 +1094,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setGstSettingsState(settings);
   };
 
-  const value: DataContextValue = {
+  // Memoize the context value to prevent unnecessary re-renders
+  const value: DataContextValue = useMemo(() => ({
     inventoryItems,
     suppliers,
     purchaseOrders,
@@ -1135,7 +1136,23 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setBusinessInfo,
     setGstSettings,
     refreshData,
-  };
+  }), [
+    inventoryItems,
+    suppliers,
+    purchaseOrders,
+    goodsReceipts,
+    proformaInvoices,
+    proformaProducts,
+    transactions,
+    customers,
+    customerActivities,
+    businessInfo,
+    gstSettings,
+    trialStartDate,
+    subscriptionEndDate,
+    loading,
+    refreshData,
+  ]);
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }
