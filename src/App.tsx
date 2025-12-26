@@ -20,7 +20,6 @@ const GoodsReceiptPage = lazy(() => import("./pages/GoodsReceipt"));
 const Suppliers = lazy(() => import("./pages/Suppliers"));
 const BusinessSetup = lazy(() => import("./pages/BusinessSetup"));
 const ProformaInvoice = lazy(() => import("./pages/ProformaInvoice"));
-const PriceTracker = lazy(() => import("./pages/PriceTracker"));
 const AdminPanel = lazy(() => import("./pages/AdminPanel"));
 
 // Optimized QueryClient with caching
@@ -88,11 +87,6 @@ const App = () => (
               <Route path="proforma" element={
                 <Suspense fallback={<PageLoader />}>
                   <ProformaInvoice />
-                </Suspense>
-              } />
-              <Route path="price-tracker" element={
-                <Suspense fallback={<PageLoader />}>
-                  <PriceTracker />
                 </Suspense>
               } />
               <Route path="business" element={
