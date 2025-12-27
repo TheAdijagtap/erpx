@@ -22,10 +22,14 @@ import {
   Truck,
   FileCheck,
   Receipt,
-  AlertTriangle
+  AlertTriangle,
+  TreePine,
+  Gift,
+  Sparkles
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { formatINR } from "@/lib/format";
+import Snowfall from "@/components/Snowfall";
 
 const Dashboard = () => {
   // Demo statistics for showcase
@@ -185,6 +189,21 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen">
+      {/* Christmas Snowfall Effect */}
+      <Snowfall />
+      
+      {/* Christmas Banner */}
+      <div className="bg-gradient-to-r from-red-600 via-green-600 to-red-600 text-white py-3 px-4 text-center relative overflow-hidden">
+        <div className="flex items-center justify-center gap-3 text-sm font-medium">
+          <TreePine className="w-5 h-5 animate-pulse" />
+          <Gift className="w-4 h-4" />
+          <span>🎄 Merry Christmas & Happy New Year 2025! 🎅</span>
+          <Gift className="w-4 h-4" />
+          <Sparkles className="w-5 h-5 animate-pulse" />
+        </div>
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse pointer-events-none" />
+      </div>
+
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-accent/5 py-20 px-6">
         <div className="absolute inset-0 bg-grid-pattern opacity-5" />
