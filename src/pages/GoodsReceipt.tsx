@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Search, Package, Eye, Edit, Printer, CheckCircle, XCircle, Trash2 } from "lucide-react";
@@ -435,15 +436,15 @@ function ViewGRDialog({ id }: { id: string }) {
   const receipt = goodsReceipts.find(g => g.id === id)!;
   const elId = `gr-print-${id}`;
   return (
-    <Dialog>
-      <DialogTrigger asChild>
+    <Sheet>
+      <SheetTrigger asChild>
         <Button variant="outline" size="sm" className="gap-1"><Eye className="w-4 h-4" /> View</Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-4xl">
-        <DialogHeader>
-          <DialogTitle>Goods Receipt</DialogTitle>
-        </DialogHeader>
-        <div id={elId}>
+      </SheetTrigger>
+      <SheetContent side="right" className="w-full sm:max-w-2xl lg:max-w-4xl overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle>Goods Receipt</SheetTitle>
+        </SheetHeader>
+        <div id={elId} className="mt-4">
           <div className="section">
             <div className="header">
               {businessInfo.logo && <img src={businessInfo.logo} alt="Logo" />}
@@ -538,11 +539,11 @@ function ViewGRDialog({ id }: { id: string }) {
           
           {receipt.notes && <div className="footer">Notes: {receipt.notes}</div>}
         </div>
-        <DialogFooter>
+        <SheetFooter className="mt-6">
           <Button onClick={() => printElementById(elId, `GR ${receipt.grNumber}`)} className="gap-1"><Printer className="w-4 h-4" /> Print</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }
 

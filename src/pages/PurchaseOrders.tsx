@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Search, FileText, Eye, Edit, Printer, Trash2, Download } from "lucide-react";
@@ -894,15 +895,15 @@ function ViewPODialog({ id }: { id: string }) {
   const order = purchaseOrders.find(p => p.id === id)!;
   const elId = `po-print-${id}`;
   return (
-    <Dialog>
-      <DialogTrigger asChild>
+    <Sheet>
+      <SheetTrigger asChild>
         <Button variant="outline" size="sm" className="gap-1"><Eye className="w-4 h-4" /> View</Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-4xl">
-        <DialogHeader>
-          <DialogTitle>Purchase Order</DialogTitle>
-        </DialogHeader>
-        <div id={elId}>
+      </SheetTrigger>
+      <SheetContent side="right" className="w-full sm:max-w-2xl lg:max-w-4xl overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle>Purchase Order</SheetTitle>
+        </SheetHeader>
+        <div id={elId} className="mt-4">
           <div className="section">
             <div className="header">
               {businessInfo.logo && <img src={businessInfo.logo} alt="Logo" />}
@@ -1000,12 +1001,12 @@ function ViewPODialog({ id }: { id: string }) {
           
           {order.notes && <div className="footer">Notes: {order.notes}</div>}
         </div>
-        <DialogFooter className="gap-2">
+        <SheetFooter className="gap-2 mt-6">
           <Button variant="outline" onClick={() => printElementById(elId, `PO ${order.poNumber}`)} className="gap-1"><Printer className="w-4 h-4" /> Print</Button>
           <DeletePODialog id={id} />
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }
 
