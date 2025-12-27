@@ -12,6 +12,7 @@ import { useData } from "@/store/SupabaseDataContext";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
 import { numberToWords } from "@/lib/numberToWords";
+import { escapeHtml } from "@/lib/htmlEscape";
 
 interface PurchaseAggregateRow {
   key: string;
@@ -1066,30 +1067,30 @@ function PrintPOButton({ id }: { id: string }) {
     tempDiv.innerHTML = `
       <div class="section">
         <div class="header">
-          ${businessInfo.logo ? `<img src="${businessInfo.logo}" alt="Logo" />` : ''}
+          ${businessInfo.logo ? `<img src="${escapeHtml(businessInfo.logo)}" alt="Logo" />` : ''}
           <div>
-            <div class="brand">${businessInfo.name}</div>
-            <div class="muted">${businessInfo.address}</div>
-            <div class="muted">${businessInfo.email} · ${businessInfo.phone}</div>
-            ${businessInfo.gstNumber ? `<div class="muted">GST: ${businessInfo.gstNumber}</div>` : ''}
+            <div class="brand">${escapeHtml(businessInfo.name)}</div>
+            <div class="muted">${escapeHtml(businessInfo.address)}</div>
+            <div class="muted">${escapeHtml(businessInfo.email)} · ${escapeHtml(businessInfo.phone)}</div>
+            ${businessInfo.gstNumber ? `<div class="muted">GST: ${escapeHtml(businessInfo.gstNumber)}</div>` : ''}
           </div>
         </div>
       </div>
-      <div class="section"><h2>Purchase Order ${order.poNumber}</h2></div>
+      <div class="section"><h2>Purchase Order ${escapeHtml(order.poNumber)}</h2></div>
       <div class="section">
         <div class="grid">
           <div>
             <strong>Supplier Details</strong>
-            <div>${order.supplier.name}</div>
-            <div class="muted">${order.supplier.address}</div>
-            <div class="muted">${order.supplier.email} · ${order.supplier.phone}</div>
-            ${order.supplier.gstNumber ? `<div class="muted">GST: ${order.supplier.gstNumber}</div>` : ''}
+            <div>${escapeHtml(order.supplier.name)}</div>
+            <div class="muted">${escapeHtml(order.supplier.address)}</div>
+            <div class="muted">${escapeHtml(order.supplier.email)} · ${escapeHtml(order.supplier.phone)}</div>
+            ${order.supplier.gstNumber ? `<div class="muted">GST: ${escapeHtml(order.supplier.gstNumber)}</div>` : ''}
           </div>
           <div>
             <strong>Order Details</strong>
             <div>Date: ${formatDateIN(order.date)}</div>
-            <div>Status: ${order.status}</div>
-            <div>Payment Terms: ${order.paymentTerms || "30 days from invoice date"}</div>
+            <div>Status: ${escapeHtml(order.status)}</div>
+            <div>Payment Terms: ${escapeHtml(order.paymentTerms || "30 days from invoice date")}</div>
             <div>GST: ${order.sgst + order.cgst > 0 ? `${gstSettings.sgstRate + gstSettings.cgstRate}%` : 'Not Applied'}</div>
           </div>
         </div>
@@ -1105,11 +1106,11 @@ function PrintPOButton({ id }: { id: string }) {
               <tr>
                 <td>${idx + 1}</td>
                 <td>
-                  <div style="font-weight: 600">${it.item.name}</div>
-                  ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${it.item.description}</div>` : ''}
+                  <div style="font-weight: 600">${escapeHtml(it.item.name)}</div>
+                  ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${escapeHtml(it.item.description)}</div>` : ''}
                 </td>
                 <td>${it.quantity}</td>
-                <td>${it.item.unit}</td>
+                <td>${escapeHtml(it.item.unit)}</td>
                 <td>${formatINR(it.unitPrice)}</td>
                 <td>${formatINR(it.total)}</td>
               </tr>
@@ -1121,7 +1122,7 @@ function PrintPOButton({ id }: { id: string }) {
         <table class="totals">
           <tbody>
             <tr><td class="label">Subtotal</td><td class="value">${formatINR(order.subtotal)}</td></tr>
-            ${(order.additionalCharges ?? []).map(charge => `<tr><td class="label">${charge.name}</td><td class="value">${formatINR(charge.amount)}</td></tr>`).join('')}
+            ${(order.additionalCharges ?? []).map(charge => `<tr><td class="label">${escapeHtml(charge.name)}</td><td class="value">${formatINR(charge.amount)}</td></tr>`).join('')}
             <tr><td class="label">SGST</td><td class="value">${formatINR(order.sgst)}</td></tr>
             <tr><td class="label">CGST</td><td class="value">${formatINR(order.cgst)}</td></tr>
             <tr><td class="label"><strong>Total Amount</strong></td><td class="value"><strong>${formatINR(order.total)}</strong></td></tr>
@@ -1132,7 +1133,7 @@ function PrintPOButton({ id }: { id: string }) {
       <div class="section terms">
         <strong>Terms & Conditions:</strong>
         <div class="muted" style="margin-top: 8px; line-height: 1.4">
-          1. Payment terms: ${order.paymentTerms || "30 days from invoice date"}<br />
+          1. Payment terms: ${escapeHtml(order.paymentTerms || "30 days from invoice date")}<br />
           2. Furnish Transporter copy of the invoice at the time of delivery of material.<br />
           3. Please mentioned our GSTIN on your tax invoice.<br />
           4. Any damaged Due To Manufacturer Transit Needs To be Replace At Free Of Cost<br />
@@ -1142,11 +1143,11 @@ function PrintPOButton({ id }: { id: string }) {
       ${businessInfo.signature ? `
         <div class="signature-section">
           <div>Authorized Signatory</div>
-          <img src="${businessInfo.signature}" alt="Authorized Signature" class="signature-image" style="margin-top: 8px" />
-          <div class="muted">${businessInfo.name}</div>
+          <img src="${escapeHtml(businessInfo.signature)}" alt="Authorized Signature" class="signature-image" style="margin-top: 8px" />
+          <div class="muted">${escapeHtml(businessInfo.name)}</div>
         </div>
       ` : ''}
-      ${order.notes ? `<div class="footer">Notes: ${order.notes}</div>` : ''}
+      ${order.notes ? `<div class="footer">Notes: ${escapeHtml(order.notes)}</div>` : ''}
     `;
     
     printElementById(elId, `PO ${order.poNumber}`);

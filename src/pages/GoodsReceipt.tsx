@@ -11,6 +11,7 @@ import { useData } from "@/store/SupabaseDataContext";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
 import { numberToWords } from "@/lib/numberToWords";
+import { escapeHtml } from "@/lib/htmlEscape";
 
 const GoodsReceiptPage = () => {
   const { goodsReceipts } = useData();
@@ -614,29 +615,29 @@ function PrintGRButton({ id }: { id: string }) {
     tempDiv.innerHTML = `
       <div class="section">
         <div class="header">
-          ${businessInfo.logo ? `<img src="${businessInfo.logo}" alt="Logo" />` : ''}
+          ${businessInfo.logo ? `<img src="${escapeHtml(businessInfo.logo)}" alt="Logo" />` : ''}
           <div>
-            <div class="brand">${businessInfo.name}</div>
-            <div class="muted">${businessInfo.address}</div>
-            <div class="muted">${businessInfo.email} · ${businessInfo.phone}</div>
-            ${businessInfo.gstNumber ? `<div class="muted">GST: ${businessInfo.gstNumber}</div>` : ''}
+            <div class="brand">${escapeHtml(businessInfo.name)}</div>
+            <div class="muted">${escapeHtml(businessInfo.address)}</div>
+            <div class="muted">${escapeHtml(businessInfo.email)} · ${escapeHtml(businessInfo.phone)}</div>
+            ${businessInfo.gstNumber ? `<div class="muted">GST: ${escapeHtml(businessInfo.gstNumber)}</div>` : ''}
           </div>
         </div>
       </div>
-      <div class="section"><h2>Goods Receipt ${receipt.grNumber}</h2></div>
+      <div class="section"><h2>Goods Receipt ${escapeHtml(receipt.grNumber)}</h2></div>
       <div class="section">
         <div class="grid">
           <div>
             <strong>Supplier Details</strong>
-            <div>${receipt.supplier.name}</div>
-            <div class="muted">${receipt.supplier.address}</div>
-            <div class="muted">${receipt.supplier.email} · ${receipt.supplier.phone}</div>
-            ${receipt.supplier.gstNumber ? `<div class="muted">GST: ${receipt.supplier.gstNumber}</div>` : ''}
+            <div>${escapeHtml(receipt.supplier.name)}</div>
+            <div class="muted">${escapeHtml(receipt.supplier.address)}</div>
+            <div class="muted">${escapeHtml(receipt.supplier.email)} · ${escapeHtml(receipt.supplier.phone)}</div>
+            ${receipt.supplier.gstNumber ? `<div class="muted">GST: ${escapeHtml(receipt.supplier.gstNumber)}</div>` : ''}
           </div>
           <div>
             <strong>Receipt Details</strong>
             <div>Date: ${formatDateIN(receipt.date)}</div>
-            <div>Status: ${receipt.status}</div>
+            <div>Status: ${escapeHtml(receipt.status)}</div>
             <div>GST: ${receipt.sgst + receipt.cgst > 0 ? `${gstSettings.sgstRate + gstSettings.cgstRate}%` : 'Not Applied'}</div>
           </div>
         </div>
@@ -652,12 +653,12 @@ function PrintGRButton({ id }: { id: string }) {
               <tr>
                 <td>${idx + 1}</td>
                 <td>
-                  <div style="font-weight: 600">${it.item.name}</div>
-                  ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${it.item.description}</div>` : ''}
+                  <div style="font-weight: 600">${escapeHtml(it.item.name)}</div>
+                  ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${escapeHtml(it.item.description)}</div>` : ''}
                 </td>
                 <td>${it.orderedQuantity || '-'}</td>
                 <td>${it.receivedQuantity}</td>
-                <td>${it.item.unit}</td>
+                <td>${escapeHtml(it.item.unit)}</td>
                 <td>${formatINR(it.unitPrice)}</td>
                 <td>${formatINR(it.total)}</td>
               </tr>
@@ -669,7 +670,7 @@ function PrintGRButton({ id }: { id: string }) {
         <table class="totals">
           <tbody>
             <tr><td class="label">Subtotal</td><td class="value">${formatINR(receipt.subtotal)}</td></tr>
-            ${(receipt.additionalCharges ?? []).map(charge => `<tr><td class="label">${charge.name}</td><td class="value">${formatINR(charge.amount)}</td></tr>`).join('')}
+            ${(receipt.additionalCharges ?? []).map(charge => `<tr><td class="label">${escapeHtml(charge.name)}</td><td class="value">${formatINR(charge.amount)}</td></tr>`).join('')}
             <tr><td class="label">SGST</td><td class="value">${formatINR(receipt.sgst)}</td></tr>
             <tr><td class="label">CGST</td><td class="value">${formatINR(receipt.cgst)}</td></tr>
             <tr><td class="label"><strong>Total Amount</strong></td><td class="value"><strong>${formatINR(receipt.total)}</strong></td></tr>
@@ -690,11 +691,11 @@ function PrintGRButton({ id }: { id: string }) {
       ${businessInfo.signature ? `
         <div class="signature-section">
           <div>Authorized Signatory</div>
-          <img src="${businessInfo.signature}" alt="Authorized Signature" class="signature-image" style="margin-top: 8px" />
-          <div class="muted">${businessInfo.name}</div>
+          <img src="${escapeHtml(businessInfo.signature)}" alt="Authorized Signature" class="signature-image" style="margin-top: 8px" />
+          <div class="muted">${escapeHtml(businessInfo.name)}</div>
         </div>
       ` : ''}
-      ${receipt.notes ? `<div class="footer">Notes: ${receipt.notes}</div>` : ''}
+      ${receipt.notes ? `<div class="footer">Notes: ${escapeHtml(receipt.notes)}</div>` : ''}
     `;
     
     printElementById(elId, `GR ${receipt.grNumber}`);
