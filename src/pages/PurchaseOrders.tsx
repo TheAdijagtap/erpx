@@ -4,13 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, FileText, Eye, Edit, Printer, Trash2, Download, X } from "lucide-react";
+import { Plus, Search, FileText, Eye, Edit, Printer, Trash2, Download } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
@@ -501,12 +499,12 @@ function CreatePODialog() {
   const [open, setOpen] = useState(false);
   const [supplierId, setSupplierId] = useState<string | null>(suppliers[0]?.id || null);
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
-  const [expectedDelivery, setExpectedDelivery] = useState<string>("");
   const [paymentTerms, setPaymentTerms] = useState<string>("30 days from invoice date");
-  const [notes, setNotes] = useState<string>("");
   const [applyGST, setApplyGST] = useState<boolean>(false);
   const [gstRate, setGstRate] = useState<number>(18);
-  const [rows, setRows] = useState<Array<{ itemId: string; quantity: number; unitPrice: number; unit: string }>>([]);
+  const [rows, setRows] = useState<Array<{ itemId: string; quantity: number; unitPrice: number; unit: string }>>([
+    { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0, unit: items[0]?.unit || "PCS" },
+  ]);
   const [additionalCharges, setAdditionalCharges] = useState<Array<{ name: string; amount: number }>>([]);
   
   // Quick-add item state
@@ -515,9 +513,6 @@ function CreatePODialog() {
   const [newItemUnit, setNewItemUnit] = useState("PCS");
   const [newItemPrice, setNewItemPrice] = useState<number>(0);
   const [newItemCategory, setNewItemCategory] = useState("");
-
-  const [supplierSearch, setSupplierSearch] = useState("");
-  const [itemSearch, setItemSearch] = useState("");
 
   const handleQuickAddItem = () => {
     if (!newItemName.trim()) return;
@@ -538,6 +533,8 @@ function CreatePODialog() {
     setNewItemCategory("");
     setQuickAddOpen(false);
   };
+  const [supplierSearch, setSupplierSearch] = useState("");
+  const [itemSearch, setItemSearch] = useState("");
 
   const filteredSuppliers = useMemo(() => 
     suppliers.filter(s => s.name.toLowerCase().includes(supplierSearch.toLowerCase())),
@@ -556,24 +553,8 @@ function CreatePODialog() {
   }, [items, itemSearch]);
 
   const onAddRow = () => setRows([...rows, { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0, unit: items[0]?.unit || "PCS" }]);
-  
-  const removeRow = (index: number) => {
-    setRows(rows.filter((_, i) => i !== index));
-  };
-
-  const calcTotals = () => {
-    const subtotal = rows.reduce((sum, row) => sum + (row.quantity * row.unitPrice), 0);
-    const chargesTotal = additionalCharges.reduce((sum, charge) => sum + charge.amount, 0);
-    const sgst = applyGST ? ((subtotal + chargesTotal) * gstRate) / 200 : 0;
-    const cgst = applyGST ? ((subtotal + chargesTotal) * gstRate) / 200 : 0;
-    const total = subtotal + chargesTotal + sgst + cgst;
-    return { subtotal, sgst, cgst, total };
-  };
-
-  const { subtotal, sgst, cgst, total } = calcTotals();
-  
   const onSubmit = () => {
-    if (!supplierId || rows.length === 0 || rows.some(r => !r.itemId || r.quantity <= 0)) return;
+    if (!supplierId || rows.some(r => !r.itemId || r.quantity <= 0)) return;
     const poNumber = `PO-${new Date().getFullYear()}-${String(Math.floor(Math.random()*999)+1).padStart(3, '0')}`;
     const supplier = suppliers.find(s => s.id === supplierId)!;
     const poItems = rows.map((r) => {
@@ -601,8 +582,8 @@ function CreatePODialog() {
       })),
       status: "SENT",
       date: new Date(date),
-      notes,
-      expectedDelivery: expectedDelivery ? new Date(expectedDelivery) : undefined,
+      notes: "",
+      expectedDelivery: undefined,
       paymentTerms,
       applyGST,
       gstRate: applyGST ? gstRate : undefined,
@@ -627,10 +608,6 @@ function CreatePODialog() {
     localStorage.setItem("priceHistory", JSON.stringify([...history, ...priceRecords]));
 
     setOpen(false);
-    // Reset form
-    setRows([]);
-    setAdditionalCharges([]);
-    setNotes("");
   };
 
   return (
@@ -640,254 +617,154 @@ function CreatePODialog() {
           <Plus className="w-4 h-4" /> Create New PO
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create Purchase Order</DialogTitle>
         </DialogHeader>
-        
-        <div className="space-y-6">
-          {/* Supplier Information */}
-          <Card className="p-4">
-            <h3 className="text-lg font-semibold mb-4">Supplier Information</h3>
+        <div className="space-y-4 text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <div className="mb-1">Supplier</div>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+                <Select value={supplierId || undefined} onValueChange={setSupplierId}>
+                  <SelectTrigger className="pl-10">
+                    <SelectValue placeholder="Select supplier" />
+                  </SelectTrigger>
+                  <SelectContent className="z-50">
+                    <div className="px-2 pb-2">
+                      <Input
+                        placeholder="Search suppliers..."
+                        value={supplierSearch}
+                        onChange={(e) => setSupplierSearch(e.target.value)}
+                        className="h-8"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                    {filteredSuppliers.length === 0 ? (
+                      <div className="px-2 py-4 text-sm text-muted-foreground text-center">
+                        No suppliers found
+                      </div>
+                    ) : (
+                      filteredSuppliers.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div>
+              <div className="mb-1">Date</div>
+              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            </div>
+            <div>
+              <div className="mb-1">Payment Terms</div>
+              <Input value={paymentTerms} onChange={(e) => setPaymentTerms(e.target.value)} placeholder="e.g., 30 days from invoice date" />
+            </div>
+            <div className="flex items-end gap-2">
+              <input id="applyGST" type="checkbox" checked={applyGST} onChange={(e) => setApplyGST(e.target.checked)} />
+              <label htmlFor="applyGST">Apply GST</label>
+            </div>
+          </div>
+          {applyGST && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="supplier">Supplier *</Label>
-                <div className="relative mt-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
-                  <Select value={supplierId || undefined} onValueChange={setSupplierId}>
-                    <SelectTrigger className="pl-10">
-                      <SelectValue placeholder="Select supplier" />
-                    </SelectTrigger>
-                    <SelectContent className="z-50 bg-background">
-                      <div className="px-2 pb-2 sticky top-0 bg-background">
-                        <Input
-                          placeholder="Search suppliers..."
-                          value={supplierSearch}
-                          onChange={(e) => setSupplierSearch(e.target.value)}
-                          className="h-8"
-                          onClick={(e) => e.stopPropagation()}
-                          onKeyDown={(e) => e.stopPropagation()}
-                        />
-                      </div>
-                      {filteredSuppliers.length === 0 ? (
-                        <div className="px-2 py-4 text-sm text-muted-foreground text-center">
-                          No suppliers found
-                        </div>
-                      ) : (
-                        filteredSuppliers.map((s) => (
-                          <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <div className="mb-1">GST Rate (%)</div>
+                <Input 
+                  type="number" 
+                  min="0" 
+                  step="0.01" 
+                  value={gstRate} 
+                  onChange={(e) => setGstRate(parseFloat(e.target.value) || 0)} 
+                  placeholder="e.g., 18"
+                />
               </div>
-              {supplierId && (
-                <div className="text-sm text-muted-foreground">
-                  {(() => {
-                    const supplier = suppliers.find(s => s.id === supplierId);
-                    return supplier ? (
-                      <div className="space-y-1 mt-6">
-                        {supplier.address && <div>{supplier.address}</div>}
-                        {supplier.phone && <div>Phone: {supplier.phone}</div>}
-                        {supplier.email && <div>Email: {supplier.email}</div>}
-                        {supplier.gstNumber && <div>GST: {supplier.gstNumber}</div>}
-                      </div>
-                    ) : null;
-                  })()}
-                </div>
-              )}
             </div>
-          </Card>
+          )}
 
-          {/* Order Details */}
-          <Card className="p-4">
-            <h3 className="text-lg font-semibold mb-4">Order Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="date">Date *</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="expectedDelivery">Expected Delivery</Label>
-                <Input
-                  id="expectedDelivery"
-                  type="date"
-                  value={expectedDelivery}
-                  onChange={(e) => setExpectedDelivery(e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="paymentTerms">Payment Terms</Label>
-                <Input
-                  id="paymentTerms"
-                  value={paymentTerms}
-                  onChange={(e) => setPaymentTerms(e.target.value)}
-                  placeholder="e.g., 30 days from invoice date"
-                  className="mt-1"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <div className="flex items-center gap-2">
-                <input 
-                  id="applyGSTPO" 
-                  type="checkbox" 
-                  checked={applyGST} 
-                  onChange={(e) => setApplyGST(e.target.checked)} 
-                />
-                <label htmlFor="applyGSTPO">Apply GST</label>
-              </div>
-              {applyGST && (
-                <div>
-                  <Label htmlFor="gstRate">GST Rate (%)</Label>
-                  <Input
-                    id="gstRate"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={gstRate}
-                    onChange={(e) => setGstRate(parseFloat(e.target.value) || 0)}
-                    placeholder="e.g., 18"
-                    className="mt-1"
-                  />
-                </div>
-              )}
-            </div>
-          </Card>
-
-          {/* Items */}
-          <Card className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Items</h3>
-              <div className="flex gap-2">
-                <Dialog open={quickAddOpen} onOpenChange={setQuickAddOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="gap-1">
-                      <Plus className="w-4 h-4" /> Quick Add Item
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Quick Add Inventory Item</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-3">
-                      <div>
-                        <Label>Item Name *</Label>
-                        <Input 
-                          value={newItemName} 
-                          onChange={(e) => setNewItemName(e.target.value)} 
-                          placeholder="Enter item name"
-                          className="mt-1"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <Label>Unit</Label>
-                          <Select value={newItemUnit} onValueChange={setNewItemUnit}>
-                            <SelectTrigger className="mt-1">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent className="z-[100] bg-background">
-                              <SelectItem value="PCS">PCS</SelectItem>
-                              <SelectItem value="KG">KG</SelectItem>
-                              <SelectItem value="LTR">LTR</SelectItem>
-                              <SelectItem value="MTR">MTR</SelectItem>
-                              <SelectItem value="BOX">BOX</SelectItem>
-                              <SelectItem value="SET">SET</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <Label>Unit Price</Label>
-                          <Input 
-                            type="number" 
-                            min="0"
-                            value={newItemPrice} 
-                            onChange={(e) => setNewItemPrice(parseFloat(e.target.value) || 0)} 
-                            placeholder="0.00"
-                            className="mt-1"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <Label>Category</Label>
-                        <Input 
-                          value={newItemCategory} 
-                          onChange={(e) => setNewItemCategory(e.target.value)} 
-                          placeholder="e.g., Raw Materials"
-                          className="mt-1"
-                        />
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setQuickAddOpen(false)}>Cancel</Button>
-                      <Button onClick={handleQuickAddItem} disabled={!newItemName.trim()}>Add Item</Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-                <Button onClick={onAddRow} variant="outline" size="sm">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Row
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-medium text-sm">Items</span>
+            <Dialog open={quickAddOpen} onOpenChange={setQuickAddOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1 h-7 text-xs">
+                  <Plus className="w-3 h-3" /> Quick Add Item
                 </Button>
-              </div>
-            </div>
-
-            {/* Item Search - Separate from dropdown */}
-            <div className="mb-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search items by name, category, or SKU..."
-                  value={itemSearch}
-                  onChange={(e) => setItemSearch(e.target.value)}
-                  className="pl-10"
-                />
-                {itemSearch && (
-                  <button 
-                    onClick={() => setItemSearch("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-              {itemSearch && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  Showing {filteredItems.length} of {items.length} items
-                </p>
-              )}
-            </div>
-            
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Quick Add Inventory Item</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium">Item Name *</label>
+                    <Input 
+                      value={newItemName} 
+                      onChange={(e) => setNewItemName(e.target.value)} 
+                      placeholder="Enter item name"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-sm font-medium">Unit</label>
+                      <Select value={newItemUnit} onValueChange={setNewItemUnit}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="PCS">PCS</SelectItem>
+                          <SelectItem value="KG">KG</SelectItem>
+                          <SelectItem value="LTR">LTR</SelectItem>
+                          <SelectItem value="MTR">MTR</SelectItem>
+                          <SelectItem value="BOX">BOX</SelectItem>
+                          <SelectItem value="SET">SET</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium">Unit Price</label>
+                      <Input 
+                        type="number" 
+                        min="0"
+                        value={newItemPrice} 
+                        onChange={(e) => setNewItemPrice(parseFloat(e.target.value) || 0)} 
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Category</label>
+                    <Input 
+                      value={newItemCategory} 
+                      onChange={(e) => setNewItemCategory(e.target.value)} 
+                      placeholder="e.g., Raw Materials"
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setQuickAddOpen(false)}>Cancel</Button>
+                  <Button onClick={handleQuickAddItem} disabled={!newItemName.trim()}>Add Item</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+          <div className="rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="min-w-[200px]">Item</TableHead>
-                  <TableHead>Quantity</TableHead>
+                  <TableHead>Item</TableHead>
+                  <TableHead>Qty</TableHead>
                   <TableHead>Unit</TableHead>
                   <TableHead>Unit Price</TableHead>
                   <TableHead>Total</TableHead>
-                  <TableHead className="w-[80px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {rows.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                      No items added yet. Click "Add Row" to add items.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  rows.map((row, idx) => (
-                    <TableRow key={idx}>
-                      <TableCell>
+                {rows.map((row, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell className="min-w-[180px]">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
                         <Select value={row.itemId} onValueChange={(v) => {
                           const it = items.find(i => i.id === v);
                           if (!it) return;
@@ -895,10 +772,19 @@ function CreatePODialog() {
                           next[idx] = { ...row, itemId: v, unitPrice: it.unitPrice || 0, unit: it.unit || "PCS" };
                           setRows(next);
                         }}>
-                          <SelectTrigger className="w-full">
+                          <SelectTrigger className="w-full pl-10">
                             <SelectValue placeholder="Select item" />
                           </SelectTrigger>
-                          <SelectContent className="z-50 bg-background max-h-64">
+                          <SelectContent className="z-50 max-h-64">
+                            <div className="px-2 pb-2 sticky top-0 bg-background">
+                              <Input
+                                placeholder="Search items..."
+                                value={itemSearch}
+                                onChange={(e) => setItemSearch(e.target.value)}
+                                className="h-8"
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
                             {filteredItems.length === 0 ? (
                               <div className="px-2 py-4 text-sm text-muted-foreground text-center">
                                 No items found
@@ -917,81 +803,51 @@ function CreatePODialog() {
                             )}
                           </SelectContent>
                         </Select>
-                      </TableCell>
-                      <TableCell>
-                        <Input 
-                          type="number" 
-                          min={0} 
-                          step="0.01" 
-                          value={row.quantity} 
-                          onChange={(e) => {
-                            const next = [...rows];
-                            next[idx] = { ...row, quantity: parseFloat(e.target.value) || 0 };
-                            setRows(next);
-                          }} 
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input 
-                          value={row.unit} 
-                          onChange={(e) => {
-                            const next = [...rows];
-                            next[idx] = { ...row, unit: e.target.value };
-                            setRows(next);
-                          }} 
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input 
-                          type="number" 
-                          min={0} 
-                          step="0.01" 
-                          value={row.unitPrice} 
-                          onChange={(e) => {
-                            const next = [...rows];
-                            next[idx] = { ...row, unitPrice: parseFloat(e.target.value) || 0 };
-                            setRows(next);
-                          }} 
-                        />
-                      </TableCell>
-                      <TableCell className="font-medium">{formatINR(row.quantity * row.unitPrice)}</TableCell>
-                      <TableCell>
-                        <Button variant="ghost" size="sm" onClick={() => removeRow(idx)}>
-                          <Trash2 className="w-4 h-4 text-destructive" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Input type="number" min={0} step="0.01" value={row.quantity} onChange={(e) => {
+                        const next = [...rows];
+                        next[idx] = { ...row, quantity: parseFloat(e.target.value) || 0 };
+                        setRows(next);
+                      }} />
+                    </TableCell>
+                    <TableCell>
+                      <Input value={row.unit} onChange={(e) => {
+                        const next = [...rows];
+                        next[idx] = { ...row, unit: e.target.value };
+                        setRows(next);
+                      }} />
+                    </TableCell>
+                    <TableCell>
+                      <Input type="number" min={0} step="0.01" value={row.unitPrice} onChange={(e) => {
+                        const next = [...rows];
+                        next[idx] = { ...row, unitPrice: parseFloat(e.target.value) || 0 };
+                        setRows(next);
+                      }} />
+                    </TableCell>
+                    <TableCell className="font-medium">{formatINR(row.quantity * row.unitPrice)}</TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
-          </Card>
+          </div>
 
-          {/* Additional Charges */}
-          <Card className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Additional Charges</h3>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setAdditionalCharges([...additionalCharges, { name: "", amount: 0 }])}
-                className="gap-2"
-              >
-                <Plus className="w-4 h-4" /> Add Charge
-              </Button>
-            </div>
+          <Button variant="outline" className="gap-2" onClick={onAddRow}><Plus className="w-4 h-4" /> Add Item</Button>
+
+          <div className="mt-6">
+            <h4 className="font-medium mb-3">Additional Charges</h4>
             <div className="space-y-2">
               {additionalCharges.map((charge, idx) => (
                 <div key={idx} className="flex gap-2">
                   <Input
-                    placeholder="Charge name (e.g., Freight, Handling)"
+                    placeholder="Charge name (e.g., Freight)"
                     value={charge.name}
                     onChange={(e) => {
                       const next = [...additionalCharges];
                       next[idx] = { ...charge, name: e.target.value };
                       setAdditionalCharges(next);
                     }}
-                    className="flex-1"
                   />
                   <Input
                     type="number"
@@ -1002,77 +858,32 @@ function CreatePODialog() {
                       next[idx] = { ...charge, amount: parseFloat(e.target.value) || 0 };
                       setAdditionalCharges(next);
                     }}
-                    className="w-32"
                   />
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     onClick={() => {
                       const next = additionalCharges.filter((_, i) => i !== idx);
                       setAdditionalCharges(next);
                     }}
                   >
-                    <Trash2 className="w-4 h-4 text-destructive" />
+                    Remove
                   </Button>
                 </div>
               ))}
-              {additionalCharges.length === 0 && (
-                <p className="text-sm text-muted-foreground text-center py-2">
-                  No additional charges. Click "Add Charge" to add freight, handling, etc.
-                </p>
-              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setAdditionalCharges([...additionalCharges, { name: "", amount: 0 }])}
+                className="gap-2"
+              >
+                <Plus className="w-4 h-4" /> Add Charge
+              </Button>
             </div>
-          </Card>
-
-          {/* Totals & Notes */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="p-4">
-              <h3 className="text-lg font-semibold mb-4">Notes</h3>
-              <Textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add any notes or special instructions..."
-                rows={4}
-              />
-            </Card>
-
-            <Card className="p-4">
-              <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Subtotal</span>
-                  <span className="font-medium">{formatINR(subtotal)}</span>
-                </div>
-                {additionalCharges.map((charge, idx) => (
-                  <div key={idx} className="flex justify-between">
-                    <span className="text-muted-foreground">{charge.name || 'Charge'}</span>
-                    <span className="font-medium">{formatINR(charge.amount)}</span>
-                  </div>
-                ))}
-                {applyGST && (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">SGST ({gstRate/2}%)</span>
-                      <span className="font-medium">{formatINR(sgst)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">CGST ({gstRate/2}%)</span>
-                      <span className="font-medium">{formatINR(cgst)}</span>
-                    </div>
-                  </>
-                )}
-                <div className="border-t pt-2 flex justify-between">
-                  <span className="font-semibold">Total</span>
-                  <span className="font-bold text-lg">{formatINR(total)}</span>
-                </div>
-              </div>
-            </Card>
           </div>
         </div>
-
-        <DialogFooter className="mt-6">
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={onSubmit} disabled={!supplierId || rows.length === 0}>Create Purchase Order</Button>
+        <DialogFooter>
+          <Button onClick={onSubmit}>Create</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
