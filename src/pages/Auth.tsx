@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Loader2, Package } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { z } from "zod";
 
 const signInSchema = z.object({
@@ -115,8 +115,12 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 bg-primary rounded-xl flex items-center justify-center">
-            <Package className="h-8 w-8 text-primary-foreground" />
+          <div className="mx-auto flex items-center justify-center">
+            <img 
+              src="https://cdn.builder.io/api/v1/image/assets%2Fc53d55d6e77f4fc3a0917324bbf678cd%2F327ce537ca7a4e5bb4b15a6a6569900e?format=webp&width=800" 
+              alt="CORS Logo" 
+              className="h-16 object-contain" 
+            />
           </div>
           <div>
             <CardTitle className="text-2xl font-bold">CORS Inventory</CardTitle>
