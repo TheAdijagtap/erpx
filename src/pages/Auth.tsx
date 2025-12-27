@@ -122,12 +122,9 @@ const Auth = () => {
               className="h-16 object-contain" 
             />
           </div>
-          <div>
-            <CardTitle className="text-2xl font-bold">CORS Inventory</CardTitle>
-            <CardDescription className="text-muted-foreground">
-              Manage your inventory, orders, and business
-            </CardDescription>
-          </div>
+          <CardDescription className="text-muted-foreground">
+            Manage your inventory, orders, and business
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
