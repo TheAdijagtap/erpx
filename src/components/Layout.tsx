@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from "react-router-dom";
-import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt, LogOut, Shield, HelpCircle } from "lucide-react";
+import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt, LogOut, Shield, HelpCircle, TreePine, Gift, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useData } from "@/store/SupabaseDataContext";
@@ -7,6 +7,7 @@ import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { TrialBanner, TrialStatusBadge, TrialExpiredOverlay, calculateTrialStatus } from "@/components/TrialBanner";
+import Snowfall from "@/components/Snowfall";
 
 const WHATSAPP_NUMBER = "919373751128";
 
@@ -41,11 +42,25 @@ const Layout = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Christmas Snowfall Effect */}
+      <Snowfall />
+      
+      {/* Christmas Banner */}
+      <div className="fixed top-0 left-0 right-0 z-[60] bg-gradient-to-r from-red-600 via-green-600 to-red-600 text-white py-2 px-4 text-center">
+        <div className="flex items-center justify-center gap-3 text-sm font-medium">
+          <TreePine className="w-4 h-4 animate-pulse" />
+          <Gift className="w-3 h-3" />
+          <span>🎄 Merry Christmas & Happy New Year 2025! 🎅</span>
+          <Gift className="w-3 h-3" />
+          <Sparkles className="w-4 h-4 animate-pulse" />
+        </div>
+      </div>
+
       {/* Trial expired overlay */}
       {isExpired && <TrialExpiredOverlay />}
       
       {/* Sidebar */}
-      <div className="fixed inset-y-0 left-0 z-50 w-64 bg-sidebar border-r border-sidebar-border shadow-[0_1px_3px_hsl(217_33%_17%_/_0.08)]">
+      <div className="fixed inset-y-0 left-0 z-50 w-64 bg-sidebar border-r border-sidebar-border shadow-[0_1px_3px_hsl(217_33%_17%_/_0.08)] pt-10">
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="px-6 py-5 border-b border-sidebar-border flex items-center justify-center">
@@ -123,7 +138,7 @@ const Layout = () => {
       </div>
 
       {/* Main content */}
-      <div className="pl-64">
+      <div className="pl-64 pt-10">
         {/* Trial warning banner */}
         <TrialBanner trialStartDate={trialStartDate} subscriptionEndDate={subscriptionEndDate} onSubscribe={handleSubscribe} />
         
