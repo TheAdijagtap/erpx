@@ -870,6 +870,28 @@ const Dashboard = () => {
           </Card>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="py-8 px-6 border-t border-border bg-background">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <img 
+                src="https://cdn.builder.io/api/v1/image/assets%2Fc53d55d6e77f4fc3a0917324bbf678cd%2F327ce537ca7a4e5bb4b15a6a6569900e?format=webp&width=200" 
+                alt="CORS Logo" 
+                className="h-8 object-contain" 
+              />
+              <div className="h-6 w-px bg-border" />
+              <span className="text-sm text-muted-foreground">
+                A <span className="font-bold text-foreground">Necrus</span> Company
+              </span>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              © {new Date().getFullYear()} CORS - Corporate Operations Resource System. All rights reserved.
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
