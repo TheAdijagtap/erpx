@@ -14,6 +14,7 @@ import { useData } from "@/store/SupabaseDataContext";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
 import { numberToWords } from "@/lib/numberToWords";
+import { escapeHtml } from "@/lib/htmlEscape";
 import { ProformaInvoice as ProformaInvoiceType, ProformaInvoiceItem, BuyerInfo, ProformaProduct } from "@/types/inventory";
 import React from "react";
 
@@ -1971,32 +1972,32 @@ const PrintProformaButton = ({ id }: { id: string }) => {
     tempDiv.innerHTML = `
       <div class="section">
         <div class="header">
-          ${businessInfo.logo ? `<img src="${businessInfo.logo}" alt="Logo" />` : ''}
+          ${businessInfo.logo ? `<img src="${escapeHtml(businessInfo.logo)}" alt="Logo" />` : ''}
           <div>
-            <div class="brand">${businessInfo.name}</div>
-            <div class="muted">${businessInfo.address}</div>
-            <div class="muted">${businessInfo.email} · ${businessInfo.phone}</div>
-            ${businessInfo.gstNumber ? `<div class="muted">GST: ${businessInfo.gstNumber}</div>` : ''}
+            <div class="brand">${escapeHtml(businessInfo.name)}</div>
+            <div class="muted">${escapeHtml(businessInfo.address)}</div>
+            <div class="muted">${escapeHtml(businessInfo.email)} · ${escapeHtml(businessInfo.phone)}</div>
+            ${businessInfo.gstNumber ? `<div class="muted">GST: ${escapeHtml(businessInfo.gstNumber)}</div>` : ''}
           </div>
         </div>
       </div>
-      <div class="section"><h2>Quotation Cum Proforma ${invoice.proformaNumber}</h2></div>
+      <div class="section"><h2>Quotation Cum Proforma ${escapeHtml(invoice.proformaNumber)}</h2></div>
       <div class="section">
         <div class="grid">
           <div>
             <strong>Buyer Details</strong>
-            <div>${invoice.buyerInfo.name}</div>
-            ${invoice.buyerInfo.contactPerson ? `<div>${invoice.buyerInfo.contactPerson}</div>` : ''}
-            <div class="muted">${invoice.buyerInfo.address}</div>
-            <div class="muted">${invoice.buyerInfo.email} · ${invoice.buyerInfo.phone}</div>
-            ${invoice.buyerInfo.gstNumber ? `<div class="muted">GST: ${invoice.buyerInfo.gstNumber}</div>` : ''}
+            <div>${escapeHtml(invoice.buyerInfo.name)}</div>
+            ${invoice.buyerInfo.contactPerson ? `<div>${escapeHtml(invoice.buyerInfo.contactPerson)}</div>` : ''}
+            <div class="muted">${escapeHtml(invoice.buyerInfo.address)}</div>
+            <div class="muted">${escapeHtml(invoice.buyerInfo.email)} · ${escapeHtml(invoice.buyerInfo.phone)}</div>
+            ${invoice.buyerInfo.gstNumber ? `<div class="muted">GST: ${escapeHtml(invoice.buyerInfo.gstNumber)}</div>` : ''}
           </div>
           <div>
             <strong>Invoice Details</strong>
             <div>Date: ${formatDateIN(invoice.date)}</div>
             ${invoice.validUntil ? `<div>Valid Until: ${formatDateIN(invoice.validUntil)}</div>` : ''}
-            <div>Status: ${invoice.status}</div>
-            ${invoice.paymentTerms ? `<div>Payment Terms: ${invoice.paymentTerms}</div>` : ''}
+            <div>Status: ${escapeHtml(invoice.status)}</div>
+            ${invoice.paymentTerms ? `<div>Payment Terms: ${escapeHtml(invoice.paymentTerms)}</div>` : ''}
           </div>
         </div>
       </div>
@@ -2011,11 +2012,11 @@ const PrintProformaButton = ({ id }: { id: string }) => {
               <tr>
                 <td>${idx + 1}</td>
                 <td>
-                  <div style="font-weight: 600">${it.item.name}</div>
-                  ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${it.item.description}</div>` : ''}
+                  <div style="font-weight: 600">${escapeHtml(it.item.name)}</div>
+                  ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${escapeHtml(it.item.description)}</div>` : ''}
                 </td>
                 <td>${it.quantity}</td>
-                <td>${it.item.unit}</td>
+                <td>${escapeHtml(it.item.unit)}</td>
                 <td>${formatINR(it.unitPrice)}</td>
                 <td>${formatINR(it.total)}</td>
               </tr>
@@ -2027,7 +2028,7 @@ const PrintProformaButton = ({ id }: { id: string }) => {
         <table class="totals">
           <tbody>
             <tr><td class="label">Subtotal</td><td class="value">${formatINR(invoice.subtotal)}</td></tr>
-            ${(invoice.additionalCharges ?? []).map(charge => `<tr><td class="label">${charge.name}</td><td class="value">${formatINR(charge.amount)}</td></tr>`).join('')}
+            ${(invoice.additionalCharges ?? []).map(charge => `<tr><td class="label">${escapeHtml(charge.name)}</td><td class="value">${formatINR(charge.amount)}</td></tr>`).join('')}
             ${invoice.sgst > 0 || invoice.cgst > 0 ? `
               <tr><td class="label">SGST (${((invoice.sgst / (invoice.subtotal + (invoice.additionalCharges?.reduce((sum, c) => sum + c.amount, 0) ?? 0))) * 100).toFixed(2)}%)</td><td class="value">${formatINR(invoice.sgst)}</td></tr>
               <tr><td class="label">CGST (${((invoice.cgst / (invoice.subtotal + (invoice.additionalCharges?.reduce((sum, c) => sum + c.amount, 0) ?? 0))) * 100).toFixed(2)}%)</td><td class="value">${formatINR(invoice.cgst)}</td></tr>
@@ -2040,7 +2041,7 @@ const PrintProformaButton = ({ id }: { id: string }) => {
       <div class="section terms">
         <strong>Terms & Conditions:</strong>
         <div class="muted" style="margin-top: 8px; line-height: 1.4">
-          1. Payment terms: ${invoice.paymentTerms || "As agreed"}<br />
+          1. Payment terms: ${escapeHtml(invoice.paymentTerms || "As agreed")}<br />
           2. Prices are valid until: ${invoice.validUntil ? formatDateIN(invoice.validUntil) : "Further notice"}<br />
           3. All prices are subject to change without prior notice<br />
           4. This is a proforma invoice and not a tax invoice<br />
@@ -2052,21 +2053,21 @@ const PrintProformaButton = ({ id }: { id: string }) => {
           <div class="section">
             <strong>Bank Details:</strong>
             <div class="muted" style="margin-top: 8px; line-height: 1.6">
-              Bank Name: ${businessInfo.bankDetails.bankName}<br />
-              Account No: ${businessInfo.bankDetails.accountNumber}<br />
-              IFSC Code: ${businessInfo.bankDetails.ifscCode}
+              Bank Name: ${escapeHtml(businessInfo.bankDetails.bankName)}<br />
+              Account No: ${escapeHtml(businessInfo.bankDetails.accountNumber)}<br />
+              IFSC Code: ${escapeHtml(businessInfo.bankDetails.ifscCode)}
             </div>
           </div>
         ` : ''}
         ${businessInfo.signature ? `
           <div class="signature-section">
             <div>Authorized Signatory</div>
-            <img src="${businessInfo.signature}" alt="Authorized Signature" class="signature-image" style="margin-top: 8px" />
-            <div class="muted">${businessInfo.name}</div>
+            <img src="${escapeHtml(businessInfo.signature)}" alt="Authorized Signature" class="signature-image" style="margin-top: 8px" />
+            <div class="muted">${escapeHtml(businessInfo.name)}</div>
           </div>
         ` : ''}
       </div>
-      ${invoice.notes ? `<div class="footer">Notes: ${invoice.notes}</div>` : ''}
+      ${invoice.notes ? `<div class="footer">Notes: ${escapeHtml(invoice.notes)}</div>` : ''}
     `;
     
     printElementById(elId, `Quotation Cum Proforma ${invoice.proformaNumber}`);
