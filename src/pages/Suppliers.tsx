@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,16 +12,18 @@ import { Plus, Search, Users, Mail, Phone, MapPin, Edit, Eye, Trash2, FileText, 
 import { useData } from "@/store/SupabaseDataContext";
 import { toast } from "@/hooks/use-toast";
 import { formatINR, formatDateIN } from "@/lib/format";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const Suppliers = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { suppliers, removeSupplier, addSupplier } = useData();
+  const debouncedSearch = useDebounce(searchTerm, 150);
 
-  const filteredSuppliers = suppliers.filter(supplier =>
-    supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    supplier.contactPerson.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    supplier.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredSuppliers = useMemo(() => suppliers.filter(supplier =>
+    supplier.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+    supplier.contactPerson.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+    supplier.email.toLowerCase().includes(debouncedSearch.toLowerCase())
+  ), [suppliers, debouncedSearch]);
 
   const exportSupplierList = () => {
     const csvContent = [

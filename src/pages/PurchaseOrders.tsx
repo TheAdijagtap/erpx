@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, memo, useCallback } from "react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -14,6 +14,7 @@ import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
 import { numberToWords } from "@/lib/numberToWords";
 import { escapeHtml } from "@/lib/htmlEscape";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface PurchaseAggregateRow {
   key: string;
@@ -535,14 +536,18 @@ function CreatePODialog() {
   };
   const [supplierSearch, setSupplierSearch] = useState("");
   const [itemSearch, setItemSearch] = useState("");
+  
+  // Debounce search for better performance
+  const debouncedSupplierSearch = useDebounce(supplierSearch, 150);
+  const debouncedItemSearch = useDebounce(itemSearch, 150);
 
   const filteredSuppliers = useMemo(() => 
-    suppliers.filter(s => s.name.toLowerCase().includes(supplierSearch.toLowerCase())),
-    [suppliers, supplierSearch]
+    suppliers.filter(s => s.name.toLowerCase().includes(debouncedSupplierSearch.toLowerCase())),
+    [suppliers, debouncedSupplierSearch]
   );
 
   const filteredItems = useMemo(() => {
-    const search = itemSearch.toLowerCase().trim();
+    const search = debouncedItemSearch.toLowerCase().trim();
     if (!search) return items;
     return items.filter(i => 
       i.name.toLowerCase().includes(search) ||
@@ -550,7 +555,7 @@ function CreatePODialog() {
       (i.category && i.category.toLowerCase().includes(search)) ||
       (i.sku && i.sku.toLowerCase().includes(search))
     );
-  }, [items, itemSearch]);
+  }, [items, debouncedItemSearch]);
 
   const onAddRow = () => setRows([...rows, { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0, unit: items[0]?.unit || "PCS" }]);
   const onSubmit = () => {

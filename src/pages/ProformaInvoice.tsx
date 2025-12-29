@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, memo } from "react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -17,6 +17,7 @@ import { numberToWords } from "@/lib/numberToWords";
 import { escapeHtml } from "@/lib/htmlEscape";
 import { ProformaInvoice as ProformaInvoiceType, ProformaInvoiceItem, BuyerInfo, ProformaProduct } from "@/types/inventory";
 import React from "react";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface ProformaAggregateRow {
   key: string;
@@ -425,11 +426,12 @@ function ProformaInsightsTab({ stats, monthlyInsights, yearlyInsights, selectedM
 const ProformaInvoicesTab = ({ proformaProducts }: { proformaProducts: ProformaProduct[] }) => {
   const { proformaInvoices } = useData();
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 150);
 
   const filteredInvoices = useMemo(() => proformaInvoices.filter(invoice =>
-    invoice.proformaNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    invoice.buyerInfo.name.toLowerCase().includes(searchTerm.toLowerCase())
-  ), [proformaInvoices, searchTerm]);
+    invoice.proformaNumber.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+    invoice.buyerInfo.name.toLowerCase().includes(debouncedSearch.toLowerCase())
+  ), [proformaInvoices, debouncedSearch]);
 
   return (
     <div className="space-y-6">
