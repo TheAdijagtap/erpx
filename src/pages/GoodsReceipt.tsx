@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,15 +13,17 @@ import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
 import { numberToWords } from "@/lib/numberToWords";
 import { escapeHtml } from "@/lib/htmlEscape";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const GoodsReceiptPage = () => {
   const { goodsReceipts } = useData();
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 150);
 
   const filteredReceipts = useMemo(() => goodsReceipts.filter(receipt =>
-    receipt.grNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    receipt.supplier.name.toLowerCase().includes(searchTerm.toLowerCase())
-  ), [goodsReceipts, searchTerm]);
+    receipt.grNumber.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+    receipt.supplier.name.toLowerCase().includes(debouncedSearch.toLowerCase())
+  ), [goodsReceipts, debouncedSearch]);
 
   return (
     <div className="space-y-6">

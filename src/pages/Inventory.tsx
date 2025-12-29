@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,17 +11,19 @@ import { Plus, Search, Package, Eye, Edit, Minus, PlusCircle, Trash2 } from "luc
 import { useData } from "@/store/SupabaseDataContext";
 import { toast } from "@/hooks/use-toast";
 import { formatINR } from "@/lib/format";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const Inventory = () => {
   const { inventoryItems: items, transactions, transactItem, removeItem, addItem } = useData();
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 150);
 
   const filteredItems = useMemo(() =>
     items.filter(item =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.category.toLowerCase().includes(searchTerm.toLowerCase())
-    ), [items, searchTerm]
+      item.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      item.description.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+      item.category.toLowerCase().includes(debouncedSearch.toLowerCase())
+    ), [items, debouncedSearch]
   );
 
   const getStockStatus = (currentStock: number, minStock: number) => {
