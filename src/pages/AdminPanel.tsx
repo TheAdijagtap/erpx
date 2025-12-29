@@ -349,7 +349,7 @@ const AdminPanel = () => {
             </div>
             <div>
               <h2 className="font-semibold">Database Storage</h2>
-              <p className="text-sm text-muted-foreground">Current usage of 8 GB limit (Large instance)</p>
+              <p className="text-sm text-muted-foreground">Current usage of 16 GB limit (XLarge instance)</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -378,9 +378,9 @@ const AdminPanel = () => {
                 </div>
                 <div className="text-right">
                   <div className="text-2xl font-bold text-primary">
-                    {((dbStats?.sizeMB || 0) / 8192 * 100).toFixed(2)}%
+                    {((dbStats?.sizeMB || 0) / 16384 * 100).toFixed(2)}%
                   </div>
-                  <div className="text-sm text-muted-foreground">of 8 GB</div>
+                  <div className="text-sm text-muted-foreground">of 16 GB</div>
                 </div>
               </div>
             )}
@@ -391,7 +391,7 @@ const AdminPanel = () => {
             <div className="w-full bg-muted rounded-full h-2.5">
               <div 
                 className="bg-primary h-2.5 rounded-full transition-all duration-500" 
-                style={{ width: `${Math.min(((dbStats?.sizeMB || 0) / 8192 * 100), 100)}%` }}
+                style={{ width: `${Math.min(((dbStats?.sizeMB || 0) / 16384 * 100), 100)}%` }}
               />
             </div>
           </div>
