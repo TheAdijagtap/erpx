@@ -25,9 +25,8 @@ import {
 import { toast } from "sonner";
 import { 
   Loader2, Users, Calendar, Shield, Edit2, 
-  Database, Package, FileText, Truck, ShoppingCart,
-  TrendingUp, UserPlus, Clock, CheckCircle, XCircle,
-  HardDrive, Activity
+  Database, TrendingUp, UserPlus, Clock, CheckCircle, XCircle,
+  Activity
 } from "lucide-react";
 import { format, differenceInDays, addDays, subDays } from "date-fns";
 
@@ -42,13 +41,7 @@ interface UserProfile {
 }
 
 interface DatabaseStats {
-  inventory_items: number;
-  suppliers: number;
-  purchase_orders: number;
-  goods_receipts: number;
-  proforma_invoices: number;
-  customers: number;
-  transactions: number;
+  totalRecords: number;
 }
 
 interface UserGrowthStats {
@@ -114,15 +107,12 @@ const AdminPanel = () => {
         supabase.from("inventory_transactions").select("id", { count: "exact", head: true })
       ]);
 
-      setDbStats({
-        inventory_items: inventoryRes.count || 0,
-        suppliers: suppliersRes.count || 0,
-        purchase_orders: poRes.count || 0,
-        goods_receipts: grRes.count || 0,
-        proforma_invoices: piRes.count || 0,
-        customers: customersRes.count || 0,
-        transactions: transactionsRes.count || 0
-      });
+      const total = (inventoryRes.count || 0) + (suppliersRes.count || 0) + 
+                    (poRes.count || 0) + (grRes.count || 0) + 
+                    (piRes.count || 0) + (customersRes.count || 0) + 
+                    (transactionsRes.count || 0);
+
+      setDbStats({ totalRecords: total });
     } catch (err) {
       console.error("Error fetching database stats:", err);
     } finally {
@@ -266,9 +256,6 @@ const AdminPanel = () => {
   }
 
   const growthStats = getUserGrowthStats();
-  const totalDbRecords = dbStats 
-    ? Object.values(dbStats).reduce((a, b) => a + b, 0) 
-    : 0;
 
   return (
     <div className="space-y-6">
@@ -367,78 +354,28 @@ const AdminPanel = () => {
         </div>
       </div>
 
-      {/* Database Stats */}
-      <div>
-        <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-          <Database className="h-5 w-5" />
-          Database Status
-        </h2>
-        {dbLoading ? (
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Loading database stats...
+      {/* Database Status */}
+      <Card className="p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-primary/10 rounded-lg">
+              <Database className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h2 className="font-semibold">Database Status</h2>
+              <p className="text-sm text-muted-foreground">Total records across all tables</p>
+            </div>
           </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
-            <Card className="p-4 border-l-4 border-l-primary">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <HardDrive className="h-4 w-4" />
-                Total Records
-              </div>
-              <div className="text-2xl font-bold mt-1">{totalDbRecords.toLocaleString()}</div>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Package className="h-4 w-4" />
-                Inventory
-              </div>
-              <div className="text-2xl font-bold mt-1">{dbStats?.inventory_items || 0}</div>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Truck className="h-4 w-4" />
-                Suppliers
-              </div>
-              <div className="text-2xl font-bold mt-1">{dbStats?.suppliers || 0}</div>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <ShoppingCart className="h-4 w-4" />
-                PO's
-              </div>
-              <div className="text-2xl font-bold mt-1">{dbStats?.purchase_orders || 0}</div>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Truck className="h-4 w-4" />
-                GR's
-              </div>
-              <div className="text-2xl font-bold mt-1">{dbStats?.goods_receipts || 0}</div>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <FileText className="h-4 w-4" />
-                Invoices
-              </div>
-              <div className="text-2xl font-bold mt-1">{dbStats?.proforma_invoices || 0}</div>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Users className="h-4 w-4" />
-                Customers
-              </div>
-              <div className="text-2xl font-bold mt-1">{dbStats?.customers || 0}</div>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Activity className="h-4 w-4" />
-                Transactions
-              </div>
-              <div className="text-2xl font-bold mt-1">{dbStats?.transactions || 0}</div>
-            </Card>
-          </div>
-        )}
-      </div>
+          {dbLoading ? (
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          ) : (
+            <div className="text-right">
+              <div className="text-3xl font-bold">{(dbStats?.totalRecords || 0).toLocaleString()}</div>
+              <div className="text-sm text-muted-foreground">records</div>
+            </div>
+          )}
+        </div>
+      </Card>
 
       <Card className="p-4 bg-gradient-to-r from-primary/10 to-primary/5">
         <div className="flex items-center justify-between">
