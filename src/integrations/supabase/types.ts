@@ -913,6 +913,7 @@ export type Database = {
     }
     Functions: {
       add_admin_by_email: { Args: { admin_email: string }; Returns: undefined }
+      get_database_size: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
