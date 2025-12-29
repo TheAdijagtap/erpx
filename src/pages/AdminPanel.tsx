@@ -352,28 +352,39 @@ const AdminPanel = () => {
               <p className="text-sm text-muted-foreground">Current usage of 500 MB limit</p>
             </div>
           </div>
-          {dbLoading ? (
-            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-          ) : (
-            <div className="flex items-center gap-6">
-              <div className="text-right">
-                <div className="text-3xl font-bold">
-                  {dbStats?.sizeMB !== undefined 
-                    ? dbStats.sizeMB >= 1000 
-                      ? `${(dbStats.sizeMB / 1024).toFixed(2)} GB`
-                      : `${dbStats.sizeMB} MB`
-                    : '0 MB'}
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                setDbLoading(true);
+                fetchDatabaseStats();
+              }}
+              disabled={dbLoading}
+            >
+              {dbLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Refresh"}
+            </Button>
+            {!dbLoading && (
+              <div className="flex items-center gap-6">
+                <div className="text-right">
+                  <div className="text-3xl font-bold">
+                    {dbStats?.sizeMB !== undefined 
+                      ? dbStats.sizeMB >= 1000 
+                        ? `${(dbStats.sizeMB / 1024).toFixed(2)} GB`
+                        : `${dbStats.sizeMB} MB`
+                      : '0 MB'}
+                  </div>
+                  <div className="text-sm text-muted-foreground">used</div>
                 </div>
-                <div className="text-sm text-muted-foreground">used</div>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-primary">
-                  {((dbStats?.sizeMB || 0) / 500 * 100).toFixed(1)}%
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-primary">
+                    {((dbStats?.sizeMB || 0) / 500 * 100).toFixed(1)}%
+                  </div>
+                  <div className="text-sm text-muted-foreground">of 500 MB</div>
                 </div>
-                <div className="text-sm text-muted-foreground">of 500 MB</div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
         {!dbLoading && (
           <div className="mt-4">
