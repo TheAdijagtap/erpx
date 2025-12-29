@@ -631,7 +631,7 @@ function CreatePODialog() {
                   <SelectTrigger className="pl-10">
                     <SelectValue placeholder="Select supplier" />
                   </SelectTrigger>
-                  <SelectContent className="z-50">
+                  <SelectContent className="z-50" onCloseAutoFocus={(e) => e.preventDefault()}>
                     <div className="px-2 pb-2">
                       <Input
                         placeholder="Search suppliers..."
@@ -639,6 +639,8 @@ function CreatePODialog() {
                         onChange={(e) => setSupplierSearch(e.target.value)}
                         className="h-8"
                         onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => e.stopPropagation()}
+                        onFocus={(e) => e.stopPropagation()}
                       />
                     </div>
                     {filteredSuppliers.length === 0 ? (
@@ -775,7 +777,7 @@ function CreatePODialog() {
                           <SelectTrigger className="w-full pl-10">
                             <SelectValue placeholder="Select item" />
                           </SelectTrigger>
-                          <SelectContent className="z-50 max-h-64">
+                          <SelectContent className="z-50 max-h-64" onCloseAutoFocus={(e) => e.preventDefault()}>
                             <div className="px-2 pb-2 sticky top-0 bg-background">
                               <Input
                                 placeholder="Search items..."
@@ -783,6 +785,8 @@ function CreatePODialog() {
                                 onChange={(e) => setItemSearch(e.target.value)}
                                 className="h-8"
                                 onClick={(e) => e.stopPropagation()}
+                                onKeyDown={(e) => e.stopPropagation()}
+                                onFocus={(e) => e.stopPropagation()}
                               />
                             </div>
                             {filteredItems.length === 0 ? (
