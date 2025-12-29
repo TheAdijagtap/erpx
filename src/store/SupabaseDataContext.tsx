@@ -133,13 +133,17 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return { subtotal: parseFloat(subtotal.toFixed(2)), sgst, cgst, total: parseFloat(total.toFixed(2)) };
   };
 
-  // Fetch all data
+  // Fetch all data - optimized for speed
   const refreshData = useCallback(async () => {
     if (!user) return;
 
     setLoading(true);
     try {
-      // Fetch all data in parallel for speed - with limits for better performance
+      // Fetch critical data first (profile for auth state), then rest in parallel
+      // Use minimal select fields where possible for faster queries
+      const profilePromise = supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+      
+      // Start all other fetches immediately in parallel
       const [
         { data: items },
         { data: sups },
@@ -151,33 +155,23 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         { data: trans },
         { data: profile },
       ] = await Promise.all([
-        supabase.from("inventory_items").select("*").order("created_at", { ascending: false }).limit(500),
-        supabase.from("suppliers").select("*").order("created_at", { ascending: false }).limit(200),
-        supabase.from("purchase_orders").select("*, purchase_order_items(*), purchase_order_additional_charges(*)").order("created_at", { ascending: false }).limit(200),
-        supabase.from("goods_receipts").select("*, goods_receipt_items(*), goods_receipt_additional_charges(*)").order("created_at", { ascending: false }).limit(200),
-        supabase.from("proforma_invoices").select("*, proforma_invoice_items(*), proforma_invoice_additional_charges(*)").order("created_at", { ascending: false }).limit(200),
-        supabase.from("proforma_products").select("*").order("created_at", { ascending: false }).limit(200),
-        supabase.from("customers").select("*").order("created_at", { ascending: false }).limit(200),
-        supabase.from("inventory_transactions").select("*").order("created_at", { ascending: false }).limit(500),
-        supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
+        supabase.from("inventory_items").select("id,name,hsn_code,description,category,current_stock,reorder_level,unit_price,unit,supplier_id,created_at,updated_at").order("created_at", { ascending: false }).limit(500),
+        supabase.from("suppliers").select("id,name,contact_person,email,phone,address,gst_number,created_at,payment_terms,notes").order("created_at", { ascending: false }).limit(200),
+        supabase.from("purchase_orders").select("id,po_number,supplier_id,supplier_name,date,expected_delivery,status,subtotal,tax_amount,total,notes,payment_terms,created_at,purchase_order_items(id,item_id,item_name,description,quantity,rate,amount,unit),purchase_order_additional_charges(id,name,amount)").order("created_at", { ascending: false }).limit(200),
+        supabase.from("goods_receipts").select("id,gr_number,purchase_order_id,supplier_id,supplier_name,receipt_date,status,subtotal,tax_amount,total,notes,created_at,goods_receipt_items(id,item_id,item_name,quantity_ordered,quantity_received,unit_price,amount,unit,notes),goods_receipt_additional_charges(id,name,amount)").order("created_at", { ascending: false }).limit(200),
+        supabase.from("proforma_invoices").select("id,invoice_number,customer_id,customer_name,customer_address,customer_gst,date,subtotal,tax_amount,total,notes,payment_terms,created_at,proforma_invoice_items(id,item_name,hsn_code,description,quantity,rate,amount,unit),proforma_invoice_additional_charges(id,name,amount)").order("created_at", { ascending: false }).limit(200),
+        supabase.from("proforma_products").select("id,name,description,unit,price,created_at").order("created_at", { ascending: false }).limit(200),
+        supabase.from("customers").select("id,name,email,phone,address,gst_number,status,total_proformas,total_value,created_at,updated_at").order("created_at", { ascending: false }).limit(200),
+        supabase.from("inventory_transactions").select("id,item_id,type,quantity,unit_price,total_value,reason,reference,created_at,notes").order("created_at", { ascending: false }).limit(300),
+        profilePromise,
       ]);
 
-      // Map transactions
-      setTransactions((trans || []).map((t: any) => ({
-        id: t.id,
-        itemId: t.item_id || "",
-        type: t.type as "IN" | "OUT",
-        quantity: Number(t.quantity),
-        unitPrice: Number(t.unit_price) || 0,
-        totalValue: Number(t.total_value) || 0,
-        reason: t.reason,
-        reference: t.reference || undefined,
-        date: new Date(t.created_at),
-        notes: t.notes || undefined,
-      })));
+      // Pre-build lookup maps for faster joins (avoid repeated .find() calls)
+      const itemsMap = new Map((items || []).map(i => [i.id, i]));
+      const suppliersMap = new Map((sups || []).map(s => [s.id, s]));
 
-      // Map inventory items
-      setInventoryItems((items || []).map(i => ({
+      // Helper to map inventory item
+      const mapInventoryItem = (i: any): InventoryItem => ({
         id: i.id,
         name: i.name,
         sku: i.hsn_code || "",
@@ -191,10 +185,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         supplier: i.supplier_id || undefined,
         createdAt: new Date(i.created_at),
         updatedAt: new Date(i.updated_at),
-      })));
+      });
 
-      // Map suppliers
-      setSuppliers((sups || []).map(s => ({
+      // Helper to map supplier
+      const mapSupplier = (s: any): Supplier => ({
         id: s.id,
         name: s.name,
         contactPerson: s.contact_person || "",
@@ -203,36 +197,40 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         address: s.address || "",
         gstNumber: s.gst_number || "",
         createdAt: new Date(s.created_at),
-      })));
+      });
 
-      // Map purchase orders
+      // Map all data in parallel using local variables
+      const mappedTransactions = (trans || []).map((t: any) => ({
+        id: t.id,
+        itemId: t.item_id || "",
+        type: t.type as "IN" | "OUT",
+        quantity: Number(t.quantity),
+        unitPrice: Number(t.unit_price) || 0,
+        totalValue: Number(t.total_value) || 0,
+        reason: t.reason,
+        reference: t.reference || undefined,
+        date: new Date(t.created_at),
+        notes: t.notes || undefined,
+      }));
+
+      const mappedItems = (items || []).map(mapInventoryItem);
+      const mappedSuppliers = (sups || []).map(mapSupplier);
+
+      // Map purchase orders using lookup maps
       const mappedPOs: PurchaseOrder[] = (pos || []).map(po => {
-        const supplier = sups?.find(s => s.id === po.supplier_id);
+        const supplier = suppliersMap.get(po.supplier_id || "");
         const poAny = po as any;
         return {
           id: po.id,
           poNumber: po.po_number,
           supplierId: po.supplier_id || "",
-          supplier: supplier ? { id: supplier.id, name: supplier.name, contactPerson: supplier.contact_person || "", email: supplier.email || "", phone: supplier.phone || "", address: supplier.address || "", gstNumber: supplier.gst_number || "", createdAt: new Date(supplier.created_at) } : {} as Supplier,
+          supplier: supplier ? mapSupplier(supplier) : {} as Supplier,
           items: (po.purchase_order_items || []).map((item: any) => {
-            const invItem = items?.find(i => i.id === item.item_id);
+            const invItem = itemsMap.get(item.item_id);
             return {
               id: item.id,
               itemId: item.item_id || "",
-              item: invItem ? {
-                id: invItem.id,
-                name: invItem.name,
-                sku: invItem.hsn_code || "",
-                description: invItem.description || "",
-                category: invItem.category || "",
-                currentStock: Number(invItem.current_stock),
-                minStock: Number(invItem.reorder_level) || 0,
-                maxStock: 1000,
-                unitPrice: Number(invItem.unit_price) || 0,
-                unit: invItem.unit,
-                createdAt: new Date(invItem.created_at),
-                updatedAt: new Date(invItem.updated_at),
-              } : { id: "", name: item.item_name || "Item", sku: "", description: item.description || "", category: "", currentStock: 0, minStock: 0, maxStock: 0, unitPrice: Number(item.rate), unit: item.unit || "piece", createdAt: new Date(), updatedAt: new Date() } as InventoryItem,
+              item: invItem ? mapInventoryItem(invItem) : { id: "", name: item.item_name || "Item", sku: "", description: item.description || "", category: "", currentStock: 0, minStock: 0, maxStock: 0, unitPrice: Number(item.rate), unit: item.unit || "piece", createdAt: new Date(), updatedAt: new Date() } as InventoryItem,
               quantity: Number(item.quantity),
               unitPrice: Number(item.rate),
               total: Number(item.amount),
@@ -254,37 +252,23 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           notes: po.notes || undefined,
         };
       });
-      setPurchaseOrders(mappedPOs);
 
-      // Map goods receipts
+      // Map goods receipts using lookup maps
       const mappedGRs: GoodsReceipt[] = (grs || []).map(gr => {
-        const supplier = sups?.find(s => s.id === gr.supplier_id);
+        const supplier = suppliersMap.get(gr.supplier_id || "");
         const grAny = gr as any;
         return {
           id: gr.id,
           grNumber: gr.gr_number,
           poId: gr.purchase_order_id || undefined,
           supplierId: gr.supplier_id || "",
-          supplier: supplier ? { id: supplier.id, name: supplier.name, contactPerson: supplier.contact_person || "", email: supplier.email || "", phone: supplier.phone || "", address: supplier.address || "", gstNumber: supplier.gst_number || "", createdAt: new Date(supplier.created_at) } : {} as Supplier,
+          supplier: supplier ? mapSupplier(supplier) : {} as Supplier,
           items: (gr.goods_receipt_items || []).map((item: any) => {
-            const invItem = items?.find(i => i.id === item.item_id);
+            const invItem = itemsMap.get(item.item_id);
             return {
               id: item.id,
               itemId: item.item_id || "",
-              item: invItem ? {
-                id: invItem.id,
-                name: invItem.name,
-                sku: invItem.hsn_code || "",
-                description: invItem.description || "",
-                category: invItem.category || "",
-                currentStock: Number(invItem.current_stock),
-                minStock: Number(invItem.reorder_level) || 0,
-                maxStock: 1000,
-                unitPrice: Number(invItem.unit_price) || 0,
-                unit: invItem.unit,
-                createdAt: new Date(invItem.created_at),
-                updatedAt: new Date(invItem.updated_at),
-              } : { id: "", name: item.item_name || "Item", sku: "", description: item.notes || "", category: "", currentStock: 0, minStock: 0, maxStock: 0, unitPrice: Number(item.unit_price), unit: item.unit || "piece", createdAt: new Date(), updatedAt: new Date() } as InventoryItem,
+              item: invItem ? mapInventoryItem(invItem) : { id: "", name: item.item_name || "Item", sku: "", description: item.notes || "", category: "", currentStock: 0, minStock: 0, maxStock: 0, unitPrice: Number(item.unit_price), unit: item.unit || "piece", createdAt: new Date(), updatedAt: new Date() } as InventoryItem,
               orderedQuantity: Number(item.quantity_ordered),
               receivedQuantity: Number(item.quantity_received),
               unitPrice: Number(item.unit_price),
@@ -305,7 +289,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           notes: gr.notes || undefined,
         };
       });
-      setGoodsReceipts(mappedGRs);
 
       // Map proforma invoices
       const mappedPIs: ProformaInvoice[] = (pis || []).map(pi => {
@@ -357,20 +340,17 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           paymentTerms: pi.payment_terms || undefined,
         };
       });
-      setProformaInvoices(mappedPIs);
 
-      // Map proforma products
-      setProformaProducts((prods || []).map((p: any) => ({
+      const mappedProducts = (prods || []).map((p: any) => ({
         id: p.id,
         name: p.name,
         description: p.description || "",
         unit: p.unit || "PCS",
         price: Number(p.price) || 0,
         createdAt: new Date(p.created_at),
-      })));
+      }));
 
-      // Map customers
-      setCustomers((custs || []).map(c => ({
+      const mappedCustomers = (custs || []).map(c => ({
         id: c.id,
         name: c.name,
         contactPerson: "",
@@ -384,7 +364,17 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         totalValue: Number(c.total_value) || 0,
         createdAt: new Date(c.created_at),
         updatedAt: new Date(c.updated_at),
-      })));
+      }));
+
+      // Set all state at once for batched rendering
+      setTransactions(mappedTransactions);
+      setInventoryItems(mappedItems);
+      setSuppliers(mappedSuppliers);
+      setPurchaseOrders(mappedPOs);
+      setGoodsReceipts(mappedGRs);
+      setProformaInvoices(mappedPIs);
+      setProformaProducts(mappedProducts);
+      setCustomers(mappedCustomers);
 
       // Map business profile
       if (profile) {
@@ -404,7 +394,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             ifscCode: profileAny.bank_ifsc_code || "",
           } : undefined,
         });
-        // Set trial start date and subscription end date
         setTrialStartDate(profileAny.trial_start_date ? new Date(profileAny.trial_start_date) : new Date());
         setSubscriptionEndDate(profileAny.subscription_end_date ? new Date(profileAny.subscription_end_date) : null);
       }
