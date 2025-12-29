@@ -611,16 +611,16 @@ function CreatePODialog() {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
         <Button className="gap-2">
           <Plus className="w-4 h-4" /> Create New PO
         </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Create Purchase Order</DialogTitle>
-        </DialogHeader>
+      </SheetTrigger>
+      <SheetContent side="right" className="w-full sm:max-w-2xl lg:max-w-4xl overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle>Create Purchase Order</SheetTitle>
+        </SheetHeader>
         <div className="space-y-4 text-sm">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -882,11 +882,11 @@ function CreatePODialog() {
             </div>
           </div>
         </div>
-        <DialogFooter>
-          <Button onClick={onSubmit}>Create</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        <SheetFooter className="mt-6">
+          <Button onClick={onSubmit} className="w-full sm:w-auto">Create Purchase Order</Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }
 
