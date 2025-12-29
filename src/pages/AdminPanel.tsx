@@ -41,7 +41,8 @@ interface UserProfile {
 }
 
 interface DatabaseStats {
-  totalRecords: number;
+  sizeMB: number;
+  sizeBytes: number;
 }
 
 interface UserGrowthStats {
@@ -88,31 +89,16 @@ const AdminPanel = () => {
 
   const fetchDatabaseStats = async () => {
     try {
-      // Fetch counts from all tables in parallel
-      const [
-        inventoryRes,
-        suppliersRes,
-        poRes,
-        grRes,
-        piRes,
-        customersRes,
-        transactionsRes
-      ] = await Promise.all([
-        supabase.from("inventory_items").select("id", { count: "exact", head: true }),
-        supabase.from("suppliers").select("id", { count: "exact", head: true }),
-        supabase.from("purchase_orders").select("id", { count: "exact", head: true }),
-        supabase.from("goods_receipts").select("id", { count: "exact", head: true }),
-        supabase.from("proforma_invoices").select("id", { count: "exact", head: true }),
-        supabase.from("customers").select("id", { count: "exact", head: true }),
-        supabase.from("inventory_transactions").select("id", { count: "exact", head: true })
-      ]);
-
-      const total = (inventoryRes.count || 0) + (suppliersRes.count || 0) + 
-                    (poRes.count || 0) + (grRes.count || 0) + 
-                    (piRes.count || 0) + (customersRes.count || 0) + 
-                    (transactionsRes.count || 0);
-
-      setDbStats({ totalRecords: total });
+      const { data, error } = await supabase.rpc('get_database_size');
+      
+      if (error) throw error;
+      
+      const result = data as { database_size_mb: number; database_size_bytes: number } | null;
+      
+      setDbStats({
+        sizeMB: result?.database_size_mb || 0,
+        sizeBytes: result?.database_size_bytes || 0
+      });
     } catch (err) {
       console.error("Error fetching database stats:", err);
     } finally {
@@ -362,19 +348,43 @@ const AdminPanel = () => {
               <Database className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h2 className="font-semibold">Database Status</h2>
-              <p className="text-sm text-muted-foreground">Total records across all tables</p>
+              <h2 className="font-semibold">Database Storage</h2>
+              <p className="text-sm text-muted-foreground">Current usage of 500 MB limit</p>
             </div>
           </div>
           {dbLoading ? (
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
           ) : (
-            <div className="text-right">
-              <div className="text-3xl font-bold">{(dbStats?.totalRecords || 0).toLocaleString()}</div>
-              <div className="text-sm text-muted-foreground">records</div>
+            <div className="flex items-center gap-6">
+              <div className="text-right">
+                <div className="text-3xl font-bold">
+                  {dbStats?.sizeMB !== undefined 
+                    ? dbStats.sizeMB >= 1000 
+                      ? `${(dbStats.sizeMB / 1024).toFixed(2)} GB`
+                      : `${dbStats.sizeMB} MB`
+                    : '0 MB'}
+                </div>
+                <div className="text-sm text-muted-foreground">used</div>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold text-primary">
+                  {((dbStats?.sizeMB || 0) / 500 * 100).toFixed(1)}%
+                </div>
+                <div className="text-sm text-muted-foreground">of 500 MB</div>
+              </div>
             </div>
           )}
         </div>
+        {!dbLoading && (
+          <div className="mt-4">
+            <div className="w-full bg-muted rounded-full h-2.5">
+              <div 
+                className="bg-primary h-2.5 rounded-full transition-all duration-500" 
+                style={{ width: `${Math.min(((dbStats?.sizeMB || 0) / 500 * 100), 100)}%` }}
+              />
+            </div>
+          </div>
+        )}
       </Card>
 
       <Card className="p-4 bg-gradient-to-r from-primary/10 to-primary/5">
