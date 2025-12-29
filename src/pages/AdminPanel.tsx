@@ -49,7 +49,6 @@ interface DatabaseStats {
   proforma_invoices: number;
   customers: number;
   transactions: number;
-  passkeys: number;
 }
 
 interface UserGrowthStats {
@@ -104,8 +103,7 @@ const AdminPanel = () => {
         grRes,
         piRes,
         customersRes,
-        transactionsRes,
-        passkeysRes
+        transactionsRes
       ] = await Promise.all([
         supabase.from("inventory_items").select("id", { count: "exact", head: true }),
         supabase.from("suppliers").select("id", { count: "exact", head: true }),
@@ -113,8 +111,7 @@ const AdminPanel = () => {
         supabase.from("goods_receipts").select("id", { count: "exact", head: true }),
         supabase.from("proforma_invoices").select("id", { count: "exact", head: true }),
         supabase.from("customers").select("id", { count: "exact", head: true }),
-        supabase.from("inventory_transactions").select("id", { count: "exact", head: true }),
-        supabase.from("passkeys").select("id", { count: "exact", head: true })
+        supabase.from("inventory_transactions").select("id", { count: "exact", head: true })
       ]);
 
       setDbStats({
@@ -124,8 +121,7 @@ const AdminPanel = () => {
         goods_receipts: grRes.count || 0,
         proforma_invoices: piRes.count || 0,
         customers: customersRes.count || 0,
-        transactions: transactionsRes.count || 0,
-        passkeys: passkeysRes.count || 0
+        transactions: transactionsRes.count || 0
       });
     } catch (err) {
       console.error("Error fetching database stats:", err);
@@ -444,7 +440,6 @@ const AdminPanel = () => {
         )}
       </div>
 
-      {/* Active Rate Card */}
       <Card className="p-4 bg-gradient-to-r from-primary/10 to-primary/5">
         <div className="flex items-center justify-between">
           <div>
@@ -455,8 +450,9 @@ const AdminPanel = () => {
             </div>
           </div>
           <div className="text-right">
-            <div className="text-sm text-muted-foreground">Passkeys Issued</div>
-            <div className="text-2xl font-bold">{dbStats?.passkeys || 0}</div>
+            <div className="text-sm text-muted-foreground">Conversion Rate</div>
+            <div className="text-2xl font-bold text-green-600">{getConversionRate()}%</div>
+            <div className="text-xs text-muted-foreground mt-1">Trial to paid</div>
           </div>
         </div>
       </Card>
