@@ -23,8 +23,13 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Loader2, Users, Calendar, Shield, Edit2 } from "lucide-react";
-import { format, differenceInDays, addDays } from "date-fns";
+import { 
+  Loader2, Users, Calendar, Shield, Edit2, 
+  Database, Package, FileText, Truck, ShoppingCart,
+  TrendingUp, UserPlus, Clock, CheckCircle, XCircle,
+  HardDrive, Activity
+} from "lucide-react";
+import { format, differenceInDays, addDays, subDays } from "date-fns";
 
 interface UserProfile {
   id: string;
@@ -36,6 +41,23 @@ interface UserProfile {
   created_at: string;
 }
 
+interface DatabaseStats {
+  inventory_items: number;
+  suppliers: number;
+  purchase_orders: number;
+  goods_receipts: number;
+  proforma_invoices: number;
+  customers: number;
+  transactions: number;
+  passkeys: number;
+}
+
+interface UserGrowthStats {
+  today: number;
+  thisWeek: number;
+  thisMonth: number;
+}
+
 const AdminPanel = () => {
   const { isAdmin, loading: adminLoading } = useAdminCheck();
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -45,10 +67,13 @@ const AdminPanel = () => {
   const [trialDays, setTrialDays] = useState("");
   const [subscriptionDays, setSubscriptionDays] = useState("");
   const [saving, setSaving] = useState(false);
+  const [dbStats, setDbStats] = useState<DatabaseStats | null>(null);
+  const [dbLoading, setDbLoading] = useState(true);
 
   useEffect(() => {
     if (isAdmin) {
       fetchUsers();
+      fetchDatabaseStats();
     }
   }, [isAdmin]);
 
@@ -67,6 +92,59 @@ const AdminPanel = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchDatabaseStats = async () => {
+    try {
+      // Fetch counts from all tables in parallel
+      const [
+        inventoryRes,
+        suppliersRes,
+        poRes,
+        grRes,
+        piRes,
+        customersRes,
+        transactionsRes,
+        passkeysRes
+      ] = await Promise.all([
+        supabase.from("inventory_items").select("id", { count: "exact", head: true }),
+        supabase.from("suppliers").select("id", { count: "exact", head: true }),
+        supabase.from("purchase_orders").select("id", { count: "exact", head: true }),
+        supabase.from("goods_receipts").select("id", { count: "exact", head: true }),
+        supabase.from("proforma_invoices").select("id", { count: "exact", head: true }),
+        supabase.from("customers").select("id", { count: "exact", head: true }),
+        supabase.from("inventory_transactions").select("id", { count: "exact", head: true }),
+        supabase.from("passkeys").select("id", { count: "exact", head: true })
+      ]);
+
+      setDbStats({
+        inventory_items: inventoryRes.count || 0,
+        suppliers: suppliersRes.count || 0,
+        purchase_orders: poRes.count || 0,
+        goods_receipts: grRes.count || 0,
+        proforma_invoices: piRes.count || 0,
+        customers: customersRes.count || 0,
+        transactions: transactionsRes.count || 0,
+        passkeys: passkeysRes.count || 0
+      });
+    } catch (err) {
+      console.error("Error fetching database stats:", err);
+    } finally {
+      setDbLoading(false);
+    }
+  };
+
+  const getUserGrowthStats = (): UserGrowthStats => {
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const weekStart = subDays(todayStart, 7);
+    const monthStart = subDays(todayStart, 30);
+
+    return {
+      today: users.filter(u => new Date(u.created_at) >= todayStart).length,
+      thisWeek: users.filter(u => new Date(u.created_at) >= weekStart).length,
+      thisMonth: users.filter(u => new Date(u.created_at) >= monthStart).length
+    };
   };
 
   const openEditDialog = (user: UserProfile) => {
@@ -164,6 +242,21 @@ const AdminPanel = () => {
     return { type: "unknown", label: "No status", variant: "outline" as const };
   };
 
+  const getConversionRate = () => {
+    if (users.length === 0) return 0;
+    const subscribed = users.filter(u => getStatus(u).type === "subscribed").length;
+    return ((subscribed / users.length) * 100).toFixed(1);
+  };
+
+  const getActiveRate = () => {
+    if (users.length === 0) return 0;
+    const active = users.filter(u => {
+      const status = getStatus(u);
+      return status.type === "subscribed" || status.type === "trial";
+    }).length;
+    return ((active / users.length) * 100).toFixed(1);
+  };
+
   if (adminLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -175,6 +268,11 @@ const AdminPanel = () => {
   if (!isAdmin) {
     return <Navigate to="/dashboard" replace />;
   }
+
+  const growthStats = getUserGrowthStats();
+  const totalDbRecords = dbStats 
+    ? Object.values(dbStats).reduce((a, b) => a + b, 0) 
+    : 0;
 
   return (
     <div className="space-y-6">
@@ -189,37 +287,179 @@ const AdminPanel = () => {
             Manage users, trials, and subscriptions
           </p>
         </div>
-        <Badge variant="outline" className="px-3 py-1">
-          <Users className="h-4 w-4 mr-2" />
-          {users.length} Users
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="px-3 py-1">
+            <Activity className="h-4 w-4 mr-2 text-green-500" />
+            System Online
+          </Badge>
+          <Badge variant="outline" className="px-3 py-1">
+            <Users className="h-4 w-4 mr-2" />
+            {users.length} Users
+          </Badge>
+        </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="p-4">
-          <div className="text-sm text-muted-foreground">Total Users</div>
-          <div className="text-2xl font-bold">{users.length}</div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-sm text-muted-foreground">Active Trials</div>
-          <div className="text-2xl font-bold">
-            {users.filter((u) => getStatus(u).type === "trial").length}
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-sm text-muted-foreground">Subscribed</div>
-          <div className="text-2xl font-bold">
-            {users.filter((u) => getStatus(u).type === "subscribed").length}
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-sm text-muted-foreground">Expired</div>
-          <div className="text-2xl font-bold text-destructive">
-            {users.filter((u) => getStatus(u).type === "expired").length}
-          </div>
-        </Card>
+      {/* User Stats Cards */}
+      <div>
+        <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+          <Users className="h-5 w-5" />
+          User Statistics
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+          <Card className="p-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Users className="h-4 w-4" />
+              Total Users
+            </div>
+            <div className="text-2xl font-bold mt-1">{users.length}</div>
+          </Card>
+          <Card className="p-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Clock className="h-4 w-4" />
+              Active Trials
+            </div>
+            <div className="text-2xl font-bold mt-1 text-blue-600">
+              {users.filter((u) => getStatus(u).type === "trial").length}
+            </div>
+          </Card>
+          <Card className="p-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <CheckCircle className="h-4 w-4" />
+              Subscribed
+            </div>
+            <div className="text-2xl font-bold mt-1 text-green-600">
+              {users.filter((u) => getStatus(u).type === "subscribed").length}
+            </div>
+          </Card>
+          <Card className="p-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <XCircle className="h-4 w-4" />
+              Expired
+            </div>
+            <div className="text-2xl font-bold mt-1 text-destructive">
+              {users.filter((u) => getStatus(u).type === "expired").length}
+            </div>
+          </Card>
+          <Card className="p-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <UserPlus className="h-4 w-4" />
+              Today
+            </div>
+            <div className="text-2xl font-bold mt-1 text-purple-600">{growthStats.today}</div>
+          </Card>
+          <Card className="p-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <TrendingUp className="h-4 w-4" />
+              This Week
+            </div>
+            <div className="text-2xl font-bold mt-1">{growthStats.thisWeek}</div>
+          </Card>
+          <Card className="p-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <TrendingUp className="h-4 w-4" />
+              This Month
+            </div>
+            <div className="text-2xl font-bold mt-1">{growthStats.thisMonth}</div>
+          </Card>
+          <Card className="p-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <TrendingUp className="h-4 w-4" />
+              Conversion
+            </div>
+            <div className="text-2xl font-bold mt-1 text-green-600">{getConversionRate()}%</div>
+          </Card>
+        </div>
       </div>
+
+      {/* Database Stats */}
+      <div>
+        <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+          <Database className="h-5 w-5" />
+          Database Status
+        </h2>
+        {dbLoading ? (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Loading database stats...
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+            <Card className="p-4 border-l-4 border-l-primary">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <HardDrive className="h-4 w-4" />
+                Total Records
+              </div>
+              <div className="text-2xl font-bold mt-1">{totalDbRecords.toLocaleString()}</div>
+            </Card>
+            <Card className="p-4">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Package className="h-4 w-4" />
+                Inventory
+              </div>
+              <div className="text-2xl font-bold mt-1">{dbStats?.inventory_items || 0}</div>
+            </Card>
+            <Card className="p-4">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Truck className="h-4 w-4" />
+                Suppliers
+              </div>
+              <div className="text-2xl font-bold mt-1">{dbStats?.suppliers || 0}</div>
+            </Card>
+            <Card className="p-4">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <ShoppingCart className="h-4 w-4" />
+                PO's
+              </div>
+              <div className="text-2xl font-bold mt-1">{dbStats?.purchase_orders || 0}</div>
+            </Card>
+            <Card className="p-4">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Truck className="h-4 w-4" />
+                GR's
+              </div>
+              <div className="text-2xl font-bold mt-1">{dbStats?.goods_receipts || 0}</div>
+            </Card>
+            <Card className="p-4">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <FileText className="h-4 w-4" />
+                Invoices
+              </div>
+              <div className="text-2xl font-bold mt-1">{dbStats?.proforma_invoices || 0}</div>
+            </Card>
+            <Card className="p-4">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Users className="h-4 w-4" />
+                Customers
+              </div>
+              <div className="text-2xl font-bold mt-1">{dbStats?.customers || 0}</div>
+            </Card>
+            <Card className="p-4">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Activity className="h-4 w-4" />
+                Transactions
+              </div>
+              <div className="text-2xl font-bold mt-1">{dbStats?.transactions || 0}</div>
+            </Card>
+          </div>
+        )}
+      </div>
+
+      {/* Active Rate Card */}
+      <Card className="p-4 bg-gradient-to-r from-primary/10 to-primary/5">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-sm text-muted-foreground">Overall Active User Rate</div>
+            <div className="text-3xl font-bold text-primary">{getActiveRate()}%</div>
+            <div className="text-xs text-muted-foreground mt-1">
+              Users currently on trial or with active subscription
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-sm text-muted-foreground">Passkeys Issued</div>
+            <div className="text-2xl font-bold">{dbStats?.passkeys || 0}</div>
+          </div>
+        </div>
+      </Card>
 
       {/* Users Table */}
       <Card>
