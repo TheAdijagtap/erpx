@@ -133,38 +133,38 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return { subtotal: parseFloat(subtotal.toFixed(2)), sgst, cgst, total: parseFloat(total.toFixed(2)) };
   };
 
-  // Fetch all data - optimized for speed
+  // Fetch all data - optimized for speed with progressive loading
   const refreshData = useCallback(async () => {
     if (!user) return;
 
     setLoading(true);
     try {
-      // Fetch critical data first (profile for auth state), then rest in parallel
-      // Use minimal select fields where possible for faster queries
-      const profilePromise = supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
-      
-      // Start all other fetches immediately in parallel
-      const [
-        { data: items },
-        { data: sups },
-        { data: pos },
-        { data: grs },
-        { data: pis },
-        { data: prods },
-        { data: custs },
-        { data: trans },
-        { data: profile },
-      ] = await Promise.all([
+      // Phase 1: Fetch critical data first (profile + core entities) for fastest initial render
+      // These are the most commonly accessed tables
+      const phase1Promise = Promise.all([
+        supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
         supabase.from("inventory_items").select("id,name,hsn_code,description,category,current_stock,reorder_level,unit_price,unit,supplier_id,created_at,updated_at").order("created_at", { ascending: false }).limit(500),
         supabase.from("suppliers").select("id,name,contact_person,email,phone,address,gst_number,created_at,payment_terms,notes").order("created_at", { ascending: false }).limit(200),
+      ]);
+
+      // Phase 2: Start secondary data fetches immediately (don't await phase 1)
+      const phase2Promise = Promise.all([
         supabase.from("purchase_orders").select("id,po_number,supplier_id,supplier_name,date,expected_delivery,status,subtotal,tax_amount,total,notes,payment_terms,created_at,purchase_order_items(id,item_id,item_name,description,quantity,rate,amount,unit),purchase_order_additional_charges(id,name,amount)").order("created_at", { ascending: false }).limit(200),
         supabase.from("goods_receipts").select("id,gr_number,purchase_order_id,supplier_id,supplier_name,receipt_date,status,subtotal,tax_amount,total,notes,created_at,goods_receipt_items(id,item_id,item_name,quantity_ordered,quantity_received,unit_price,amount,unit,notes),goods_receipt_additional_charges(id,name,amount)").order("created_at", { ascending: false }).limit(200),
         supabase.from("proforma_invoices").select("id,invoice_number,customer_id,customer_name,customer_address,customer_gst,date,subtotal,tax_amount,total,notes,payment_terms,created_at,proforma_invoice_items(id,item_name,hsn_code,description,quantity,rate,amount,unit),proforma_invoice_additional_charges(id,name,amount)").order("created_at", { ascending: false }).limit(200),
         supabase.from("proforma_products").select("id,name,description,unit,price,created_at").order("created_at", { ascending: false }).limit(200),
         supabase.from("customers").select("id,name,email,phone,address,gst_number,status,total_proformas,total_value,created_at,updated_at").order("created_at", { ascending: false }).limit(200),
-        supabase.from("inventory_transactions").select("id,item_id,type,quantity,unit_price,total_value,reason,reference,created_at,notes").order("created_at", { ascending: false }).limit(300),
-        profilePromise,
       ]);
+
+      // Phase 3: Transactions are least critical for initial render - defer
+      const phase3Promise = supabase.from("inventory_transactions").select("id,item_id,type,quantity,unit_price,total_value,reason,reference,created_at,notes").order("created_at", { ascending: false }).limit(300);
+
+      // Await all phases in parallel (they're already executing)
+      const [
+        [{ data: profile }, { data: items }, { data: sups }],
+        [{ data: pos }, { data: grs }, { data: pis }, { data: prods }, { data: custs }],
+        { data: trans }
+      ] = await Promise.all([phase1Promise, phase2Promise, phase3Promise]);
 
       // Pre-build lookup maps for faster joins (avoid repeated .find() calls)
       const itemsMap = new Map((items || []).map(i => [i.id, i]));
@@ -366,17 +366,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         updatedAt: new Date(c.updated_at),
       }));
 
-      // Set all state at once for batched rendering
-      setTransactions(mappedTransactions);
-      setInventoryItems(mappedItems);
-      setSuppliers(mappedSuppliers);
-      setPurchaseOrders(mappedPOs);
-      setGoodsReceipts(mappedGRs);
-      setProformaInvoices(mappedPIs);
-      setProformaProducts(mappedProducts);
-      setCustomers(mappedCustomers);
-
-      // Map business profile
+      // Batch all state updates together - React 18 will batch these automatically
+      // Set business profile first (critical for UI header)
       if (profile) {
         const profileAny = profile as any;
         setBusinessInfoState({
@@ -398,10 +389,22 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         setSubscriptionEndDate(profileAny.subscription_end_date ? new Date(profileAny.subscription_end_date) : null);
       }
 
+      // Set core data entities (batched)
+      setInventoryItems(mappedItems);
+      setSuppliers(mappedSuppliers);
+      setPurchaseOrders(mappedPOs);
+      setGoodsReceipts(mappedGRs);
+      setProformaInvoices(mappedPIs);
+      setProformaProducts(mappedProducts);
+      setCustomers(mappedCustomers);
+      setTransactions(mappedTransactions);
+
+      // Clear loading state immediately after setting data
+      setLoading(false);
+
     } catch (error) {
       console.error("Error fetching data:", error);
       toast.error("Failed to load data");
-    } finally {
       setLoading(false);
     }
   }, [user]);
