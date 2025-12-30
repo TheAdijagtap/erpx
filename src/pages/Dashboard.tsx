@@ -110,48 +110,6 @@ const Dashboard = () => {
     { step: "04", title: "Manage Stock", description: "Receive goods and monitor inventory levels" }
   ];
 
-  const coreFeatures = [
-    {
-      icon: Package,
-      title: "Inventory Tracking",
-      points: [
-        "Real-time stock level monitoring",
-        "Automatic low stock alerts",
-        "Multi-unit support (pcs, kg, liters, etc.)",
-        "Historical inventory analytics"
-      ]
-    },
-    {
-      icon: ShoppingCart,
-      title: "Purchase Management",
-      points: [
-        "Create and manage purchase orders",
-        "Supplier relationship management",
-        "Automated pricing calculations",
-        "Order status tracking"
-      ]
-    },
-    {
-      icon: FileText,
-      title: "Document Management",
-      points: [
-        "Goods receipt notes generation",
-        "Proforma invoice creation",
-        "Scrap note management",
-        "Complete audit trails"
-      ]
-    },
-    {
-      icon: BarChart3,
-      title: "Business Intelligence",
-      points: [
-        "Price tracking and analytics",
-        "Inventory valuation reports",
-        "Supplier performance metrics",
-        "Business dashboard insights"
-      ]
-    }
-  ];
 
   const indianBusinessFeatures = [
     {
@@ -431,46 +389,6 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Core Features Section */}
-      <section className="py-20 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Core Modules
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Powerful modules to manage every aspect of your inventory
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 gap-8">
-            {coreFeatures.map((feature) => {
-              const Icon = feature.icon;
-              return (
-                <Card key={feature.title} className="p-8 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
-                  <div className="flex items-start gap-4">
-                    <div className="p-3 bg-primary/10 rounded-lg shrink-0">
-                      <Icon className="w-6 h-6 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-foreground mb-4">
-                        {feature.title}
-                      </h3>
-                      <ul className="space-y-2">
-                        {feature.points.map((point) => (
-                          <li key={point} className="flex items-start gap-2 text-sm text-muted-foreground">
-                            <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                            <span>{point}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-      </section>
 
       {/* Indian Business Features */}
       <section className="py-20 px-6 bg-muted/30">
