@@ -18,7 +18,7 @@ export function calculateTrialStatus(trialStartDate: Date | null, subscriptionEn
   // If user has a subscription, use that instead
   if (subscriptionEndDate) {
     const diffTime = subscriptionEndDate.getTime() - now.getTime();
-    const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const daysRemaining = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     
     return {
       daysRemaining: Math.max(0, daysRemaining),
