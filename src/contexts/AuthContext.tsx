@@ -29,13 +29,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener for subsequent changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state changed:', event);
         setSession(session);
         setUser(session?.user ?? null);
         if (loading) setLoading(false);
       }
     );
 
-    return () => subscription.unsubscribe();
+    // Periodically check session when tab becomes visible (handles long inactivity)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Re-check session when user returns to the app
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          setSession(session);
+          setUser(session?.user ?? null);
+        });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      subscription.unsubscribe();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const signUp = async (email: string, password: string, phone?: string) => {
