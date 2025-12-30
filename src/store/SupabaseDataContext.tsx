@@ -406,12 +406,55 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
+  // Refresh data when user changes
   useEffect(() => {
     if (user) {
       refreshData();
     } else {
       setLoading(false);
     }
+  }, [user, refreshData]);
+
+  // Re-fetch data when user returns to the app after being away
+  useEffect(() => {
+    if (!user) return;
+
+    let lastActiveTime = Date.now();
+    const STALE_THRESHOLD = 5 * 60 * 1000; // 5 minutes
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        const now = Date.now();
+        const timeSinceLastActive = now - lastActiveTime;
+        
+        // If user was away for more than 5 minutes, refresh data
+        if (timeSinceLastActive > STALE_THRESHOLD) {
+          console.log('Refreshing data after returning from inactivity');
+          refreshData();
+        }
+      } else {
+        lastActiveTime = Date.now();
+      }
+    };
+
+    const handleFocus = () => {
+      const now = Date.now();
+      const timeSinceLastActive = now - lastActiveTime;
+      
+      if (timeSinceLastActive > STALE_THRESHOLD) {
+        console.log('Refreshing data after window focus');
+        refreshData();
+      }
+      lastActiveTime = now;
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, [user, refreshData]);
 
   // Inventory operations
