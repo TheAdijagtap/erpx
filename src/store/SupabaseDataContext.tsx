@@ -153,7 +153,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         { data: trans }
       ] = await Promise.all([
         supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
-        supabase.from("inventory_items").select("id,name,hsn_code,description,category,current_stock,reorder_level,unit_price,unit,supplier_id,created_at,updated_at").order("created_at", { ascending: false }).limit(500),
+        supabase.from("inventory_items").select("id,name,hsn_code,description,category,current_stock,reorder_level,unit_price,unit,supplier_id,item_code,make,mpn,created_at,updated_at").order("created_at", { ascending: false }).limit(500),
         supabase.from("suppliers").select("id,name,contact_person,email,phone,address,gst_number,created_at,payment_terms,notes").order("created_at", { ascending: false }).limit(200),
         supabase.from("purchase_orders").select("id,po_number,supplier_id,supplier_name,date,expected_delivery,status,subtotal,tax_amount,total,notes,payment_terms,created_at,purchase_order_items(id,item_id,item_name,description,hsn_code,quantity,rate,amount,unit),purchase_order_additional_charges(id,name,amount)").order("created_at", { ascending: false }).limit(200),
         supabase.from("goods_receipts").select("id,gr_number,purchase_order_id,supplier_id,supplier_name,receipt_date,status,subtotal,tax_amount,total,notes,created_at,goods_receipt_items(id,item_id,item_name,quantity_ordered,quantity_received,unit_price,amount,unit,notes,batch_number),goods_receipt_additional_charges(id,name,amount)").order("created_at", { ascending: false }).limit(200),
@@ -180,6 +180,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         unitPrice: Number(i.unit_price) || 0,
         unit: i.unit,
         supplier: i.supplier_id || undefined,
+        itemCode: i.item_code || undefined,
+        make: i.make || undefined,
+        mpn: i.mpn || undefined,
         createdAt: new Date(i.created_at),
         updatedAt: new Date(i.updated_at),
       });
@@ -478,6 +481,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       unit: item.unit,
       hsn_code: item.sku,
       supplier_id: item.supplier || null,
+      item_code: item.itemCode || null,
+      make: item.make || null,
+      mpn: item.mpn || null,
     }).select().single();
 
     if (error) throw error;
@@ -495,6 +501,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       unitPrice: item.unitPrice,
       unit: item.unit,
       supplier: item.supplier,
+      itemCode: item.itemCode,
+      make: item.make,
+      mpn: item.mpn,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
