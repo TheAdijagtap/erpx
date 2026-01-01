@@ -895,6 +895,51 @@ export type Database = {
         }
         Relationships: []
       }
+      t_codes: {
+        Row: {
+          batch_number: string | null
+          created_at: string
+          goods_receipt_id: string
+          goods_receipt_item_id: string
+          gr_number: string
+          id: string
+          item_name: string
+          sticker_number: number
+          t_code: string
+          total_stickers: number
+          unit: string
+          user_id: string
+        }
+        Insert: {
+          batch_number?: string | null
+          created_at?: string
+          goods_receipt_id: string
+          goods_receipt_item_id: string
+          gr_number: string
+          id?: string
+          item_name: string
+          sticker_number: number
+          t_code: string
+          total_stickers: number
+          unit: string
+          user_id: string
+        }
+        Update: {
+          batch_number?: string | null
+          created_at?: string
+          goods_receipt_id?: string
+          goods_receipt_item_id?: string
+          gr_number?: string
+          id?: string
+          item_name?: string
+          sticker_number?: number
+          t_code?: string
+          total_stickers?: number
+          unit?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
