@@ -823,6 +823,7 @@ function TCodeDialog({ id }: { id: string }) {
   const [open, setOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [stickerQty, setStickerQty] = useState(1);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const selectedItemData = receipt.items.find(it => it.id === selectedItem);
 
@@ -833,10 +834,14 @@ function TCodeDialog({ id }: { id: string }) {
     return `TC-${dateStr}-${random}`;
   };
 
-  const printStickers = () => {
+  const printStickers = async () => {
     if (!selectedItemData) return;
 
+    setIsGenerating(true);
+    
     const stickers = [];
+    const tCodeRecords = [];
+    
     for (let i = 0; i < stickerQty; i++) {
       const tCode = generateTCode();
       stickers.push({
@@ -848,7 +853,37 @@ function TCodeDialog({ id }: { id: string }) {
         stickerNo: i + 1,
         totalStickers: stickerQty,
       });
+      
+      tCodeRecords.push({
+        goods_receipt_id: receipt.id,
+        goods_receipt_item_id: selectedItemData.id,
+        t_code: tCode,
+        item_name: selectedItemData.item.name,
+        gr_number: receipt.grNumber,
+        batch_number: selectedItemData.batchNumber || null,
+        unit: selectedItemData.item.unit,
+        sticker_number: i + 1,
+        total_stickers: stickerQty,
+      });
     }
+
+    // Save T-Codes to database
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        const recordsWithUserId = tCodeRecords.map(r => ({ ...r, user_id: user.id }));
+        const { error } = await supabase.from('t_codes').insert(recordsWithUserId);
+        if (error) {
+          console.error('Failed to save T-Codes:', error);
+        }
+      }
+    } catch (err) {
+      console.error('Error saving T-Codes:', err);
+    }
+    
+    setIsGenerating(false);
 
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
@@ -996,10 +1031,10 @@ function TCodeDialog({ id }: { id: string }) {
         <DialogFooter>
           <Button
             onClick={printStickers}
-            disabled={!selectedItem}
+            disabled={!selectedItem || isGenerating}
             className="gap-1"
           >
-            <Printer className="w-4 h-4" /> Print Stickers
+            <Printer className="w-4 h-4" /> {isGenerating ? 'Generating...' : 'Print Stickers'}
           </Button>
         </DialogFooter>
       </DialogContent>
