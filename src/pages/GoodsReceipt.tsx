@@ -493,7 +493,6 @@ function ViewGRDialog({ id }: { id: string }) {
                 <tr>
                   <th>#</th>
                   <th>Description</th>
-                  {receipt.items.some(it => it.item.category) && <th>Dept</th>}
                   {receipt.items.some(it => isValidHsn(it.item.sku)) && <th>HSN</th>}
                   <th>Ordered</th>
                   <th>Received</th>
@@ -510,7 +509,6 @@ function ViewGRDialog({ id }: { id: string }) {
                       <div style={{fontWeight: '600'}}>{it.item.name}</div>
                       {it.item.description && <div style={{fontSize: '12px', color: '#64748b', marginTop: '2px'}}>{it.item.description}</div>}
                     </td>
-                    {receipt.items.some(i => i.item.category) && <td>{it.item.category || '-'}</td>}
                     {receipt.items.some(i => isValidHsn(i.item.sku)) && <td>{isValidHsn(it.item.sku) ? it.item.sku : '-'}</td>}
                     <td>{it.orderedQuantity || '-'}</td>
                     <td>{it.receivedQuantity}</td>
@@ -669,7 +667,6 @@ function PrintGRButton({ id }: { id: string }) {
             <tr>
               <th>#</th>
               <th>Description</th>
-              ${receipt.items.some(it => it.item.category) ? '<th>Dept</th>' : ''}
               ${receipt.items.some(it => isValidHsn(it.item.sku)) ? '<th>HSN</th>' : ''}
               <th>Ordered</th>
               <th>Received</th>
@@ -686,7 +683,6 @@ function PrintGRButton({ id }: { id: string }) {
                   <div style="font-weight: 600">${escapeHtml(it.item.name)}</div>
                   ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${escapeHtml(it.item.description)}</div>` : ''}
                 </td>
-                ${receipt.items.some(i => i.item.category) ? `<td>${escapeHtml(it.item.category || '-')}</td>` : ''}
                 ${receipt.items.some(i => isValidHsn(i.item.sku)) ? `<td>${isValidHsn(it.item.sku) ? escapeHtml(it.item.sku) : '-'}</td>` : ''}
                 <td>${it.orderedQuantity || '-'}</td>
                 <td>${it.receivedQuantity}</td>
