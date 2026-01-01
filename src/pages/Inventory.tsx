@@ -159,76 +159,76 @@ function ItemViewDialog({ itemId, children }: { itemId: string; children: React.
           <DialogTitle>Item Details</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <div className="space-y-3 text-sm">
-            {/* Row 1: Name & Category */}
-            <div className="grid grid-cols-2 gap-x-8 gap-y-3">
-              <div>
-                <div className="text-muted-foreground text-xs">Name</div>
-                <div className="font-medium">{item.name}</div>
-              </div>
-              <div>
-                <div className="text-muted-foreground text-xs">Category</div>
-                <div className="font-medium">{item.category}</div>
-              </div>
+          <div className="space-y-4 text-sm">
+            {/* Name */}
+            <div>
+              <div className="text-muted-foreground text-xs">Name</div>
+              <div className="font-medium">{item.name}</div>
             </div>
-            
-            {/* Row 2: HSN Code (full width) */}
+
+            {/* HSN Code */}
             {item.sku && (
               <div>
                 <div className="text-muted-foreground text-xs">HSN Code</div>
                 <div className="font-medium">{item.sku}</div>
               </div>
             )}
-            
-            {/* Row 3: Item Code, Make, MPN - fixed 3-column grid */}
-            {(item.itemCode || item.make || item.mpn) && (
-              <div className="grid grid-cols-3 gap-x-8 gap-y-3 items-start">
-                <div className="min-w-0">
-                  <div className="text-muted-foreground text-xs">Item Code</div>
-                  <div
-                    className="font-medium truncate"
-                    title={item.itemCode || '-'}
-                  >
-                    {item.itemCode || '-'}
-                  </div>
-                </div>
-                <div className="min-w-0">
-                  <div className="text-muted-foreground text-xs">Make</div>
-                  <div
-                    className="font-medium truncate"
-                    title={item.make || '-'}
-                  >
-                    {item.make || '-'}
-                  </div>
-                </div>
-                <div className="min-w-0">
-                  <div className="text-muted-foreground text-xs">MPN</div>
-                  <div
-                    className="font-medium truncate"
-                    title={item.mpn || '-'}
-                  >
-                    {item.mpn || '-'}
-                  </div>
+
+            {/* Item Code (if available) */}
+            {item.itemCode && (
+              <div>
+                <div className="text-muted-foreground text-xs">Item Code</div>
+                <div className="font-medium" title={item.itemCode}>
+                  {item.itemCode}
                 </div>
               </div>
             )}
-            
-            {/* Row 4: Description (full width) */}
+
+            {/* Center-aligned spec block (Category/Make/MPN/Unit) */}
+            <div className="rounded-md border bg-muted/20 p-4">
+              <div className="grid grid-cols-3 gap-x-10 gap-y-4">
+                {/* Row 1: Category centered */}
+                <div className="col-start-2 text-center min-w-0">
+                  <div className="text-muted-foreground text-xs">Category</div>
+                  <div className="font-medium truncate" title={item.category || '-'}>
+                    {item.category || '-'}
+                  </div>
+                </div>
+
+                {/* Row 2: Make (left) / MPN (right) */}
+                <div className="col-start-1 min-w-0">
+                  <div className="text-muted-foreground text-xs">Make</div>
+                  <div className="font-medium truncate" title={item.make || '-'}>
+                    {item.make || '-'}
+                  </div>
+                </div>
+                <div className="col-start-3 text-right min-w-0">
+                  <div className="text-muted-foreground text-xs">MPN</div>
+                  <div className="font-medium truncate" title={item.mpn || '-'}>
+                    {item.mpn || '-'}
+                  </div>
+                </div>
+
+                {/* Row 3: Unit centered */}
+                <div className="col-start-2 text-center min-w-0">
+                  <div className="text-muted-foreground text-xs">Unit</div>
+                  <div className="font-medium truncate" title={item.unit || '-'}>
+                    {item.unit || '-'}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Description */}
             <div>
               <div className="text-muted-foreground text-xs">Description</div>
               <div className="font-medium">{item.description || '-'}</div>
             </div>
-            
-            {/* Row 5: Unit Price & Unit */}
-            <div className="grid grid-cols-2 gap-x-8 gap-y-3">
-              <div>
-                <div className="text-muted-foreground text-xs">Unit Price</div>
-                <div className="font-medium">{formatINR(item.unitPrice)}</div>
-              </div>
-              <div>
-                <div className="text-muted-foreground text-xs">Unit</div>
-                <div className="font-medium">{item.unit}</div>
-              </div>
+
+            {/* Unit Price */}
+            <div>
+              <div className="text-muted-foreground text-xs">Unit Price</div>
+              <div className="font-medium">{formatINR(item.unitPrice)}</div>
             </div>
           </div>
 
