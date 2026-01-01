@@ -24,7 +24,8 @@ export function calculateTrialStatus(trialStartDate: Date | null, subscriptionEn
     
     return {
       daysRemaining: Math.max(0, daysRemaining),
-      isExpired: daysRemaining < 0,
+      // Block when 0 or less days remaining
+      isExpired: daysRemaining <= 0,
       percentRemaining: Math.max(0, Math.min(100, (daysRemaining / 30) * 100)),
       isSubscription: true,
     };
@@ -43,7 +44,8 @@ export function calculateTrialStatus(trialStartDate: Date | null, subscriptionEn
 
   return {
     daysRemaining: Math.max(0, daysRemaining),
-    isExpired: daysRemaining < 0,
+    // Block when 0 or less days remaining
+    isExpired: daysRemaining <= 0,
     percentRemaining: Math.max(0, Math.min(100, (daysRemaining / TRIAL_DAYS) * 100)),
     isSubscription: false,
   };
