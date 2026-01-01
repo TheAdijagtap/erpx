@@ -1154,6 +1154,7 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
               <TableHeader>
                 <TableRow>
                   <TableHead>Item</TableHead>
+                  <TableHead>HSN (Optional)</TableHead>
                   <TableHead>Quantity</TableHead>
                   <TableHead>Unit Price</TableHead>
                   <TableHead>Total</TableHead>
@@ -1197,6 +1198,14 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
                           </SelectContent>
                         </Select>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      <Input
+                        value={item.hsnCode || ""}
+                        onChange={(e) => updateItem(index, 'hsnCode', e.target.value)}
+                        placeholder="HSN"
+                        className="w-24"
+                      />
                     </TableCell>
                     <TableCell>
                       <Input
@@ -1806,6 +1815,7 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
               <TableHeader>
                 <TableRow>
                   <TableHead>Item</TableHead>
+                  <TableHead>HSN (Optional)</TableHead>
                   <TableHead>Quantity</TableHead>
                   <TableHead>Unit Price</TableHead>
                   <TableHead>Total</TableHead>
@@ -1831,6 +1841,14 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
                           ))}
                         </SelectContent>
                       </Select>
+                    </TableCell>
+                    <TableCell>
+                      <Input
+                        value={item.hsnCode || ""}
+                        onChange={(e) => updateItem(index, 'hsnCode', e.target.value)}
+                        placeholder="HSN"
+                        className="w-24"
+                      />
                     </TableCell>
                     <TableCell>
                       <Input
