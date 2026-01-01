@@ -1,7 +1,9 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, MessageCircle, AlertTriangle } from "lucide-react";
+import { Clock, MessageCircle, AlertTriangle, LogOut } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 interface TrialBannerProps {
   trialStartDate: Date | null;
@@ -85,11 +87,18 @@ export function TrialStatusBadge({ trialStartDate, subscriptionEndDate }: { tria
 }
 
 export function TrialExpiredOverlay() {
+  const { signOut } = useAuth();
+
   const handleSubscribe = () => {
     const message = encodeURIComponent(
       "Hi! I would like to subscribe to CORS Inventory app. My trial has expired and I want to continue using the service."
     );
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, "_blank");
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("Signed out successfully");
   };
 
   return (
@@ -114,6 +123,16 @@ export function TrialExpiredOverlay() {
           >
             <MessageCircle className="w-5 h-5" />
             Subscribe via WhatsApp
+          </Button>
+          
+          <Button 
+            onClick={handleSignOut} 
+            variant="outline"
+            className="w-full gap-2"
+            size="lg"
+          >
+            <LogOut className="w-5 h-5" />
+            Sign Out
           </Button>
           
           <p className="text-xs text-muted-foreground">
