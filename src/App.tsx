@@ -12,15 +12,36 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { DataProvider } from "./store/SupabaseDataContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
-// Lazy load heavy pages for faster initial load
-const AppDashboard = lazy(() => import("./pages/AppDashboard"));
-const Inventory = lazy(() => import("./pages/Inventory"));
-const PurchaseOrders = lazy(() => import("./pages/PurchaseOrders"));
-const GoodsReceiptPage = lazy(() => import("./pages/GoodsReceipt"));
-const Suppliers = lazy(() => import("./pages/Suppliers"));
-const BusinessSetup = lazy(() => import("./pages/BusinessSetup"));
-const ProformaInvoice = lazy(() => import("./pages/ProformaInvoice"));
-const AdminPanel = lazy(() => import("./pages/AdminPanel"));
+// Lazy load pages with preloading capability
+const appDashboardImport = () => import("./pages/AppDashboard");
+const inventoryImport = () => import("./pages/Inventory");
+const purchaseOrdersImport = () => import("./pages/PurchaseOrders");
+const goodsReceiptImport = () => import("./pages/GoodsReceipt");
+const suppliersImport = () => import("./pages/Suppliers");
+const businessSetupImport = () => import("./pages/BusinessSetup");
+const proformaInvoiceImport = () => import("./pages/ProformaInvoice");
+const adminPanelImport = () => import("./pages/AdminPanel");
+
+const AppDashboard = lazy(appDashboardImport);
+const Inventory = lazy(inventoryImport);
+const PurchaseOrders = lazy(purchaseOrdersImport);
+const GoodsReceiptPage = lazy(goodsReceiptImport);
+const Suppliers = lazy(suppliersImport);
+const BusinessSetup = lazy(businessSetupImport);
+const ProformaInvoice = lazy(proformaInvoiceImport);
+const AdminPanel = lazy(adminPanelImport);
+
+// Preload all pages immediately for instant navigation
+export const preloadAllPages = () => {
+  appDashboardImport();
+  inventoryImport();
+  purchaseOrdersImport();
+  goodsReceiptImport();
+  suppliersImport();
+  businessSetupImport();
+  proformaInvoiceImport();
+  adminPanelImport();
+};
 
 // Optimized QueryClient with caching
 const queryClient = new QueryClient({
