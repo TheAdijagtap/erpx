@@ -37,7 +37,7 @@ interface DataContextValue {
   // Inventory
   addItem: (item: Omit<InventoryItem, "id" | "createdAt" | "updatedAt">) => Promise<string>;
   updateItem: (id: string, patch: Partial<InventoryItem>) => Promise<void>;
-  transactItem: (itemId: string, type: "IN" | "OUT", quantity: number, reason: string, reference?: string, unitPriceOverride?: number) => Promise<void>;
+  transactItem: (itemId: string, type: "IN" | "OUT", quantity: number, reason: string, reference?: string, unitPriceOverride?: number, batchNumber?: string) => Promise<void>;
   removeItem: (id: string) => Promise<void>;
 
   // Suppliers
@@ -160,7 +160,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         supabase.from("proforma_invoices").select("id,invoice_number,customer_id,customer_name,customer_address,customer_gst,date,subtotal,tax_amount,total,notes,payment_terms,created_at,proforma_invoice_items(id,item_name,hsn_code,description,quantity,rate,amount,unit),proforma_invoice_additional_charges(id,name,amount)").order("created_at", { ascending: false }).limit(200),
         supabase.from("proforma_products").select("id,name,description,unit,price,created_at").order("created_at", { ascending: false }).limit(200),
         supabase.from("customers").select("id,name,email,phone,address,gst_number,status,total_proformas,total_value,created_at,updated_at").order("created_at", { ascending: false }).limit(200),
-        supabase.from("inventory_transactions").select("id,item_id,type,quantity,unit_price,total_value,reason,reference,created_at,notes").order("created_at", { ascending: false }).limit(300),
+        supabase.from("inventory_transactions").select("id,item_id,type,quantity,unit_price,total_value,reason,reference,batch_number,created_at,notes").order("created_at", { ascending: false }).limit(300),
       ]);
 
       // Pre-build lookup maps for faster joins (avoid repeated .find() calls)
@@ -206,6 +206,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         totalValue: Number(t.total_value) || 0,
         reason: t.reason,
         reference: t.reference || undefined,
+        batchNumber: t.batch_number || undefined,
         date: new Date(t.created_at),
         notes: t.notes || undefined,
       }));
@@ -520,7 +521,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     ));
   };
 
-  const transactItem = async (itemId: string, type: "IN" | "OUT", quantity: number, reason: string, reference?: string, unitPriceOverride?: number) => {
+  const transactItem = async (itemId: string, type: "IN" | "OUT", quantity: number, reason: string, reference?: string, unitPriceOverride?: number, batchNumber?: string) => {
     if (!user) throw new Error("Not authenticated");
     
     const item = inventoryItems.find(i => i.id === itemId);
@@ -541,6 +542,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       total_value: totalValue,
       reason,
       reference: reference || null,
+      batch_number: batchNumber || null,
     }).select().single();
     
     if (transError) throw transError;
@@ -563,6 +565,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       totalValue,
       reason,
       reference,
+      batchNumber,
       date: new Date(),
     };
     setTransactions(prev => [newTransaction, ...prev]);

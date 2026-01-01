@@ -203,12 +203,13 @@ function ItemViewDialog({ itemId, children }: { itemId: string; children: React.
                     <TableHead>Qty</TableHead>
                     <TableHead>Reason</TableHead>
                     <TableHead>Reference</TableHead>
+                    <TableHead>Batch/Lot</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {itemTx.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center text-muted-foreground">No transactions yet.</TableCell>
+                      <TableCell colSpan={6} className="text-center text-muted-foreground">No transactions yet.</TableCell>
                     </TableRow>
                   )}
                   {itemTx.map((t) => (
@@ -218,6 +219,7 @@ function ItemViewDialog({ itemId, children }: { itemId: string; children: React.
                       <TableCell>{t.quantity}</TableCell>
                       <TableCell>{t.reason}</TableCell>
                       <TableCell>{t.reference || '-'}</TableCell>
+                      <TableCell>{t.batchNumber || '-'}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -238,6 +240,7 @@ function ItemTransactDialog({ itemId, type, children }: { itemId: string; type: 
   const [unitPrice, setUnitPrice] = useState(item.unitPrice);
   const [reason, setReason] = useState(type === 'IN' ? 'Purchase' : 'Usage');
   const [reference, setReference] = useState("");
+  const [batchNumber, setBatchNumber] = useState("");
 
   const onSubmit = () => {
     if (quantity <= 0) return;
@@ -245,7 +248,7 @@ function ItemTransactDialog({ itemId, type, children }: { itemId: string; type: 
       toast({ title: 'Insufficient stock', description: 'Quantity exceeds available stock.', variant: 'destructive' as any });
       return;
     }
-    transactItem(itemId, type, quantity, reason, reference || undefined, type === 'IN' ? unitPrice : undefined);
+    transactItem(itemId, type, quantity, reason, reference || undefined, type === 'IN' ? unitPrice : undefined, batchNumber || undefined);
     toast({ title: 'Transaction recorded', description: `${type === 'IN' ? 'Added' : 'Used'} ${quantity} ${item.unit}.` });
     setOpen(false);
   };
@@ -287,9 +290,15 @@ function ItemTransactDialog({ itemId, type, children }: { itemId: string; type: 
             <Input value={reason} onChange={(e) => setReason(e.target.value)} />
           </div>
 
-          <div>
-            <div className="text-sm mb-1">Reference (optional)</div>
-            <Input value={reference} onChange={(e) => setReference(e.target.value)} placeholder="PO/GR number, etc." />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <div className="text-sm mb-1">Reference (optional)</div>
+              <Input value={reference} onChange={(e) => setReference(e.target.value)} placeholder="PO/GR number, etc." />
+            </div>
+            <div>
+              <div className="text-sm mb-1">Batch/Lot No. (optional)</div>
+              <Input value={batchNumber} onChange={(e) => setBatchNumber(e.target.value)} placeholder="e.g., LOT-2026-001" />
+            </div>
           </div>
         </div>
         <DialogFooter>
