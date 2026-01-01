@@ -827,11 +827,12 @@ function TCodeDialog({ id }: { id: string }) {
 
   const selectedItemData = receipt.items.find(it => it.id === selectedItem);
 
-  const generateTCode = (itemCode?: string, index?: number) => {
-    // Use item's Item Code if available, otherwise generate auto code
+  const generateTCode = (itemCode?: string) => {
+    // Use item's Item Code directly if available
     if (itemCode) {
-      return `${itemCode}-${String((index || 0) + 1).padStart(3, '0')}`;
+      return itemCode;
     }
+    // Fallback to auto-generated format if no item code
     const now = new Date();
     const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
     const random = String(Math.floor(Math.random() * 999) + 1).padStart(3, '0');
@@ -850,7 +851,7 @@ function TCodeDialog({ id }: { id: string }) {
     const tCodeRecords = [];
     
     for (let i = 0; i < stickerQty; i++) {
-      const tCode = generateTCode(selectedItemData.item.itemCode, i);
+      const tCode = generateTCode(selectedItemData.item.itemCode);
       
       // Generate QR code as data URL
       const qrDataUrl = await QRCode.toDataURL(tCode, {
