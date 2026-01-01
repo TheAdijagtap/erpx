@@ -1405,7 +1405,7 @@ const ViewProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
                   <th>#</th>
                   <th>Description</th>
                   {invoice.items.some(it => it.item.category) && <th>Dept</th>}
-                  {invoice.items.some(it => it.hsnCode || it.item.sku) && <th>HSN</th>}
+                  {invoice.items.some(it => it.hsnCode) && <th>HSN</th>}
                   <th>Qty</th>
                   <th>Unit</th>
                   <th>Rate</th>
@@ -1421,7 +1421,7 @@ const ViewProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
                       {it.item.description && <div style={{fontSize: '12px', color: '#64748b', marginTop: '2px'}}>{it.item.description}</div>}
                     </td>
                     {invoice.items.some(i => i.item.category) && <td>{it.item.category || '-'}</td>}
-                    {invoice.items.some(i => i.hsnCode || i.item.sku) && <td>{it.hsnCode || it.item.sku || '-'}</td>}
+                    {invoice.items.some(i => i.hsnCode) && <td>{it.hsnCode || '-'}</td>}
                     <td>{it.quantity}</td>
                     <td>{it.item.unit}</td>
                     <td>{formatINR(it.unitPrice)}</td>
@@ -2022,7 +2022,7 @@ const PrintProformaButton = ({ id }: { id: string }) => {
               <th>#</th>
               <th>Description</th>
               ${invoice.items.some(it => it.item.category) ? '<th>Dept</th>' : ''}
-              ${invoice.items.some(it => it.hsnCode || it.item.sku) ? '<th>HSN</th>' : ''}
+              ${invoice.items.some(it => it.hsnCode) ? '<th>HSN</th>' : ''}
               <th>Qty</th>
               <th>Unit</th>
               <th>Rate</th>
@@ -2038,7 +2038,7 @@ const PrintProformaButton = ({ id }: { id: string }) => {
                   ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${escapeHtml(it.item.description)}</div>` : ''}
                 </td>
                 ${invoice.items.some(i => i.item.category) ? `<td>${escapeHtml(it.item.category || '-')}</td>` : ''}
-                ${invoice.items.some(i => i.hsnCode || i.item.sku) ? `<td>${escapeHtml(it.hsnCode || it.item.sku || '-')}</td>` : ''}
+                ${invoice.items.some(i => i.hsnCode) ? `<td>${escapeHtml(it.hsnCode || '-')}</td>` : ''}
                 <td>${it.quantity}</td>
                 <td>${escapeHtml(it.item.unit)}</td>
                 <td>${formatINR(it.unitPrice)}</td>
