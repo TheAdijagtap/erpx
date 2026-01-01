@@ -147,10 +147,66 @@ const Inventory = () => {
 };
 
 function ItemViewDialog({ itemId, children }: { itemId: string; children: React.ReactNode }) {
-  const { inventoryItems: items, transactions, suppliers } = useData();
+  const { inventoryItems: items, transactions, suppliers, updateItem } = useData();
   const item = items.find(i => i.id === itemId)!;
   const itemTx = transactions.filter(t => t.itemId === itemId);
   const supplier = item.supplier ? suppliers.find(s => s.id === item.supplier) : null;
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: item.name,
+    description: item.description,
+    category: item.category,
+    sku: item.sku,
+    itemCode: item.itemCode || '',
+    make: item.make || '',
+    mpn: item.mpn || '',
+    unitPrice: item.unitPrice,
+    unit: item.unit,
+    minStock: item.minStock,
+  });
+
+  // Reset form when item changes or edit mode toggles
+  const handleEditClick = () => {
+    setEditForm({
+      name: item.name,
+      description: item.description,
+      category: item.category,
+      sku: item.sku,
+      itemCode: item.itemCode || '',
+      make: item.make || '',
+      mpn: item.mpn || '',
+      unitPrice: item.unitPrice,
+      unit: item.unit,
+      minStock: item.minStock,
+    });
+    setIsEditing(true);
+  };
+
+  const handleSave = async () => {
+    if (!editForm.name.trim()) {
+      toast({ title: "Error", description: "Item name is required", variant: "destructive" as any });
+      return;
+    }
+    try {
+      await updateItem(item.id, {
+        name: editForm.name.trim(),
+        description: editForm.description.trim(),
+        category: editForm.category.trim(),
+        sku: editForm.sku.trim(),
+        itemCode: editForm.itemCode.trim() || undefined,
+        make: editForm.make.trim() || undefined,
+        mpn: editForm.mpn.trim() || undefined,
+        unitPrice: Number(editForm.unitPrice) || 0,
+        unit: editForm.unit.trim(),
+        minStock: Number(editForm.minStock) || 0,
+      });
+      toast({ title: "Success", description: "Item updated successfully" });
+      setIsEditing(false);
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to update item", variant: "destructive" as any });
+    }
+  };
 
   // Calculate stats
   const totalIn = itemTx.filter(t => t.type === 'IN').reduce((sum, t) => sum + t.quantity, 0);
@@ -159,7 +215,7 @@ function ItemViewDialog({ itemId, children }: { itemId: string; children: React.
   const stockStatus = item.currentStock <= item.minStock ? 'low' : item.currentStock <= item.minStock * 1.5 ? 'medium' : 'good';
 
   return (
-    <Dialog>
+    <Dialog onOpenChange={(open) => !open && setIsEditing(false)}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
@@ -169,37 +225,83 @@ function ItemViewDialog({ itemId, children }: { itemId: string; children: React.
               <Package className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-foreground">{item.name}</h2>
-              <p className="text-sm text-muted-foreground mt-0.5">{item.description || 'No description'}</p>
+              {isEditing ? (
+                <Input
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  className="text-xl font-semibold h-auto py-1"
+                  placeholder="Item name"
+                />
+              ) : (
+                <h2 className="text-xl font-semibold text-foreground">{item.name}</h2>
+              )}
+              {isEditing ? (
+                <Input
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  className="text-sm mt-1"
+                  placeholder="Description"
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground mt-0.5">{item.description || 'No description'}</p>
+              )}
               <div className="flex items-center gap-2 mt-2">
-                <Badge variant="secondary" className="text-xs">{item.category || 'Uncategorized'}</Badge>
-                {stockStatus === 'low' && <Badge variant="destructive" className="text-xs">Low Stock</Badge>}
-                {stockStatus === 'medium' && <Badge className="bg-warning text-warning-foreground text-xs">Medium Stock</Badge>}
-                {stockStatus === 'good' && <Badge className="bg-success text-success-foreground text-xs">In Stock</Badge>}
+                {isEditing ? (
+                  <Input
+                    value={editForm.category}
+                    onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                    className="text-xs w-32"
+                    placeholder="Category"
+                  />
+                ) : (
+                  <Badge variant="secondary" className="text-xs">{item.category || 'Uncategorized'}</Badge>
+                )}
+                {!isEditing && stockStatus === 'low' && <Badge variant="destructive" className="text-xs">Low Stock</Badge>}
+                {!isEditing && stockStatus === 'medium' && <Badge className="bg-warning text-warning-foreground text-xs">Medium Stock</Badge>}
+                {!isEditing && stockStatus === 'good' && <Badge className="bg-success text-success-foreground text-xs">In Stock</Badge>}
               </div>
             </div>
           </div>
+          <div className="flex gap-2">
+            {isEditing ? (
+              <>
+                <Button variant="outline" size="sm" onClick={() => setIsEditing(false)}>
+                  Cancel
+                </Button>
+                <Button size="sm" onClick={handleSave}>
+                  Save
+                </Button>
+              </>
+            ) : (
+              <Button variant="outline" size="sm" onClick={handleEditClick} className="gap-1">
+                <Edit className="w-3.5 h-3.5" />
+                Edit
+              </Button>
+            )}
+          </div>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-4 gap-3 py-4">
-          <div className="text-center p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
-            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{item.currentStock}</div>
-            <div className="text-xs text-muted-foreground mt-1">Current Stock ({item.unit})</div>
+        {/* Quick Stats - View only */}
+        {!isEditing && (
+          <div className="grid grid-cols-4 gap-3 py-4">
+            <div className="text-center p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{item.currentStock}</div>
+              <div className="text-xs text-muted-foreground mt-1">Current Stock ({item.unit})</div>
+            </div>
+            <div className="text-center p-3 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800">
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">{formatINR(stockValue)}</div>
+              <div className="text-xs text-muted-foreground mt-1">Stock Value</div>
+            </div>
+            <div className="text-center p-3 rounded-lg bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800">
+              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{totalIn}</div>
+              <div className="text-xs text-muted-foreground mt-1">Total Received</div>
+            </div>
+            <div className="text-center p-3 rounded-lg bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800">
+              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{totalOut}</div>
+              <div className="text-xs text-muted-foreground mt-1">Total Used</div>
+            </div>
           </div>
-          <div className="text-center p-3 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800">
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{formatINR(stockValue)}</div>
-            <div className="text-xs text-muted-foreground mt-1">Stock Value</div>
-          </div>
-          <div className="text-center p-3 rounded-lg bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800">
-            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{totalIn}</div>
-            <div className="text-xs text-muted-foreground mt-1">Total Received</div>
-          </div>
-          <div className="text-center p-3 rounded-lg bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800">
-            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{totalOut}</div>
-            <div className="text-xs text-muted-foreground mt-1">Total Used</div>
-          </div>
-        </div>
+        )}
 
         {/* Specifications Grid */}
         <div className="grid grid-cols-2 gap-4 py-4 border-t">
@@ -212,19 +314,55 @@ function ItemViewDialog({ itemId, children }: { itemId: string; children: React.
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="p-3 rounded-md bg-muted/50">
                 <div className="text-xs text-muted-foreground mb-1">HSN Code</div>
-                <div className="font-medium font-mono">{item.sku || '-'}</div>
+                {isEditing ? (
+                  <Input
+                    value={editForm.sku}
+                    onChange={(e) => setEditForm({ ...editForm, sku: e.target.value })}
+                    className="h-7 text-sm font-mono"
+                    placeholder="HSN Code"
+                  />
+                ) : (
+                  <div className="font-medium font-mono">{item.sku || '-'}</div>
+                )}
               </div>
               <div className="p-3 rounded-md bg-muted/50">
                 <div className="text-xs text-muted-foreground mb-1">Item Code</div>
-                <div className="font-medium font-mono">{item.itemCode || '-'}</div>
+                {isEditing ? (
+                  <Input
+                    value={editForm.itemCode}
+                    onChange={(e) => setEditForm({ ...editForm, itemCode: e.target.value })}
+                    className="h-7 text-sm font-mono"
+                    placeholder="Item Code"
+                  />
+                ) : (
+                  <div className="font-medium font-mono">{item.itemCode || '-'}</div>
+                )}
               </div>
               <div className="p-3 rounded-md bg-muted/50">
                 <div className="text-xs text-muted-foreground mb-1">Make</div>
-                <div className="font-medium">{item.make || '-'}</div>
+                {isEditing ? (
+                  <Input
+                    value={editForm.make}
+                    onChange={(e) => setEditForm({ ...editForm, make: e.target.value })}
+                    className="h-7 text-sm"
+                    placeholder="Make"
+                  />
+                ) : (
+                  <div className="font-medium">{item.make || '-'}</div>
+                )}
               </div>
               <div className="p-3 rounded-md bg-muted/50">
                 <div className="text-xs text-muted-foreground mb-1">MPN</div>
-                <div className="font-medium font-mono">{item.mpn || '-'}</div>
+                {isEditing ? (
+                  <Input
+                    value={editForm.mpn}
+                    onChange={(e) => setEditForm({ ...editForm, mpn: e.target.value })}
+                    className="h-7 text-sm font-mono"
+                    placeholder="MPN"
+                  />
+                ) : (
+                  <div className="font-medium font-mono">{item.mpn || '-'}</div>
+                )}
               </div>
             </div>
           </div>
@@ -238,15 +376,43 @@ function ItemViewDialog({ itemId, children }: { itemId: string; children: React.
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="p-3 rounded-md bg-muted/50">
                 <div className="text-xs text-muted-foreground mb-1">Unit Price</div>
-                <div className="font-medium text-primary">{formatINR(item.unitPrice)}</div>
+                {isEditing ? (
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={editForm.unitPrice}
+                    onChange={(e) => setEditForm({ ...editForm, unitPrice: parseFloat(e.target.value) || 0 })}
+                    className="h-7 text-sm"
+                  />
+                ) : (
+                  <div className="font-medium text-primary">{formatINR(item.unitPrice)}</div>
+                )}
               </div>
               <div className="p-3 rounded-md bg-muted/50">
                 <div className="text-xs text-muted-foreground mb-1">Unit</div>
-                <div className="font-medium">{item.unit}</div>
+                {isEditing ? (
+                  <Input
+                    value={editForm.unit}
+                    onChange={(e) => setEditForm({ ...editForm, unit: e.target.value })}
+                    className="h-7 text-sm"
+                    placeholder="pcs, kg, etc."
+                  />
+                ) : (
+                  <div className="font-medium">{item.unit}</div>
+                )}
               </div>
               <div className="p-3 rounded-md bg-muted/50">
                 <div className="text-xs text-muted-foreground mb-1">Min Stock Level</div>
-                <div className="font-medium">{item.minStock} {item.unit}</div>
+                {isEditing ? (
+                  <Input
+                    type="number"
+                    value={editForm.minStock}
+                    onChange={(e) => setEditForm({ ...editForm, minStock: parseFloat(e.target.value) || 0 })}
+                    className="h-7 text-sm"
+                  />
+                ) : (
+                  <div className="font-medium">{item.minStock} {item.unit}</div>
+                )}
               </div>
               <div className="p-3 rounded-md bg-muted/50">
                 <div className="text-xs text-muted-foreground mb-1">Supplier</div>
@@ -256,68 +422,72 @@ function ItemViewDialog({ itemId, children }: { itemId: string; children: React.
           </div>
         </div>
 
-        {/* Timeline Info */}
-        <div className="flex items-center gap-6 py-3 px-4 rounded-md bg-muted/30 text-xs text-muted-foreground border-t">
-          <div>
-            <span className="font-medium">Created:</span> {item.createdAt.toLocaleDateString('en-IN')}
+        {/* Timeline Info - View only */}
+        {!isEditing && (
+          <div className="flex items-center gap-6 py-3 px-4 rounded-md bg-muted/30 text-xs text-muted-foreground border-t">
+            <div>
+              <span className="font-medium">Created:</span> {item.createdAt.toLocaleDateString('en-IN')}
+            </div>
+            <div>
+              <span className="font-medium">Last Updated:</span> {item.updatedAt.toLocaleDateString('en-IN')}
+            </div>
+            <div>
+              <span className="font-medium">Transactions:</span> {itemTx.length}
+            </div>
           </div>
-          <div>
-            <span className="font-medium">Last Updated:</span> {item.updatedAt.toLocaleDateString('en-IN')}
-          </div>
-          <div>
-            <span className="font-medium">Transactions:</span> {itemTx.length}
-          </div>
-        </div>
+        )}
 
-        {/* Transactions Table */}
-        <div className="pt-4 border-t">
-          <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-            <span className="w-1 h-4 bg-primary rounded-full"></span>
-            Transaction History
-          </h4>
-          <div className="rounded-md border max-h-48 overflow-y-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/50">
-                  <TableHead className="text-xs">Date</TableHead>
-                  <TableHead className="text-xs">Type</TableHead>
-                  <TableHead className="text-xs">Qty</TableHead>
-                  <TableHead className="text-xs">Reason</TableHead>
-                  <TableHead className="text-xs">Reference</TableHead>
-                  <TableHead className="text-xs">Batch/Lot</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {itemTx.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground py-6">
-                      No transactions yet
-                    </TableCell>
+        {/* Transactions Table - View only */}
+        {!isEditing && (
+          <div className="pt-4 border-t">
+            <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+              <span className="w-1 h-4 bg-primary rounded-full"></span>
+              Transaction History
+            </h4>
+            <div className="rounded-md border max-h-48 overflow-y-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/50">
+                    <TableHead className="text-xs">Date</TableHead>
+                    <TableHead className="text-xs">Type</TableHead>
+                    <TableHead className="text-xs">Qty</TableHead>
+                    <TableHead className="text-xs">Reason</TableHead>
+                    <TableHead className="text-xs">Reference</TableHead>
+                    <TableHead className="text-xs">Batch/Lot</TableHead>
                   </TableRow>
-                )}
-                {itemTx.slice(0, 10).map((t) => (
-                  <TableRow key={t.id}>
-                    <TableCell className="text-xs">{new Date(t.date).toLocaleDateString('en-IN')}</TableCell>
-                    <TableCell>
-                      <Badge variant={t.type === 'IN' ? 'default' : 'secondary'} className="text-xs">
-                        {t.type}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-xs font-medium">{t.quantity}</TableCell>
-                    <TableCell className="text-xs">{t.reason}</TableCell>
-                    <TableCell className="text-xs font-mono">{t.reference || '-'}</TableCell>
-                    <TableCell className="text-xs font-mono">{t.batchNumber || '-'}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {itemTx.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center text-muted-foreground py-6">
+                        No transactions yet
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {itemTx.slice(0, 10).map((t) => (
+                    <TableRow key={t.id}>
+                      <TableCell className="text-xs">{new Date(t.date).toLocaleDateString('en-IN')}</TableCell>
+                      <TableCell>
+                        <Badge variant={t.type === 'IN' ? 'default' : 'secondary'} className="text-xs">
+                          {t.type}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs font-medium">{t.quantity}</TableCell>
+                      <TableCell className="text-xs">{t.reason}</TableCell>
+                      <TableCell className="text-xs font-mono">{t.reference || '-'}</TableCell>
+                      <TableCell className="text-xs font-mono">{t.batchNumber || '-'}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            {itemTx.length > 10 && (
+              <p className="text-xs text-muted-foreground mt-2 text-center">
+                Showing 10 of {itemTx.length} transactions
+              </p>
+            )}
           </div>
-          {itemTx.length > 10 && (
-            <p className="text-xs text-muted-foreground mt-2 text-center">
-              Showing 10 of {itemTx.length} transactions
-            </p>
-          )}
-        </div>
+        )}
       </DialogContent>
     </Dialog>
   );
