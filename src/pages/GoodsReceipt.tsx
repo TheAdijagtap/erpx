@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Package, Eye, Edit, Printer, CheckCircle, XCircle, Trash2 } from "lucide-react";
+import { Plus, Search, Package, Eye, Edit, Printer, CheckCircle, XCircle, Trash2, Tag } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
@@ -102,6 +102,7 @@ const GoodsReceiptPage = () => {
                 <ViewGRDialog id={receipt.id} />
                 <EditGRDialog id={receipt.id} />
                 <PrintGRButton id={receipt.id} />
+                <TCodeDialog id={receipt.id} />
                 <DeleteGRDialog id={receipt.id} />
                 {receipt.status === 'QUALITY_CHECK' && (
                   <>
@@ -812,6 +813,197 @@ function DeleteGRDialog({ id }: { id: string }) {
     <Button variant="destructive" size="sm" onClick={handleDelete} className="gap-1">
       <Trash2 className="w-4 h-4" /> Delete
     </Button>
+  );
+}
+
+// T-Code Sticker Generator Dialog
+function TCodeDialog({ id }: { id: string }) {
+  const { goodsReceipts, businessInfo } = useData();
+  const receipt = goodsReceipts.find(g => g.id === id)!;
+  const [open, setOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [stickerQty, setStickerQty] = useState(1);
+
+  const selectedItemData = receipt.items.find(it => it.id === selectedItem);
+
+  const generateTCode = () => {
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+    const random = String(Math.floor(Math.random() * 999) + 1).padStart(3, '0');
+    return `TC-${dateStr}-${random}`;
+  };
+
+  const printStickers = () => {
+    if (!selectedItemData) return;
+
+    const stickers = [];
+    for (let i = 0; i < stickerQty; i++) {
+      const tCode = generateTCode();
+      stickers.push({
+        tCode,
+        itemName: selectedItemData.item.name,
+        grNumber: receipt.grNumber,
+        batchNumber: selectedItemData.batchNumber || '-',
+        unit: selectedItemData.item.unit,
+        stickerNo: i + 1,
+        totalStickers: stickerQty,
+      });
+    }
+
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const stickerHtml = stickers.map((s, idx) => `
+      <div class="sticker" style="page-break-inside: avoid; ${idx > 0 ? 'page-break-before: auto;' : ''}">
+        <div class="tcode">${escapeHtml(s.tCode)}</div>
+        <div class="company">${escapeHtml(businessInfo.name)}</div>
+        <table>
+          <tr><td class="label">Item:</td><td class="value">${escapeHtml(s.itemName)}</td></tr>
+          <tr><td class="label">GR No:</td><td class="value">${escapeHtml(s.grNumber)}</td></tr>
+          <tr><td class="label">Batch/Lot:</td><td class="value">${escapeHtml(s.batchNumber)}</td></tr>
+          <tr><td class="label">Unit:</td><td class="value">${escapeHtml(s.unit)}</td></tr>
+          <tr><td class="label">Sticker:</td><td class="value">${s.stickerNo} of ${s.totalStickers}</td></tr>
+        </table>
+        <div class="date">Generated: ${new Date().toLocaleDateString('en-IN')}</div>
+      </div>
+    `).join('');
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>T-Code Stickers - ${receipt.grNumber}</title>
+        <style>
+          @page { size: 80mm 50mm; margin: 2mm; }
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: 'Arial', sans-serif; }
+          .sticker {
+            width: 76mm;
+            height: 46mm;
+            border: 1px solid #000;
+            padding: 3mm;
+            margin-bottom: 2mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+          }
+          .tcode {
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            padding: 2mm;
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            letter-spacing: 1px;
+          }
+          .company {
+            font-size: 10px;
+            text-align: center;
+            font-weight: bold;
+            margin: 2mm 0;
+            color: #333;
+          }
+          table {
+            width: 100%;
+            font-size: 10px;
+            border-collapse: collapse;
+          }
+          td { padding: 1mm 0; }
+          td.label { font-weight: bold; width: 30%; color: #555; }
+          td.value { color: #000; }
+          .date {
+            font-size: 8px;
+            text-align: right;
+            color: #666;
+            margin-top: 2mm;
+          }
+          @media print {
+            .sticker { page-break-inside: avoid; }
+          }
+        </style>
+      </head>
+      <body>${stickerHtml}</body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-1">
+          <Tag className="w-4 h-4" /> T-Code
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Generate T-Code Stickers</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 text-sm">
+          <p className="text-muted-foreground">
+            Generate printable T-Code stickers for items in this GR. Each sticker contains item details, batch number, and a unique transaction code.
+          </p>
+
+          <div>
+            <div className="mb-1 font-medium">Select Item</div>
+            <Select value={selectedItem || undefined} onValueChange={setSelectedItem}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select item to generate T-Code" />
+              </SelectTrigger>
+              <SelectContent>
+                {receipt.items.map((it) => (
+                  <SelectItem key={it.id} value={it.id}>
+                    {it.item.name} - Qty: {it.receivedQuantity} {it.item.unit} {it.batchNumber ? `(${it.batchNumber})` : ''}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {selectedItemData && (
+            <div className="p-3 bg-muted rounded-md space-y-1">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Item:</span>
+                <span className="font-medium">{selectedItemData.item.name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Received Qty:</span>
+                <span className="font-medium">{selectedItemData.receivedQuantity} {selectedItemData.item.unit}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Batch/Lot:</span>
+                <span className="font-medium">{selectedItemData.batchNumber || '-'}</span>
+              </div>
+            </div>
+          )}
+
+          <div>
+            <div className="mb-1 font-medium">Number of Stickers</div>
+            <Input
+              type="number"
+              min={1}
+              max={100}
+              value={stickerQty}
+              onChange={(e) => setStickerQty(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
+              placeholder="Enter quantity"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Generate multiple stickers for the same item (e.g., for different packages)
+            </p>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button
+            onClick={printStickers}
+            disabled={!selectedItem}
+            className="gap-1"
+          >
+            <Printer className="w-4 h-4" /> Print Stickers
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
