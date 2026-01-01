@@ -1418,7 +1418,6 @@ const ViewProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
                 <tr>
                   <th>#</th>
                   <th>Description</th>
-                  {invoice.items.some(it => it.item.category) && <th>Dept</th>}
                   {invoice.items.some(it => isValidHsn(it.hsnCode)) && <th>HSN</th>}
                   <th>Qty</th>
                   <th>Unit</th>
@@ -1434,7 +1433,6 @@ const ViewProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
                       <div style={{fontWeight: '600'}}>{it.item.name}</div>
                       {it.item.description && <div style={{fontSize: '12px', color: '#64748b', marginTop: '2px'}}>{it.item.description}</div>}
                     </td>
-                    {invoice.items.some(i => i.item.category) && <td>{it.item.category || '-'}</td>}
                     {invoice.items.some(i => isValidHsn(i.hsnCode)) && <td>{isValidHsn(it.hsnCode) ? it.hsnCode : '-'}</td>}
                     <td>{it.quantity}</td>
                     <td>{it.item.unit}</td>
@@ -2044,7 +2042,6 @@ const PrintProformaButton = ({ id }: { id: string }) => {
             <tr>
               <th>#</th>
               <th>Description</th>
-              ${invoice.items.some(it => it.item.category) ? '<th>Dept</th>' : ''}
               ${invoice.items.some(it => isValidHsn(it.hsnCode)) ? '<th>HSN</th>' : ''}
               <th>Qty</th>
               <th>Unit</th>
@@ -2060,7 +2057,6 @@ const PrintProformaButton = ({ id }: { id: string }) => {
                   <div style="font-weight: 600">${escapeHtml(it.item.name)}</div>
                   ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${escapeHtml(it.item.description)}</div>` : ''}
                 </td>
-                ${invoice.items.some(i => i.item.category) ? `<td>${escapeHtml(it.item.category || '-')}</td>` : ''}
                 ${invoice.items.some(i => isValidHsn(i.hsnCode)) ? `<td>${isValidHsn(it.hsnCode) ? escapeHtml(it.hsnCode) : '-'}</td>` : ''}
                 <td>${it.quantity}</td>
                 <td>${escapeHtml(it.item.unit)}</td>
