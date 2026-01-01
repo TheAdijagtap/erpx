@@ -182,18 +182,33 @@ function ItemViewDialog({ itemId, children }: { itemId: string; children: React.
             
             {/* Row 3: Item Code, Make, MPN - fixed 3-column grid */}
             {(item.itemCode || item.make || item.mpn) && (
-              <div className="grid grid-cols-3 gap-x-8 gap-y-3">
-                <div>
+              <div className="grid grid-cols-3 gap-x-8 gap-y-3 items-start">
+                <div className="min-w-0">
                   <div className="text-muted-foreground text-xs">Item Code</div>
-                  <div className="font-medium">{item.itemCode || '-'}</div>
+                  <div
+                    className="font-medium truncate"
+                    title={item.itemCode || '-'}
+                  >
+                    {item.itemCode || '-'}
+                  </div>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="text-muted-foreground text-xs">Make</div>
-                  <div className="font-medium">{item.make || '-'}</div>
+                  <div
+                    className="font-medium truncate"
+                    title={item.make || '-'}
+                  >
+                    {item.make || '-'}
+                  </div>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="text-muted-foreground text-xs">MPN</div>
-                  <div className="font-medium">{item.mpn || '-'}</div>
+                  <div
+                    className="font-medium truncate"
+                    title={item.mpn || '-'}
+                  >
+                    {item.mpn || '-'}
+                  </div>
                 </div>
               </div>
             )}
