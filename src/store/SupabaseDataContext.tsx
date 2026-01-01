@@ -352,6 +352,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         description: p.description || "",
         unit: p.unit || "PCS",
         price: Number(p.price) || 0,
+        hsnCode: p.hsn_code || undefined,
         createdAt: new Date(p.created_at),
       }));
 
@@ -1014,6 +1015,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       description: product.description,
       unit: product.unit,
       price: product.price,
+      hsn_code: product.hsnCode || null,
     }).select().single();
 
     if (error) throw error;
@@ -1034,6 +1036,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (patch.description !== undefined) updateData.description = patch.description;
     if (patch.unit !== undefined) updateData.unit = patch.unit;
     if (patch.price !== undefined) updateData.price = patch.price;
+    if (patch.hsnCode !== undefined) updateData.hsn_code = patch.hsnCode;
 
     const { error } = await supabase.from("proforma_products").update(updateData).eq("id", id);
     if (error) throw error;

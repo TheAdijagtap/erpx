@@ -605,6 +605,7 @@ function CreateProductDialog() {
   const [description, setDescription] = useState("");
   const [unit, setUnit] = useState("PCS");
   const [price, setPrice] = useState(0);
+  const [hsnCode, setHsnCode] = useState("");
 
   const onSubmit = async () => {
     if (!name.trim() || price <= 0) return;
@@ -615,12 +616,14 @@ function CreateProductDialog() {
         description: description.trim(),
         unit,
         price,
+        hsnCode: hsnCode.trim() || undefined,
       });
       setOpen(false);
       setName("");
       setDescription("");
       setUnit("PCS");
       setPrice(0);
+      setHsnCode("");
     } catch (error) {
       console.error("Failed to add product:", error);
     }
@@ -657,14 +660,23 @@ function CreateProductDialog() {
               rows={3}
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="hsn">HSN Code</Label>
+              <Input
+                id="hsn"
+                value={hsnCode}
+                onChange={(e) => setHsnCode(e.target.value)}
+                placeholder="e.g., 8539"
+              />
+            </div>
             <div>
               <Label htmlFor="unit">Unit</Label>
               <Input
                 id="unit"
                 value={unit}
                 onChange={(e) => setUnit(e.target.value)}
-                placeholder="e.g., PCS, KG, METER"
+                placeholder="e.g., PCS, KG"
               />
             </div>
             <div>
@@ -700,6 +712,7 @@ function EditProductDialog({ product }: {
   const [description, setDescription] = useState(product.description);
   const [unit, setUnit] = useState(product.unit);
   const [price, setPrice] = useState(product.price);
+  const [hsnCode, setHsnCode] = useState(product.hsnCode || "");
 
   const onSubmit = async () => {
     if (!name.trim() || price <= 0) return;
@@ -710,6 +723,7 @@ function EditProductDialog({ product }: {
         description: description.trim(),
         unit,
         price,
+        hsnCode: hsnCode.trim() || undefined,
       });
       setOpen(false);
     } catch (error) {
@@ -748,14 +762,23 @@ function EditProductDialog({ product }: {
               rows={3}
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="hsn">HSN Code</Label>
+              <Input
+                id="hsn"
+                value={hsnCode}
+                onChange={(e) => setHsnCode(e.target.value)}
+                placeholder="e.g., 8539"
+              />
+            </div>
             <div>
               <Label htmlFor="unit">Unit</Label>
               <Input
                 id="unit"
                 value={unit}
                 onChange={(e) => setUnit(e.target.value)}
-                placeholder="e.g., PCS, KG, METER"
+                placeholder="e.g., PCS, KG"
               />
             </div>
             <div>
@@ -910,6 +933,7 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
       quantity: 1,
       unitPrice: proformaProducts[0].price,
       total: proformaProducts[0].price,
+      hsnCode: proformaProducts[0].hsnCode || undefined,
     }]);
   };
 
@@ -938,6 +962,7 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
           item: selectedItem,
           unitPrice: selectedProduct.price,
           total: newItems[index].quantity * selectedProduct.price,
+          hsnCode: selectedProduct.hsnCode || undefined,
         };
       }
     } else if (field === 'quantity' || field === 'unitPrice') {
@@ -1568,6 +1593,7 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
       quantity: 1,
       unitPrice: proformaProducts[0].price,
       total: proformaProducts[0].price,
+      hsnCode: proformaProducts[0].hsnCode || undefined,
     }]);
   };
 
@@ -1596,6 +1622,7 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
           item: selectedItem,
           unitPrice: selectedProduct.price,
           total: newItems[index].quantity * selectedProduct.price,
+          hsnCode: selectedProduct.hsnCode || undefined,
         };
       }
     } else if (field === 'quantity' || field === 'unitPrice') {
