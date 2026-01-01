@@ -233,7 +233,7 @@ function ItemViewDialog({ itemId, children }: { itemId: string; children: React.
 }
 
 function ItemTransactDialog({ itemId, type, children }: { itemId: string; type: 'IN' | 'OUT'; children: React.ReactNode }) {
-  const { inventoryItems: items, transactItem } = useData();
+  const { inventoryItems: items, transactItem, transactions } = useData();
   const item = items.find(i => i.id === itemId)!;
   const [open, setOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
@@ -241,6 +241,33 @@ function ItemTransactDialog({ itemId, type, children }: { itemId: string; type: 
   const [reason, setReason] = useState(type === 'IN' ? 'Purchase' : 'Usage');
   const [reference, setReference] = useState("");
   const [batchNumber, setBatchNumber] = useState("");
+
+  // Auto-generate batch number when dialog opens for IN transactions
+  const generateBatchNumber = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const prefix = `LOT-${year}${month}-`;
+    
+    // Find highest existing batch number with same prefix
+    const existingBatches = transactions
+      .filter(t => t.batchNumber?.startsWith(prefix))
+      .map(t => {
+        const num = parseInt(t.batchNumber?.split('-').pop() || '0', 10);
+        return isNaN(num) ? 0 : num;
+      });
+    
+    const nextNum = existingBatches.length > 0 ? Math.max(...existingBatches) + 1 : 1;
+    return `${prefix}${String(nextNum).padStart(3, '0')}`;
+  };
+
+  // Generate batch number when dialog opens for IN type
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (isOpen && type === 'IN') {
+      setBatchNumber(generateBatchNumber());
+    }
+  };
 
   const onSubmit = () => {
     if (quantity <= 0) return;
@@ -254,7 +281,7 @@ function ItemTransactDialog({ itemId, type, children }: { itemId: string; type: 
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
@@ -295,10 +322,12 @@ function ItemTransactDialog({ itemId, type, children }: { itemId: string; type: 
               <div className="text-sm mb-1">Reference (optional)</div>
               <Input value={reference} onChange={(e) => setReference(e.target.value)} placeholder="PO/GR number, etc." />
             </div>
-            <div>
-              <div className="text-sm mb-1">Batch/Lot No. (optional)</div>
-              <Input value={batchNumber} onChange={(e) => setBatchNumber(e.target.value)} placeholder="e.g., LOT-2026-001" />
-            </div>
+            {type === 'IN' && (
+              <div>
+                <div className="text-sm mb-1">Batch/Lot No.</div>
+                <Input value={batchNumber} onChange={(e) => setBatchNumber(e.target.value)} placeholder="Auto-generated" />
+              </div>
+            )}
           </div>
         </div>
         <DialogFooter>

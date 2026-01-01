@@ -145,18 +145,50 @@ function getStatusBadge(status: string) {
 }
 
 function CreateGRDialog() {
-  const { suppliers, inventoryItems: items, addGoodsReceipt, gstSettings, purchaseOrders } = useData();
+  const { suppliers, inventoryItems: items, addGoodsReceipt, gstSettings, purchaseOrders, transactions } = useData();
   const [open, setOpen] = useState(false);
   const [selectedPoId, setSelectedPoId] = useState<string | null>(null);
   const [supplierId, setSupplierId] = useState<string | null>(suppliers[0]?.id || null);
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [applyGST, setApplyGST] = useState<boolean>(gstSettings.enabled);
-  const [rows, setRows] = useState<Array<{ itemId: string; receivedQuantity: number; unitPrice: number; orderedQuantity?: number; batchNumber?: string }>>([
-    { itemId: items[0]?.id || "", receivedQuantity: 1, unitPrice: items[0]?.unitPrice || 0, batchNumber: "" },
-  ]);
+  const [batchCounter, setBatchCounter] = useState(0);
+  const [rows, setRows] = useState<Array<{ itemId: string; receivedQuantity: number; unitPrice: number; orderedQuantity?: number; batchNumber?: string }>>([]);
   const [additionalCharges, setAdditionalCharges] = useState<Array<{ name: string; amount: number }>>([]);
   const [itemSearch, setItemSearch] = useState("");
   const [supplierSearch, setSupplierSearch] = useState("");
+
+  // Generate batch number
+  const generateBatchNumber = (counter: number) => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const prefix = `LOT-${year}${month}-`;
+    
+    // Find highest existing batch number with same prefix from transactions
+    const existingBatches = transactions
+      .filter(t => t.batchNumber?.startsWith(prefix))
+      .map(t => {
+        const num = parseInt(t.batchNumber?.split('-').pop() || '0', 10);
+        return isNaN(num) ? 0 : num;
+      });
+    
+    const baseNum = existingBatches.length > 0 ? Math.max(...existingBatches) : 0;
+    return `${prefix}${String(baseNum + counter + 1).padStart(3, '0')}`;
+  };
+
+  // Initialize first row with batch number when dialog opens
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (isOpen && rows.length === 0) {
+      setBatchCounter(0);
+      setRows([{ 
+        itemId: items[0]?.id || "", 
+        receivedQuantity: 1, 
+        unitPrice: items[0]?.unitPrice || 0, 
+        batchNumber: generateBatchNumber(0) 
+      }]);
+    }
+  };
 
   const filteredItems = useMemo(() => {
     const search = itemSearch.toLowerCase().trim();
@@ -183,12 +215,13 @@ function CreateGRDialog() {
       setSupplierId(selectedPO.supplierId);
       setDate(new Date().toISOString().slice(0, 10));
       setApplyGST(selectedPO.sgst > 0 || selectedPO.cgst > 0);
-      setRows(selectedPO.items.map(item => ({
+      setBatchCounter(selectedPO.items.length - 1);
+      setRows(selectedPO.items.map((item, idx) => ({
         itemId: item.itemId,
         orderedQuantity: item.quantity,
         receivedQuantity: item.quantity,
         unitPrice: item.unitPrice,
-        batchNumber: "",
+        batchNumber: generateBatchNumber(idx),
       })));
       setAdditionalCharges(selectedPO.additionalCharges?.map(charge => ({
         name: charge.name,
@@ -197,7 +230,16 @@ function CreateGRDialog() {
     }
   };
 
-  const onAddRow = () => setRows([...rows, { itemId: items[0]?.id || "", receivedQuantity: 1, unitPrice: items[0]?.unitPrice || 0, batchNumber: "" }]);
+  const onAddRow = () => {
+    const newCounter = batchCounter + 1;
+    setBatchCounter(newCounter);
+    setRows([...rows, { 
+      itemId: items[0]?.id || "", 
+      receivedQuantity: 1, 
+      unitPrice: items[0]?.unitPrice || 0, 
+      batchNumber: generateBatchNumber(newCounter) 
+    }]);
+  };
   const onSubmit = () => {
     if (!supplierId || rows.some(r => !r.itemId || r.receivedQuantity <= 0)) return;
     const grNumber = `GR-${new Date().getFullYear()}-${String(Math.floor(Math.random()*999)+1).padStart(3, '0')}`;
@@ -229,12 +271,13 @@ function CreateGRDialog() {
     });
     setOpen(false);
     setSelectedPoId(null);
-    setRows([{ itemId: items[0]?.id || "", receivedQuantity: 1, unitPrice: items[0]?.unitPrice || 0, batchNumber: "" }]);
+    setBatchCounter(0);
+    setRows([]);
     setAdditionalCharges([]);
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button className="gap-2">
           <Plus className="w-4 h-4" /> Create New GR
