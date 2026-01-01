@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback, use
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { preloadAllPages } from "@/App";
 import type {
   InventoryItem,
   Supplier,
@@ -405,10 +406,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user]);
 
-  // Refresh data when user changes
+  // Refresh data when user changes + preload all page components
   useEffect(() => {
     if (user) {
       refreshData();
+      // Preload all page components immediately for instant navigation
+      preloadAllPages();
     } else {
       setLoading(false);
     }
