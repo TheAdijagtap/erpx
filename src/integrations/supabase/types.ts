@@ -661,6 +661,7 @@ export type Database = {
         Row: {
           amount: number
           description: string | null
+          hsn_code: string | null
           id: string
           item_id: string | null
           item_name: string
@@ -672,6 +673,7 @@ export type Database = {
         Insert: {
           amount: number
           description?: string | null
+          hsn_code?: string | null
           id?: string
           item_id?: string | null
           item_name: string
@@ -683,6 +685,7 @@ export type Database = {
         Update: {
           amount?: number
           description?: string | null
+          hsn_code?: string | null
           id?: string
           item_id?: string | null
           item_name?: string

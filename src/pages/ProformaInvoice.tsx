@@ -1401,7 +1401,15 @@ const ViewProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
             <p style={{marginBottom: '8px', fontStyle: 'italic'}}>We are pleased to submit our quotation for the following items :</p>
             <table>
               <thead>
-                <tr><th>#</th><th>Description</th><th>Qty</th><th>Unit</th><th>Rate</th><th>Total</th></tr>
+                <tr>
+                  <th>#</th>
+                  <th>Description</th>
+                  {invoice.items.some(it => it.hsnCode || it.item.sku) && <th>HSN</th>}
+                  <th>Qty</th>
+                  <th>Unit</th>
+                  <th>Rate</th>
+                  <th>Total</th>
+                </tr>
               </thead>
               <tbody>
                 {invoice.items.map((it, idx) => (
@@ -1411,6 +1419,7 @@ const ViewProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
                       <div style={{fontWeight: '600'}}>{it.item.name}</div>
                       {it.item.description && <div style={{fontSize: '12px', color: '#64748b', marginTop: '2px'}}>{it.item.description}</div>}
                     </td>
+                    {invoice.items.some(i => i.hsnCode || i.item.sku) && <td>{it.hsnCode || it.item.sku || '-'}</td>}
                     <td>{it.quantity}</td>
                     <td>{it.item.unit}</td>
                     <td>{formatINR(it.unitPrice)}</td>

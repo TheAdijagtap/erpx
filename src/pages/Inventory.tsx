@@ -170,6 +170,12 @@ function ItemViewDialog({ itemId, children }: { itemId: string; children: React.
                 <div className="font-medium">{item.category}</div>
               </div>
             </div>
+            {item.sku && (
+              <div>
+                <div className="text-muted-foreground">HSN Code</div>
+                <div className="font-medium">{item.sku}</div>
+              </div>
+            )}
             <div>
               <div className="text-muted-foreground">Description</div>
               <div className="font-medium">{item.description}</div>
@@ -301,6 +307,7 @@ function CreateItemDialog({ children }: { children: React.ReactNode }) {
     name: "",
     description: "",
     category: "",
+    hsnCode: "",
     currentStock: 0,
     minStock: 0,
     maxStock: 0,
@@ -318,14 +325,14 @@ function CreateItemDialog({ children }: { children: React.ReactNode }) {
     const item = {
       id: Date.now().toString(),
       ...formData,
-      sku: `SKU-${Date.now()}`, // Auto-generate SKU
+      sku: formData.hsnCode || "", // Use HSN code as SKU
       createdAt: new Date(),
       updatedAt: new Date()
     };
 
     addItem(item);
     toast({ title: "Success", description: "Item added successfully!" });
-    setFormData({ name: "", description: "", category: "", currentStock: 0, minStock: 0, maxStock: 0, unitPrice: 0, unit: "pcs" });
+    setFormData({ name: "", description: "", category: "", hsnCode: "", currentStock: 0, minStock: 0, maxStock: 0, unitPrice: 0, unit: "pcs" });
     setOpen(false);
   };
 
@@ -357,15 +364,26 @@ function CreateItemDialog({ children }: { children: React.ReactNode }) {
               required
             />
           </div>
-          <div>
-            <Label htmlFor="category">Category *</Label>
-            <Input 
-              id="category"
-              value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              placeholder="Enter category"
-              required
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="category">Category *</Label>
+              <Input 
+                id="category"
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                placeholder="Enter category"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="hsnCode">HSN Code</Label>
+              <Input 
+                id="hsnCode"
+                value={formData.hsnCode}
+                onChange={(e) => setFormData({ ...formData, hsnCode: e.target.value })}
+                placeholder="e.g., 8471"
+              />
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>

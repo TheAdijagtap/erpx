@@ -227,10 +227,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             return {
               id: item.id,
               itemId: item.item_id || "",
-              item: invItem ? mapInventoryItem(invItem) : { id: "", name: item.item_name || "Item", sku: "", description: item.description || "", category: "", currentStock: 0, minStock: 0, maxStock: 0, unitPrice: Number(item.rate), unit: item.unit || "piece", createdAt: new Date(), updatedAt: new Date() } as InventoryItem,
+              item: invItem ? mapInventoryItem(invItem) : { id: "", name: item.item_name || "Item", sku: item.hsn_code || "", description: item.description || "", category: "", currentStock: 0, minStock: 0, maxStock: 0, unitPrice: Number(item.rate), unit: item.unit || "piece", createdAt: new Date(), updatedAt: new Date() } as InventoryItem,
               quantity: Number(item.quantity),
               unitPrice: Number(item.rate),
               total: Number(item.amount),
+              hsnCode: item.hsn_code || undefined,
             };
           }),
           additionalCharges: (poAny.purchase_order_additional_charges || []).map((charge: any) => ({
@@ -321,6 +322,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             quantity: Number(item.quantity),
             unitPrice: Number(item.rate),
             total: Number(item.amount),
+            hsnCode: item.hsn_code || undefined,
           })),
           additionalCharges: (piAny.proforma_invoice_additional_charges || []).map((charge: any) => ({
             id: charge.id,
@@ -653,6 +655,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       rate: item.unitPrice,
       amount: item.total,
       unit: item.item?.unit || "piece",
+      hsn_code: item.hsnCode || item.item?.sku || null,
     }));
 
     await supabase.from("purchase_order_items").insert(poItems);

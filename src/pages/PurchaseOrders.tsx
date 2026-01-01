@@ -503,8 +503,8 @@ function CreatePODialog() {
   const [paymentTerms, setPaymentTerms] = useState<string>("30 days from invoice date");
   const [applyGST, setApplyGST] = useState<boolean>(false);
   const [gstRate, setGstRate] = useState<number>(18);
-  const [rows, setRows] = useState<Array<{ itemId: string; quantity: number; unitPrice: number; unit: string }>>([
-    { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0, unit: items[0]?.unit || "PCS" },
+  const [rows, setRows] = useState<Array<{ itemId: string; quantity: number; unitPrice: number; unit: string; hsnCode: string }>>([
+    { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0, unit: items[0]?.unit || "PCS", hsnCode: items[0]?.sku || "" },
   ]);
   const [additionalCharges, setAdditionalCharges] = useState<Array<{ name: string; amount: number }>>([]);
   
@@ -557,7 +557,7 @@ function CreatePODialog() {
     );
   }, [items, debouncedItemSearch]);
 
-  const onAddRow = () => setRows([...rows, { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0, unit: items[0]?.unit || "PCS" }]);
+  const onAddRow = () => setRows([...rows, { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0, unit: items[0]?.unit || "PCS", hsnCode: items[0]?.sku || "" }]);
   const onSubmit = () => {
     if (!supplierId || rows.some(r => !r.itemId || r.quantity <= 0)) return;
     const poNumber = `PO-${new Date().getFullYear()}-${String(Math.floor(Math.random()*999)+1).padStart(3, '0')}`;
@@ -572,6 +572,7 @@ function CreatePODialog() {
         quantity: qty,
         unitPrice: price,
         total: qty * price,
+        hsnCode: r.hsnCode || undefined,
       };
     });
     
@@ -760,6 +761,7 @@ function CreatePODialog() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Item</TableHead>
+                  <TableHead>HSN</TableHead>
                   <TableHead>Qty</TableHead>
                   <TableHead>Unit</TableHead>
                   <TableHead>Unit Price</TableHead>
@@ -776,7 +778,7 @@ function CreatePODialog() {
                           const it = items.find(i => i.id === v);
                           if (!it) return;
                           const next = [...rows];
-                          next[idx] = { ...row, itemId: v, unitPrice: it.unitPrice || 0, unit: it.unit || "PCS" };
+                          next[idx] = { ...row, itemId: v, unitPrice: it.unitPrice || 0, unit: it.unit || "PCS", hsnCode: it.sku || "" };
                           setRows(next);
                         }}>
                           <SelectTrigger className="w-full pl-10">
@@ -813,6 +815,18 @@ function CreatePODialog() {
                           </SelectContent>
                         </Select>
                       </div>
+                    </TableCell>
+                    <TableCell className="min-w-[80px]">
+                      <Input 
+                        value={row.hsnCode} 
+                        onChange={(e) => {
+                          const next = [...rows];
+                          next[idx] = { ...row, hsnCode: e.target.value };
+                          setRows(next);
+                        }} 
+                        placeholder="HSN"
+                        className="w-20"
+                      />
                     </TableCell>
                     <TableCell>
                       <Input type="number" min={0} step="0.01" value={row.quantity} onChange={(e) => {
@@ -952,7 +966,15 @@ function ViewPODialog({ id }: { id: string }) {
             <p style={{marginBottom: '8px', fontStyle: 'italic'}}>Please supply following goods in accordance with terms and conditions prescribed hereunder :</p>
             <table>
               <thead>
-                <tr><th>#</th><th>Description</th><th>Qty</th><th>Unit</th><th>Rate</th><th>Total</th></tr>
+                <tr>
+                  <th>#</th>
+                  <th>Description</th>
+                  {order.items.some(it => it.hsnCode || it.item.sku) && <th>HSN</th>}
+                  <th>Qty</th>
+                  <th>Unit</th>
+                  <th>Rate</th>
+                  <th>Total</th>
+                </tr>
               </thead>
               <tbody>
                 {order.items.map((it, idx) => (
@@ -962,6 +984,7 @@ function ViewPODialog({ id }: { id: string }) {
                       <div style={{fontWeight: '600'}}>{it.item.name}</div>
                       {it.item.description && <div style={{fontSize: '12px', color: '#64748b', marginTop: '2px'}}>{it.item.description}</div>}
                     </td>
+                    {order.items.some(i => i.hsnCode || i.item.sku) && <td>{it.hsnCode || it.item.sku || '-'}</td>}
                     <td>{it.quantity}</td>
                     <td>{it.item.unit}</td>
                     <td>{formatINR(it.unitPrice)}</td>

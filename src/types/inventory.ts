@@ -85,6 +85,7 @@ export interface PurchaseOrderItem {
   quantity: number;
   unitPrice: number;
   total: number;
+  hsnCode?: string; // Optional HSN code
 }
 
 export interface GoodsReceipt {
@@ -144,6 +145,7 @@ export interface ProformaInvoiceItem {
   quantity: number;
   unitPrice: number;
   total: number;
+  hsnCode?: string; // Optional HSN code
 }
 
 export interface ProformaProduct {
