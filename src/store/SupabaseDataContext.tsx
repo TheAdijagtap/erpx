@@ -775,6 +775,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             total_value: item.receivedQuantity * item.unitPrice,
             reason: "Goods Receipt",
             reference: gr.grNumber,
+            batch_number: item.batchNumber || null,
           });
         }
       }
@@ -828,6 +829,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         totalValue: t.total_value,
         reason: t.reason,
         reference: t.reference,
+        batchNumber: t.batch_number,
         date: new Date(),
       }));
       setTransactions(prev => [...newTransactions, ...prev]);
