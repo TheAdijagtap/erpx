@@ -969,6 +969,7 @@ function ViewPODialog({ id }: { id: string }) {
                 <tr>
                   <th>#</th>
                   <th>Description</th>
+                  {order.items.some(it => it.item.category) && <th>Dept</th>}
                   {order.items.some(it => it.hsnCode || it.item.sku) && <th>HSN</th>}
                   <th>Qty</th>
                   <th>Unit</th>
@@ -984,6 +985,7 @@ function ViewPODialog({ id }: { id: string }) {
                       <div style={{fontWeight: '600'}}>{it.item.name}</div>
                       {it.item.description && <div style={{fontSize: '12px', color: '#64748b', marginTop: '2px'}}>{it.item.description}</div>}
                     </td>
+                    {order.items.some(i => i.item.category) && <td>{it.item.category || '-'}</td>}
                     {order.items.some(i => i.hsnCode || i.item.sku) && <td>{it.hsnCode || it.item.sku || '-'}</td>}
                     <td>{it.quantity}</td>
                     <td>{it.item.unit}</td>
@@ -1132,7 +1134,16 @@ function PrintPOButton({ id }: { id: string }) {
         <p style="margin-bottom: 8px; font-style: italic">Please supply following goods in accordance with terms and conditions prescribed hereunder :</p>
         <table>
           <thead>
-            <tr><th>#</th><th>Description</th><th>Qty</th><th>Unit</th><th>Rate</th><th>Total</th></tr>
+            <tr>
+              <th>#</th>
+              <th>Description</th>
+              ${order.items.some(it => it.item.category) ? '<th>Dept</th>' : ''}
+              ${order.items.some(it => it.hsnCode || it.item.sku) ? '<th>HSN</th>' : ''}
+              <th>Qty</th>
+              <th>Unit</th>
+              <th>Rate</th>
+              <th>Total</th>
+            </tr>
           </thead>
           <tbody>
             ${order.items.map((it, idx) => `
@@ -1142,6 +1153,8 @@ function PrintPOButton({ id }: { id: string }) {
                   <div style="font-weight: 600">${escapeHtml(it.item.name)}</div>
                   ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${escapeHtml(it.item.description)}</div>` : ''}
                 </td>
+                ${order.items.some(i => i.item.category) ? `<td>${escapeHtml(it.item.category || '-')}</td>` : ''}
+                ${order.items.some(i => i.hsnCode || i.item.sku) ? `<td>${escapeHtml(it.hsnCode || it.item.sku || '-')}</td>` : ''}
                 <td>${it.quantity}</td>
                 <td>${escapeHtml(it.item.unit)}</td>
                 <td>${formatINR(it.unitPrice)}</td>
