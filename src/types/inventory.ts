@@ -160,6 +160,7 @@ export interface ProformaProduct {
   description: string;
   unit: string;
   price: number;
+  hsnCode?: string;
   createdAt: Date;
 }
 
