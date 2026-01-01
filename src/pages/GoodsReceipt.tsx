@@ -686,8 +686,16 @@ function EditGRDialog({ id }: { id: string }) {
 
 function UpdateStatusButton({ id, status, label, destructive }: { id: string; status: any; label: string; destructive?: boolean }) {
   const { updateGoodsReceipt } = useData();
+  const handleClick = () => {
+    // Auto-set QC date to today when accepting
+    if (status === 'ACCEPTED') {
+      updateGoodsReceipt(id, { status, qcDate: new Date() });
+    } else {
+      updateGoodsReceipt(id, { status });
+    }
+  };
   return (
-    <Button variant={destructive ? 'destructive' : 'default'} size="sm" onClick={() => updateGoodsReceipt(id, { status })}>
+    <Button variant={destructive ? 'destructive' : 'default'} size="sm" onClick={handleClick}>
       {label}
     </Button>
   );
