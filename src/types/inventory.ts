@@ -106,6 +106,7 @@ export interface GoodsReceipt {
   total: number;
   status: 'RECEIVED' | 'QUALITY_CHECK' | 'ACCEPTED' | 'REJECTED';
   date: Date;
+  qcDate?: Date;
   notes?: string;
 }
 

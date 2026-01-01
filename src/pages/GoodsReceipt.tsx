@@ -630,8 +630,16 @@ function EditGRDialog({ id }: { id: string }) {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState(receipt.status);
   const [notes, setNotes] = useState(receipt.notes || "");
+  const [qcDate, setQcDate] = useState<string>(receipt.qcDate ? receipt.qcDate.toISOString().slice(0, 10) : "");
 
-  const onSave = () => { updateGoodsReceipt(id, { status, notes }); setOpen(false); };
+  const onSave = () => { 
+    updateGoodsReceipt(id, { 
+      status, 
+      notes, 
+      qcDate: qcDate ? new Date(qcDate) : undefined 
+    }); 
+    setOpen(false); 
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -653,6 +661,15 @@ function EditGRDialog({ id }: { id: string }) {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div>
+            <div className="mb-1">QC Date</div>
+            <Input 
+              type="date" 
+              value={qcDate} 
+              onChange={(e) => setQcDate(e.target.value)} 
+              placeholder="Select QC completion date"
+            />
           </div>
           <div>
             <div className="mb-1">Notes</div>
@@ -865,6 +882,8 @@ function TCodeDialog({ id }: { id: string }) {
         qrCode: qrDataUrl,
         itemName: selectedItemData.item.name,
         grNumber: receipt.grNumber,
+        grDate: receipt.date.toLocaleDateString('en-IN'),
+        qcDate: receipt.qcDate ? receipt.qcDate.toLocaleDateString('en-IN') : '-',
         batchNumber: selectedItemData.batchNumber || '-',
         unit: selectedItemData.item.unit,
         stickerNo: i + 1,
@@ -917,12 +936,12 @@ function TCodeDialog({ id }: { id: string }) {
         <table>
           <tr><td class="label">Item:</td><td class="value">${escapeHtml(s.itemName)}</td></tr>
           <tr><td class="label">GR No:</td><td class="value">${escapeHtml(s.grNumber)}</td></tr>
+          <tr><td class="label">GR Date:</td><td class="value">${escapeHtml(s.grDate)}</td></tr>
+          <tr><td class="label">QC Date:</td><td class="value">${escapeHtml(s.qcDate)}</td></tr>
           <tr><td class="label">Batch/Lot:</td><td class="value">${escapeHtml(s.batchNumber)}</td></tr>
-          <tr><td class="label">Unit:</td><td class="value">${escapeHtml(s.unit)}</td></tr>
         </table>
         <div class="footer">
           <span class="sticker-num">${s.stickerNo} of ${s.totalStickers}</span>
-          <span class="date">${new Date().toLocaleDateString('en-IN')}</span>
         </div>
       </div>
     `).join('');
