@@ -889,6 +889,7 @@ function TCodeDialog({ id }: { id: string }) {
         tCode,
         qrCode: qrDataUrl,
         itemName: selectedItemData.item.name,
+        itemDescription: selectedItemData.item.description || '-',
         grNumber: receipt.grNumber,
         grDate: receipt.date.toLocaleDateString('en-IN'),
         qcDate: receipt.qcDate ? receipt.qcDate.toLocaleDateString('en-IN') : '-',
@@ -938,7 +939,7 @@ function TCodeDialog({ id }: { id: string }) {
           <div class="qr-code"><img src="${s.qrCode}" alt="QR Code" /></div>
           <div class="header-text">
             <div class="tcode">${escapeHtml(s.tCode)}</div>
-            <div class="company">${escapeHtml(businessInfo.name)}</div>
+            <div class="company">${escapeHtml(s.itemDescription)}</div>
           </div>
         </div>
         <table>
