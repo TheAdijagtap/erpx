@@ -843,13 +843,25 @@ function TCodeDialog({ id }: { id: string }) {
 
     setIsGenerating(true);
     
+    // Import QR code library
+    const QRCode = await import('qrcode');
+    
     const stickers = [];
     const tCodeRecords = [];
     
     for (let i = 0; i < stickerQty; i++) {
       const tCode = generateTCode(selectedItemData.item.itemCode, i);
+      
+      // Generate QR code as data URL
+      const qrDataUrl = await QRCode.toDataURL(tCode, {
+        width: 80,
+        margin: 1,
+        errorCorrectionLevel: 'M',
+      });
+      
       stickers.push({
         tCode,
+        qrCode: qrDataUrl,
         itemName: selectedItemData.item.name,
         grNumber: receipt.grNumber,
         batchNumber: selectedItemData.batchNumber || '-',
@@ -894,16 +906,23 @@ function TCodeDialog({ id }: { id: string }) {
 
     const stickerHtml = stickers.map((s, idx) => `
       <div class="sticker" style="page-break-inside: avoid; ${idx > 0 ? 'page-break-before: auto;' : ''}">
-        <div class="tcode">${escapeHtml(s.tCode)}</div>
-        <div class="company">${escapeHtml(businessInfo.name)}</div>
+        <div class="header">
+          <div class="qr-code"><img src="${s.qrCode}" alt="QR Code" /></div>
+          <div class="header-text">
+            <div class="tcode">${escapeHtml(s.tCode)}</div>
+            <div class="company">${escapeHtml(businessInfo.name)}</div>
+          </div>
+        </div>
         <table>
           <tr><td class="label">Item:</td><td class="value">${escapeHtml(s.itemName)}</td></tr>
           <tr><td class="label">GR No:</td><td class="value">${escapeHtml(s.grNumber)}</td></tr>
           <tr><td class="label">Batch/Lot:</td><td class="value">${escapeHtml(s.batchNumber)}</td></tr>
           <tr><td class="label">Unit:</td><td class="value">${escapeHtml(s.unit)}</td></tr>
-          <tr><td class="label">Sticker:</td><td class="value">${s.stickerNo} of ${s.totalStickers}</td></tr>
         </table>
-        <div class="date">Generated: ${new Date().toLocaleDateString('en-IN')}</div>
+        <div class="footer">
+          <span class="sticker-num">${s.stickerNo} of ${s.totalStickers}</span>
+          <span class="date">${new Date().toLocaleDateString('en-IN')}</span>
+        </div>
       </div>
     `).join('');
 
@@ -920,41 +939,58 @@ function TCodeDialog({ id }: { id: string }) {
             width: 76mm;
             height: 46mm;
             border: 1px solid #000;
-            padding: 3mm;
+            padding: 2mm;
             margin-bottom: 2mm;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
           }
+          .header {
+            display: flex;
+            align-items: center;
+            gap: 2mm;
+          }
+          .qr-code {
+            flex-shrink: 0;
+          }
+          .qr-code img {
+            width: 18mm;
+            height: 18mm;
+          }
+          .header-text {
+            flex: 1;
+          }
           .tcode {
-            font-size: 14px;
+            font-size: 12px;
             font-weight: bold;
-            text-align: center;
-            padding: 2mm;
+            padding: 1mm;
             background: #f0f0f0;
             border: 1px solid #ccc;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
+            text-align: center;
           }
           .company {
-            font-size: 10px;
+            font-size: 9px;
             text-align: center;
             font-weight: bold;
-            margin: 2mm 0;
+            margin-top: 1mm;
             color: #333;
           }
           table {
             width: 100%;
-            font-size: 10px;
+            font-size: 9px;
             border-collapse: collapse;
+            margin-top: 1mm;
           }
-          td { padding: 1mm 0; }
-          td.label { font-weight: bold; width: 30%; color: #555; }
+          td { padding: 0.5mm 0; }
+          td.label { font-weight: bold; width: 25%; color: #555; }
           td.value { color: #000; }
-          .date {
+          .footer {
+            display: flex;
+            justify-content: space-between;
             font-size: 8px;
-            text-align: right;
             color: #666;
-            margin-top: 2mm;
+            margin-top: 1mm;
           }
           @media print {
             .sticker { page-break-inside: avoid; }
