@@ -14,6 +14,8 @@ interface TrialBannerProps {
 const TRIAL_DAYS = 15;
 const WHATSAPP_NUMBER = "919373751128";
 
+const GRACE_PERIOD_DAYS = 1; // Extra day before blocking access
+
 export function calculateTrialStatus(trialStartDate: Date | null, subscriptionEndDate?: Date | null) {
   const now = new Date();
 
@@ -24,7 +26,8 @@ export function calculateTrialStatus(trialStartDate: Date | null, subscriptionEn
     
     return {
       daysRemaining: Math.max(0, daysRemaining),
-      isExpired: daysRemaining <= 0,
+      // Give 1 extra day grace period before blocking
+      isExpired: daysRemaining < -GRACE_PERIOD_DAYS,
       percentRemaining: Math.max(0, Math.min(100, (daysRemaining / 30) * 100)),
       isSubscription: true,
     };
@@ -43,7 +46,8 @@ export function calculateTrialStatus(trialStartDate: Date | null, subscriptionEn
 
   return {
     daysRemaining: Math.max(0, daysRemaining),
-    isExpired: daysRemaining <= 0,
+    // Give 1 extra day grace period before blocking
+    isExpired: daysRemaining < -GRACE_PERIOD_DAYS,
     percentRemaining: Math.max(0, Math.min(100, (daysRemaining / TRIAL_DAYS) * 100)),
     isSubscription: false,
   };
