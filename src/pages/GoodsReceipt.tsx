@@ -151,8 +151,8 @@ function CreateGRDialog() {
   const [supplierId, setSupplierId] = useState<string | null>(suppliers[0]?.id || null);
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [applyGST, setApplyGST] = useState<boolean>(gstSettings.enabled);
-  const [rows, setRows] = useState<Array<{ itemId: string; receivedQuantity: number; unitPrice: number; orderedQuantity?: number }>>([
-    { itemId: items[0]?.id || "", receivedQuantity: 1, unitPrice: items[0]?.unitPrice || 0 },
+  const [rows, setRows] = useState<Array<{ itemId: string; receivedQuantity: number; unitPrice: number; orderedQuantity?: number; batchNumber?: string }>>([
+    { itemId: items[0]?.id || "", receivedQuantity: 1, unitPrice: items[0]?.unitPrice || 0, batchNumber: "" },
   ]);
   const [additionalCharges, setAdditionalCharges] = useState<Array<{ name: string; amount: number }>>([]);
   const [itemSearch, setItemSearch] = useState("");
@@ -187,7 +187,8 @@ function CreateGRDialog() {
         itemId: item.itemId,
         orderedQuantity: item.quantity,
         receivedQuantity: item.quantity,
-        unitPrice: item.unitPrice
+        unitPrice: item.unitPrice,
+        batchNumber: "",
       })));
       setAdditionalCharges(selectedPO.additionalCharges?.map(charge => ({
         name: charge.name,
@@ -196,7 +197,7 @@ function CreateGRDialog() {
     }
   };
 
-  const onAddRow = () => setRows([...rows, { itemId: items[0]?.id || "", receivedQuantity: 1, unitPrice: items[0]?.unitPrice || 0 }]);
+  const onAddRow = () => setRows([...rows, { itemId: items[0]?.id || "", receivedQuantity: 1, unitPrice: items[0]?.unitPrice || 0, batchNumber: "" }]);
   const onSubmit = () => {
     if (!supplierId || rows.some(r => !r.itemId || r.receivedQuantity <= 0)) return;
     const grNumber = `GR-${new Date().getFullYear()}-${String(Math.floor(Math.random()*999)+1).padStart(3, '0')}`;
@@ -208,6 +209,7 @@ function CreateGRDialog() {
       receivedQuantity: r.receivedQuantity,
       unitPrice: r.unitPrice,
       total: r.receivedQuantity * r.unitPrice,
+      batchNumber: r.batchNumber || undefined,
     }));
     addGoodsReceipt({
       grNumber,
@@ -227,7 +229,7 @@ function CreateGRDialog() {
     });
     setOpen(false);
     setSelectedPoId(null);
-    setRows([{ itemId: items[0]?.id || "", receivedQuantity: 1, unitPrice: items[0]?.unitPrice || 0 }]);
+    setRows([{ itemId: items[0]?.id || "", receivedQuantity: 1, unitPrice: items[0]?.unitPrice || 0, batchNumber: "" }]);
     setAdditionalCharges([]);
   };
 
@@ -304,6 +306,7 @@ function CreateGRDialog() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Item</TableHead>
+                  <TableHead>Batch/Lot No.</TableHead>
                   <TableHead>Ordered Qty</TableHead>
                   <TableHead>Received Qty</TableHead>
                   <TableHead>Unit Price</TableHead>
@@ -352,6 +355,17 @@ function CreateGRDialog() {
                           </SelectContent>
                         </Select>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      <Input
+                        placeholder="Batch/Lot"
+                        value={row.batchNumber || ""}
+                        onChange={(e) => {
+                          const next = [...rows];
+                          next[idx] = { ...row, batchNumber: e.target.value };
+                          setRows(next);
+                        }}
+                      />
                     </TableCell>
                     <TableCell>
                       <Input type="number" min={0} value={row.orderedQuantity || 0} onChange={(e) => {
@@ -493,6 +507,7 @@ function ViewGRDialog({ id }: { id: string }) {
                 <tr>
                   <th>#</th>
                   <th>Description</th>
+                  {receipt.items.some(it => it.batchNumber) && <th>Batch/Lot</th>}
                   {receipt.items.some(it => isValidHsn(it.item.sku)) && <th>HSN</th>}
                   <th>Ordered</th>
                   <th>Received</th>
@@ -509,6 +524,7 @@ function ViewGRDialog({ id }: { id: string }) {
                       <div style={{fontWeight: '600'}}>{it.item.name}</div>
                       {it.item.description && <div style={{fontSize: '12px', color: '#64748b', marginTop: '2px'}}>{it.item.description}</div>}
                     </td>
+                    {receipt.items.some(i => i.batchNumber) && <td>{it.batchNumber || '-'}</td>}
                     {receipt.items.some(i => isValidHsn(i.item.sku)) && <td>{isValidHsn(it.item.sku) ? it.item.sku : '-'}</td>}
                     <td>{it.orderedQuantity || '-'}</td>
                     <td>{it.receivedQuantity}</td>
@@ -667,6 +683,7 @@ function PrintGRButton({ id }: { id: string }) {
             <tr>
               <th>#</th>
               <th>Description</th>
+              ${receipt.items.some(it => it.batchNumber) ? '<th>Batch/Lot</th>' : ''}
               ${receipt.items.some(it => isValidHsn(it.item.sku)) ? '<th>HSN</th>' : ''}
               <th>Ordered</th>
               <th>Received</th>
@@ -683,6 +700,7 @@ function PrintGRButton({ id }: { id: string }) {
                   <div style="font-weight: 600">${escapeHtml(it.item.name)}</div>
                   ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${escapeHtml(it.item.description)}</div>` : ''}
                 </td>
+                ${receipt.items.some(i => i.batchNumber) ? `<td>${it.batchNumber ? escapeHtml(it.batchNumber) : '-'}</td>` : ''}
                 ${receipt.items.some(i => isValidHsn(i.item.sku)) ? `<td>${isValidHsn(it.item.sku) ? escapeHtml(it.item.sku) : '-'}</td>` : ''}
                 <td>${it.orderedQuantity || '-'}</td>
                 <td>${it.receivedQuantity}</td>

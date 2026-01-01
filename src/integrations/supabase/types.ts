@@ -132,6 +132,7 @@ export type Database = {
       goods_receipt_items: {
         Row: {
           amount: number
+          batch_number: string | null
           goods_receipt_id: string
           id: string
           item_id: string | null
@@ -144,6 +145,7 @@ export type Database = {
         }
         Insert: {
           amount?: number
+          batch_number?: string | null
           goods_receipt_id: string
           id?: string
           item_id?: string | null
@@ -156,6 +158,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          batch_number?: string | null
           goods_receipt_id?: string
           id?: string
           item_id?: string | null

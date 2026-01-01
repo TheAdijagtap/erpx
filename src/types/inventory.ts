@@ -113,6 +113,7 @@ export interface GoodsReceiptItem {
   receivedQuantity: number;
   unitPrice: number;
   total: number;
+  batchNumber?: string;
 }
 
 export interface GSTSettings {
