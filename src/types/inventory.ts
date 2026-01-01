@@ -23,6 +23,7 @@ export interface Transaction {
   totalValue: number;
   reason: string; // 'Purchase', 'Sale', 'Adjustment', 'Damage', etc.
   reference?: string; // PO number, GR number, etc.
+  batchNumber?: string; // Batch/Lot number for traceability
   date: Date;
   notes?: string;
 }

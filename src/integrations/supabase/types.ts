@@ -307,6 +307,7 @@ export type Database = {
       }
       inventory_transactions: {
         Row: {
+          batch_number: string | null
           created_at: string
           id: string
           item_id: string | null
@@ -321,6 +322,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          batch_number?: string | null
           created_at?: string
           id?: string
           item_id?: string | null
@@ -335,6 +337,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          batch_number?: string | null
           created_at?: string
           id?: string
           item_id?: string | null
