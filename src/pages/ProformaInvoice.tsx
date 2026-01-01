@@ -19,6 +19,11 @@ import { ProformaInvoice as ProformaInvoiceType, ProformaInvoiceItem, BuyerInfo,
 import React from "react";
 import { useDebounce } from "@/hooks/useDebounce";
 
+const isValidHsn = (value?: string) => {
+  const v = (value ?? "").trim();
+  return v.length > 0 && /^\d+$/.test(v);
+};
+
 interface ProformaAggregateRow {
   key: string;
   label: string;
@@ -1405,7 +1410,7 @@ const ViewProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
                   <th>#</th>
                   <th>Description</th>
                   {invoice.items.some(it => it.item.category) && <th>Dept</th>}
-                  {invoice.items.some(it => it.hsnCode) && <th>HSN</th>}
+                  {invoice.items.some(it => isValidHsn(it.hsnCode)) && <th>HSN</th>}
                   <th>Qty</th>
                   <th>Unit</th>
                   <th>Rate</th>
@@ -1421,7 +1426,7 @@ const ViewProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
                       {it.item.description && <div style={{fontSize: '12px', color: '#64748b', marginTop: '2px'}}>{it.item.description}</div>}
                     </td>
                     {invoice.items.some(i => i.item.category) && <td>{it.item.category || '-'}</td>}
-                    {invoice.items.some(i => i.hsnCode) && <td>{it.hsnCode || '-'}</td>}
+                    {invoice.items.some(i => isValidHsn(i.hsnCode)) && <td>{isValidHsn(it.hsnCode) ? it.hsnCode : '-'}</td>}
                     <td>{it.quantity}</td>
                     <td>{it.item.unit}</td>
                     <td>{formatINR(it.unitPrice)}</td>
@@ -2022,7 +2027,7 @@ const PrintProformaButton = ({ id }: { id: string }) => {
               <th>#</th>
               <th>Description</th>
               ${invoice.items.some(it => it.item.category) ? '<th>Dept</th>' : ''}
-              ${invoice.items.some(it => it.hsnCode) ? '<th>HSN</th>' : ''}
+              ${invoice.items.some(it => isValidHsn(it.hsnCode)) ? '<th>HSN</th>' : ''}
               <th>Qty</th>
               <th>Unit</th>
               <th>Rate</th>
@@ -2038,7 +2043,7 @@ const PrintProformaButton = ({ id }: { id: string }) => {
                   ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${escapeHtml(it.item.description)}</div>` : ''}
                 </td>
                 ${invoice.items.some(i => i.item.category) ? `<td>${escapeHtml(it.item.category || '-')}</td>` : ''}
-                ${invoice.items.some(i => i.hsnCode) ? `<td>${escapeHtml(it.hsnCode || '-')}</td>` : ''}
+                ${invoice.items.some(i => isValidHsn(i.hsnCode)) ? `<td>${isValidHsn(it.hsnCode) ? escapeHtml(it.hsnCode) : '-'}</td>` : ''}
                 <td>${it.quantity}</td>
                 <td>${escapeHtml(it.item.unit)}</td>
                 <td>${formatINR(it.unitPrice)}</td>

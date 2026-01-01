@@ -36,6 +36,11 @@ interface PurchaseOrderStatsSummary {
   yearlyTotals: PurchaseAggregateRow[];
 }
 
+const isValidHsn = (value?: string) => {
+  const v = (value ?? "").trim();
+  return v.length > 0 && /^\d+$/.test(v);
+};
+
 const PurchaseOrders = () => {
   const { purchaseOrders } = useData();
   const [searchTerm, setSearchTerm] = useState("");
@@ -504,7 +509,7 @@ function CreatePODialog() {
   const [applyGST, setApplyGST] = useState<boolean>(false);
   const [gstRate, setGstRate] = useState<number>(18);
   const [rows, setRows] = useState<Array<{ itemId: string; quantity: number; unitPrice: number; unit: string; hsnCode: string }>>([
-    { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0, unit: items[0]?.unit || "PCS", hsnCode: items[0]?.sku || "" },
+    { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0, unit: items[0]?.unit || "PCS", hsnCode: isValidHsn(items[0]?.sku) ? (items[0]?.sku || "") : "" },
   ]);
   const [additionalCharges, setAdditionalCharges] = useState<Array<{ name: string; amount: number }>>([]);
   
@@ -519,7 +524,7 @@ function CreatePODialog() {
     if (!newItemName.trim()) return;
     addItem({
       name: newItemName.trim(),
-      sku: `SKU-${Date.now()}`,
+      sku: "", // HSN is optional; don't auto-fill with a generated SKU
       description: "",
       unit: newItemUnit,
       unitPrice: newItemPrice,
@@ -557,7 +562,7 @@ function CreatePODialog() {
     );
   }, [items, debouncedItemSearch]);
 
-  const onAddRow = () => setRows([...rows, { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0, unit: items[0]?.unit || "PCS", hsnCode: items[0]?.sku || "" }]);
+  const onAddRow = () => setRows([...rows, { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0, unit: items[0]?.unit || "PCS", hsnCode: isValidHsn(items[0]?.sku) ? (items[0]?.sku || "") : "" }]);
   const onSubmit = () => {
     if (!supplierId || rows.some(r => !r.itemId || r.quantity <= 0)) return;
     const poNumber = `PO-${new Date().getFullYear()}-${String(Math.floor(Math.random()*999)+1).padStart(3, '0')}`;
@@ -778,7 +783,7 @@ function CreatePODialog() {
                           const it = items.find(i => i.id === v);
                           if (!it) return;
                           const next = [...rows];
-                          next[idx] = { ...row, itemId: v, unitPrice: it.unitPrice || 0, unit: it.unit || "PCS", hsnCode: it.sku || "" };
+                          next[idx] = { ...row, itemId: v, unitPrice: it.unitPrice || 0, unit: it.unit || "PCS", hsnCode: isValidHsn(it.sku) ? it.sku : "" };
                           setRows(next);
                         }}>
                           <SelectTrigger className="w-full pl-10">
@@ -970,7 +975,7 @@ function ViewPODialog({ id }: { id: string }) {
                   <th>#</th>
                   <th>Description</th>
                   {order.items.some(it => it.item.category) && <th>Dept</th>}
-                  {order.items.some(it => it.hsnCode) && <th>HSN</th>}
+                  {order.items.some(it => isValidHsn(it.hsnCode)) && <th>HSN</th>}
                   <th>Qty</th>
                   <th>Unit</th>
                   <th>Rate</th>
@@ -986,7 +991,7 @@ function ViewPODialog({ id }: { id: string }) {
                       {it.item.description && <div style={{fontSize: '12px', color: '#64748b', marginTop: '2px'}}>{it.item.description}</div>}
                     </td>
                     {order.items.some(i => i.item.category) && <td>{it.item.category || '-'}</td>}
-                    {order.items.some(i => i.hsnCode) && <td>{it.hsnCode || '-'}</td>}
+                    {order.items.some(i => isValidHsn(i.hsnCode)) && <td>{isValidHsn(it.hsnCode) ? it.hsnCode : '-'}</td>}
                     <td>{it.quantity}</td>
                     <td>{it.item.unit}</td>
                     <td>{formatINR(it.unitPrice)}</td>
@@ -1138,7 +1143,7 @@ function PrintPOButton({ id }: { id: string }) {
               <th>#</th>
               <th>Description</th>
               ${order.items.some(it => it.item.category) ? '<th>Dept</th>' : ''}
-              ${order.items.some(it => it.hsnCode) ? '<th>HSN</th>' : ''}
+              ${order.items.some(it => isValidHsn(it.hsnCode)) ? '<th>HSN</th>' : ''}
               <th>Qty</th>
               <th>Unit</th>
               <th>Rate</th>
@@ -1154,7 +1159,7 @@ function PrintPOButton({ id }: { id: string }) {
                   ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${escapeHtml(it.item.description)}</div>` : ''}
                 </td>
                 ${order.items.some(i => i.item.category) ? `<td>${escapeHtml(it.item.category || '-')}</td>` : ''}
-                ${order.items.some(i => i.hsnCode) ? `<td>${escapeHtml(it.hsnCode || '-')}</td>` : ''}
+                ${order.items.some(i => isValidHsn(i.hsnCode)) ? `<td>${isValidHsn(it.hsnCode) ? escapeHtml(it.hsnCode) : '-'}</td>` : ''}
                 <td>${it.quantity}</td>
                 <td>${escapeHtml(it.item.unit)}</td>
                 <td>${formatINR(it.unitPrice)}</td>
