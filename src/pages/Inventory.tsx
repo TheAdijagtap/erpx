@@ -160,53 +160,58 @@ function ItemViewDialog({ itemId, children }: { itemId: string; children: React.
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-3 text-sm">
-            <div className="grid grid-cols-2 gap-4">
+            {/* Row 1: Name & Category */}
+            <div className="grid grid-cols-2 gap-x-8 gap-y-3">
               <div>
-                <div className="text-muted-foreground">Name</div>
+                <div className="text-muted-foreground text-xs">Name</div>
                 <div className="font-medium">{item.name}</div>
               </div>
               <div>
-                <div className="text-muted-foreground">Category</div>
+                <div className="text-muted-foreground text-xs">Category</div>
                 <div className="font-medium">{item.category}</div>
               </div>
             </div>
+            
+            {/* Row 2: HSN Code (full width) */}
             {item.sku && (
               <div>
-                <div className="text-muted-foreground">HSN Code</div>
+                <div className="text-muted-foreground text-xs">HSN Code</div>
                 <div className="font-medium">{item.sku}</div>
               </div>
             )}
-            <div className="grid grid-cols-3 gap-4">
-              {item.itemCode && (
+            
+            {/* Row 3: Item Code, Make, MPN - fixed 3-column grid */}
+            {(item.itemCode || item.make || item.mpn) && (
+              <div className="grid grid-cols-3 gap-x-8 gap-y-3">
                 <div>
-                  <div className="text-muted-foreground">Item Code</div>
-                  <div className="font-medium">{item.itemCode}</div>
+                  <div className="text-muted-foreground text-xs">Item Code</div>
+                  <div className="font-medium">{item.itemCode || '-'}</div>
                 </div>
-              )}
-              {item.make && (
                 <div>
-                  <div className="text-muted-foreground">Make</div>
-                  <div className="font-medium">{item.make}</div>
+                  <div className="text-muted-foreground text-xs">Make</div>
+                  <div className="font-medium">{item.make || '-'}</div>
                 </div>
-              )}
-              {item.mpn && (
                 <div>
-                  <div className="text-muted-foreground">MPN</div>
-                  <div className="font-medium">{item.mpn}</div>
+                  <div className="text-muted-foreground text-xs">MPN</div>
+                  <div className="font-medium">{item.mpn || '-'}</div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+            
+            {/* Row 4: Description (full width) */}
             <div>
-              <div className="text-muted-foreground">Description</div>
-              <div className="font-medium">{item.description}</div>
+              <div className="text-muted-foreground text-xs">Description</div>
+              <div className="font-medium">{item.description || '-'}</div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            
+            {/* Row 5: Unit Price & Unit */}
+            <div className="grid grid-cols-2 gap-x-8 gap-y-3">
               <div>
-                <div className="text-muted-foreground">Unit Price</div>
+                <div className="text-muted-foreground text-xs">Unit Price</div>
                 <div className="font-medium">{formatINR(item.unitPrice)}</div>
               </div>
               <div>
-                <div className="text-muted-foreground">Unit</div>
+                <div className="text-muted-foreground text-xs">Unit</div>
                 <div className="font-medium">{item.unit}</div>
               </div>
             </div>
