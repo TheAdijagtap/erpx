@@ -156,7 +156,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         supabase.from("inventory_items").select("id,name,hsn_code,description,category,current_stock,reorder_level,unit_price,unit,supplier_id,item_code,make,mpn,created_at,updated_at").order("created_at", { ascending: false }).limit(500),
         supabase.from("suppliers").select("id,name,contact_person,email,phone,address,gst_number,created_at,payment_terms,notes").order("created_at", { ascending: false }).limit(200),
         supabase.from("purchase_orders").select("id,po_number,supplier_id,supplier_name,date,expected_delivery,status,subtotal,tax_amount,total,notes,payment_terms,created_at,purchase_order_items(id,item_id,item_name,description,hsn_code,quantity,rate,amount,unit),purchase_order_additional_charges(id,name,amount)").order("created_at", { ascending: false }).limit(200),
-        supabase.from("goods_receipts").select("id,gr_number,purchase_order_id,supplier_id,supplier_name,receipt_date,status,subtotal,tax_amount,total,notes,created_at,goods_receipt_items(id,item_id,item_name,quantity_ordered,quantity_received,unit_price,amount,unit,notes,batch_number),goods_receipt_additional_charges(id,name,amount)").order("created_at", { ascending: false }).limit(200),
+        supabase.from("goods_receipts").select("id,gr_number,purchase_order_id,supplier_id,supplier_name,receipt_date,qc_date,status,subtotal,tax_amount,total,notes,created_at,goods_receipt_items(id,item_id,item_name,quantity_ordered,quantity_received,unit_price,amount,unit,notes,batch_number),goods_receipt_additional_charges(id,name,amount)").order("created_at", { ascending: false }).limit(200),
         supabase.from("proforma_invoices").select("id,invoice_number,customer_id,customer_name,customer_address,customer_gst,date,subtotal,tax_amount,total,notes,payment_terms,created_at,proforma_invoice_items(id,item_name,hsn_code,description,quantity,rate,amount,unit),proforma_invoice_additional_charges(id,name,amount)").order("created_at", { ascending: false }).limit(200),
         supabase.from("proforma_products").select("id,name,description,unit,price,created_at").order("created_at", { ascending: false }).limit(200),
         supabase.from("customers").select("id,name,email,phone,address,gst_number,status,total_proformas,total_value,created_at,updated_at").order("created_at", { ascending: false }).limit(200),
@@ -289,6 +289,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           total: Number(gr.total),
           status: (gr.status?.toUpperCase() || "RECEIVED") as GoodsReceipt["status"],
           date: new Date(gr.receipt_date),
+          qcDate: grAny.qc_date ? new Date(grAny.qc_date) : undefined,
           notes: gr.notes || undefined,
         };
       });
@@ -857,6 +858,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     const updateData: any = {};
     if (patch.status !== undefined) updateData.status = patch.status;
     if (patch.notes !== undefined) updateData.notes = patch.notes;
+    if (patch.qcDate !== undefined) updateData.qc_date = patch.qcDate.toISOString().slice(0, 10);
 
     const { error } = await supabase.from("goods_receipts").update(updateData).eq("id", id);
     if (error) throw error;

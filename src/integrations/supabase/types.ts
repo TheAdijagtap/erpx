@@ -193,6 +193,7 @@ export type Database = {
           id: string
           notes: string | null
           purchase_order_id: string | null
+          qc_date: string | null
           receipt_date: string
           status: string
           subtotal: number
@@ -208,6 +209,7 @@ export type Database = {
           id?: string
           notes?: string | null
           purchase_order_id?: string | null
+          qc_date?: string | null
           receipt_date: string
           status?: string
           subtotal?: number
@@ -223,6 +225,7 @@ export type Database = {
           id?: string
           notes?: string | null
           purchase_order_id?: string | null
+          qc_date?: string | null
           receipt_date?: string
           status?: string
           subtotal?: number
