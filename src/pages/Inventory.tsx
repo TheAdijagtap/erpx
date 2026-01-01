@@ -147,125 +147,176 @@ const Inventory = () => {
 };
 
 function ItemViewDialog({ itemId, children }: { itemId: string; children: React.ReactNode }) {
-  const { inventoryItems: items, transactions } = useData();
+  const { inventoryItems: items, transactions, suppliers } = useData();
   const item = items.find(i => i.id === itemId)!;
   const itemTx = transactions.filter(t => t.itemId === itemId);
+  const supplier = item.supplier ? suppliers.find(s => s.id === item.supplier) : null;
+
+  // Calculate stats
+  const totalIn = itemTx.filter(t => t.type === 'IN').reduce((sum, t) => sum + t.quantity, 0);
+  const totalOut = itemTx.filter(t => t.type === 'OUT').reduce((sum, t) => sum + t.quantity, 0);
+  const stockValue = item.currentStock * item.unitPrice;
+  const stockStatus = item.currentStock <= item.minStock ? 'low' : item.currentStock <= item.minStock * 1.5 ? 'medium' : 'good';
 
   return (
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Item Details</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div className="space-y-4 text-sm">
-            {/* Name */}
-            <div>
-              <div className="text-muted-foreground text-xs">Name</div>
-              <div className="font-medium">{item.name}</div>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4 pb-4 border-b">
+          <div className="flex items-start gap-3">
+            <div className="p-3 bg-primary/10 rounded-lg">
+              <Package className="w-6 h-6 text-primary" />
             </div>
-
-            {/* HSN Code */}
-            {item.sku && (
-              <div>
-                <div className="text-muted-foreground text-xs">HSN Code</div>
-                <div className="font-medium">{item.sku}</div>
-              </div>
-            )}
-
-            {/* Item Code (if available) */}
-            {item.itemCode && (
-              <div>
-                <div className="text-muted-foreground text-xs">Item Code</div>
-                <div className="font-medium" title={item.itemCode}>
-                  {item.itemCode}
-                </div>
-              </div>
-            )}
-
-            {/* Center-aligned spec block (Category/Make/MPN/Unit) */}
-            <div className="rounded-md border bg-muted/20 p-4">
-              <div className="grid grid-cols-3 gap-x-10 gap-y-4">
-                {/* Row 1: Category centered */}
-                <div className="col-start-2 text-center min-w-0">
-                  <div className="text-muted-foreground text-xs">Category</div>
-                  <div className="font-medium truncate" title={item.category || '-'}>
-                    {item.category || '-'}
-                  </div>
-                </div>
-
-                {/* Row 2: Make (left) / MPN (right) */}
-                <div className="col-start-1 min-w-0">
-                  <div className="text-muted-foreground text-xs">Make</div>
-                  <div className="font-medium truncate" title={item.make || '-'}>
-                    {item.make || '-'}
-                  </div>
-                </div>
-                <div className="col-start-3 text-right min-w-0">
-                  <div className="text-muted-foreground text-xs">MPN</div>
-                  <div className="font-medium truncate" title={item.mpn || '-'}>
-                    {item.mpn || '-'}
-                  </div>
-                </div>
-
-                {/* Row 3: Unit centered */}
-                <div className="col-start-2 text-center min-w-0">
-                  <div className="text-muted-foreground text-xs">Unit</div>
-                  <div className="font-medium truncate" title={item.unit || '-'}>
-                    {item.unit || '-'}
-                  </div>
-                </div>
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">{item.name}</h2>
+              <p className="text-sm text-muted-foreground mt-0.5">{item.description || 'No description'}</p>
+              <div className="flex items-center gap-2 mt-2">
+                <Badge variant="secondary" className="text-xs">{item.category || 'Uncategorized'}</Badge>
+                {stockStatus === 'low' && <Badge variant="destructive" className="text-xs">Low Stock</Badge>}
+                {stockStatus === 'medium' && <Badge className="bg-warning text-warning-foreground text-xs">Medium Stock</Badge>}
+                {stockStatus === 'good' && <Badge className="bg-success text-success-foreground text-xs">In Stock</Badge>}
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* Description */}
-            <div>
-              <div className="text-muted-foreground text-xs">Description</div>
-              <div className="font-medium">{item.description || '-'}</div>
-            </div>
+        {/* Quick Stats */}
+        <div className="grid grid-cols-4 gap-3 py-4">
+          <div className="text-center p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
+            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{item.currentStock}</div>
+            <div className="text-xs text-muted-foreground mt-1">Current Stock ({item.unit})</div>
+          </div>
+          <div className="text-center p-3 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800">
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">{formatINR(stockValue)}</div>
+            <div className="text-xs text-muted-foreground mt-1">Stock Value</div>
+          </div>
+          <div className="text-center p-3 rounded-lg bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800">
+            <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{totalIn}</div>
+            <div className="text-xs text-muted-foreground mt-1">Total Received</div>
+          </div>
+          <div className="text-center p-3 rounded-lg bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800">
+            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{totalOut}</div>
+            <div className="text-xs text-muted-foreground mt-1">Total Used</div>
+          </div>
+        </div>
 
-            {/* Unit Price */}
-            <div>
-              <div className="text-muted-foreground text-xs">Unit Price</div>
-              <div className="font-medium">{formatINR(item.unitPrice)}</div>
+        {/* Specifications Grid */}
+        <div className="grid grid-cols-2 gap-4 py-4 border-t">
+          {/* Left Column - Item Codes */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <span className="w-1 h-4 bg-primary rounded-full"></span>
+              Item Codes & Identifiers
+            </h4>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="p-3 rounded-md bg-muted/50">
+                <div className="text-xs text-muted-foreground mb-1">HSN Code</div>
+                <div className="font-medium font-mono">{item.sku || '-'}</div>
+              </div>
+              <div className="p-3 rounded-md bg-muted/50">
+                <div className="text-xs text-muted-foreground mb-1">Item Code</div>
+                <div className="font-medium font-mono">{item.itemCode || '-'}</div>
+              </div>
+              <div className="p-3 rounded-md bg-muted/50">
+                <div className="text-xs text-muted-foreground mb-1">Make</div>
+                <div className="font-medium">{item.make || '-'}</div>
+              </div>
+              <div className="p-3 rounded-md bg-muted/50">
+                <div className="text-xs text-muted-foreground mb-1">MPN</div>
+                <div className="font-medium font-mono">{item.mpn || '-'}</div>
+              </div>
             </div>
           </div>
 
+          {/* Right Column - Stock & Pricing */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+              <span className="w-1 h-4 bg-primary rounded-full"></span>
+              Stock & Pricing
+            </h4>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="p-3 rounded-md bg-muted/50">
+                <div className="text-xs text-muted-foreground mb-1">Unit Price</div>
+                <div className="font-medium text-primary">{formatINR(item.unitPrice)}</div>
+              </div>
+              <div className="p-3 rounded-md bg-muted/50">
+                <div className="text-xs text-muted-foreground mb-1">Unit</div>
+                <div className="font-medium">{item.unit}</div>
+              </div>
+              <div className="p-3 rounded-md bg-muted/50">
+                <div className="text-xs text-muted-foreground mb-1">Min Stock Level</div>
+                <div className="font-medium">{item.minStock} {item.unit}</div>
+              </div>
+              <div className="p-3 rounded-md bg-muted/50">
+                <div className="text-xs text-muted-foreground mb-1">Supplier</div>
+                <div className="font-medium truncate" title={supplier?.name || '-'}>{supplier?.name || '-'}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Timeline Info */}
+        <div className="flex items-center gap-6 py-3 px-4 rounded-md bg-muted/30 text-xs text-muted-foreground border-t">
           <div>
-            <h4 className="font-semibold mb-2">Transactions</h4>
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Qty</TableHead>
-                    <TableHead>Reason</TableHead>
-                    <TableHead>Reference</TableHead>
-                    <TableHead>Batch/Lot</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {itemTx.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center text-muted-foreground">No transactions yet.</TableCell>
-                    </TableRow>
-                  )}
-                  {itemTx.map((t) => (
-                    <TableRow key={t.id}>
-                      <TableCell>{new Date(t.date).toLocaleDateString('en-IN')}</TableCell>
-                      <TableCell>{t.type}</TableCell>
-                      <TableCell>{t.quantity}</TableCell>
-                      <TableCell>{t.reason}</TableCell>
-                      <TableCell>{t.reference || '-'}</TableCell>
-                      <TableCell>{t.batchNumber || '-'}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+            <span className="font-medium">Created:</span> {item.createdAt.toLocaleDateString('en-IN')}
           </div>
+          <div>
+            <span className="font-medium">Last Updated:</span> {item.updatedAt.toLocaleDateString('en-IN')}
+          </div>
+          <div>
+            <span className="font-medium">Transactions:</span> {itemTx.length}
+          </div>
+        </div>
+
+        {/* Transactions Table */}
+        <div className="pt-4 border-t">
+          <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+            <span className="w-1 h-4 bg-primary rounded-full"></span>
+            Transaction History
+          </h4>
+          <div className="rounded-md border max-h-48 overflow-y-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50">
+                  <TableHead className="text-xs">Date</TableHead>
+                  <TableHead className="text-xs">Type</TableHead>
+                  <TableHead className="text-xs">Qty</TableHead>
+                  <TableHead className="text-xs">Reason</TableHead>
+                  <TableHead className="text-xs">Reference</TableHead>
+                  <TableHead className="text-xs">Batch/Lot</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {itemTx.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center text-muted-foreground py-6">
+                      No transactions yet
+                    </TableCell>
+                  </TableRow>
+                )}
+                {itemTx.slice(0, 10).map((t) => (
+                  <TableRow key={t.id}>
+                    <TableCell className="text-xs">{new Date(t.date).toLocaleDateString('en-IN')}</TableCell>
+                    <TableCell>
+                      <Badge variant={t.type === 'IN' ? 'default' : 'secondary'} className="text-xs">
+                        {t.type}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-xs font-medium">{t.quantity}</TableCell>
+                    <TableCell className="text-xs">{t.reason}</TableCell>
+                    <TableCell className="text-xs font-mono">{t.reference || '-'}</TableCell>
+                    <TableCell className="text-xs font-mono">{t.batchNumber || '-'}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          {itemTx.length > 10 && (
+            <p className="text-xs text-muted-foreground mt-2 text-center">
+              Showing 10 of {itemTx.length} transactions
+            </p>
+          )}
         </div>
       </DialogContent>
     </Dialog>
