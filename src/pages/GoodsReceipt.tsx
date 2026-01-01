@@ -15,6 +15,11 @@ import { numberToWords } from "@/lib/numberToWords";
 import { escapeHtml } from "@/lib/htmlEscape";
 import { useDebounce } from "@/hooks/useDebounce";
 
+const isValidHsn = (value?: string) => {
+  const v = (value ?? "").trim();
+  return v.length > 0 && /^\d+$/.test(v);
+};
+
 const GoodsReceiptPage = () => {
   const { goodsReceipts } = useData();
   const [searchTerm, setSearchTerm] = useState("");
@@ -485,7 +490,17 @@ function ViewGRDialog({ id }: { id: string }) {
             <p style={{marginBottom: '8px', fontStyle: 'italic'}}>Following goods have been received and verified :</p>
             <table>
               <thead>
-                <tr><th>#</th><th>Description</th><th>Ordered</th><th>Received</th><th>Unit</th><th>Rate</th><th>Total</th></tr>
+                <tr>
+                  <th>#</th>
+                  <th>Description</th>
+                  {receipt.items.some(it => it.item.category) && <th>Dept</th>}
+                  {receipt.items.some(it => isValidHsn(it.item.sku)) && <th>HSN</th>}
+                  <th>Ordered</th>
+                  <th>Received</th>
+                  <th>Unit</th>
+                  <th>Rate</th>
+                  <th>Total</th>
+                </tr>
               </thead>
               <tbody>
                 {receipt.items.map((it, idx) => (
@@ -495,6 +510,8 @@ function ViewGRDialog({ id }: { id: string }) {
                       <div style={{fontWeight: '600'}}>{it.item.name}</div>
                       {it.item.description && <div style={{fontSize: '12px', color: '#64748b', marginTop: '2px'}}>{it.item.description}</div>}
                     </td>
+                    {receipt.items.some(i => i.item.category) && <td>{it.item.category || '-'}</td>}
+                    {receipt.items.some(i => isValidHsn(i.item.sku)) && <td>{isValidHsn(it.item.sku) ? it.item.sku : '-'}</td>}
                     <td>{it.orderedQuantity || '-'}</td>
                     <td>{it.receivedQuantity}</td>
                     <td>{it.item.unit}</td>
@@ -649,7 +666,17 @@ function PrintGRButton({ id }: { id: string }) {
         <p style="margin-bottom: 8px; font-style: italic">Following goods have been received and verified :</p>
         <table>
           <thead>
-            <tr><th>#</th><th>Description</th><th>Ordered</th><th>Received</th><th>Unit</th><th>Rate</th><th>Total</th></tr>
+            <tr>
+              <th>#</th>
+              <th>Description</th>
+              ${receipt.items.some(it => it.item.category) ? '<th>Dept</th>' : ''}
+              ${receipt.items.some(it => isValidHsn(it.item.sku)) ? '<th>HSN</th>' : ''}
+              <th>Ordered</th>
+              <th>Received</th>
+              <th>Unit</th>
+              <th>Rate</th>
+              <th>Total</th>
+            </tr>
           </thead>
           <tbody>
             ${receipt.items.map((it, idx) => `
@@ -659,6 +686,8 @@ function PrintGRButton({ id }: { id: string }) {
                   <div style="font-weight: 600">${escapeHtml(it.item.name)}</div>
                   ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${escapeHtml(it.item.description)}</div>` : ''}
                 </td>
+                ${receipt.items.some(i => i.item.category) ? `<td>${escapeHtml(it.item.category || '-')}</td>` : ''}
+                ${receipt.items.some(i => isValidHsn(i.item.sku)) ? `<td>${isValidHsn(it.item.sku) ? escapeHtml(it.item.sku) : '-'}</td>` : ''}
                 <td>${it.orderedQuantity || '-'}</td>
                 <td>${it.receivedQuantity}</td>
                 <td>${escapeHtml(it.item.unit)}</td>
