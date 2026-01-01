@@ -257,6 +257,9 @@ export type Database = {
           description: string | null
           hsn_code: string | null
           id: string
+          item_code: string | null
+          make: string | null
+          mpn: string | null
           name: string
           reorder_level: number | null
           supplier_id: string | null
@@ -272,6 +275,9 @@ export type Database = {
           description?: string | null
           hsn_code?: string | null
           id?: string
+          item_code?: string | null
+          make?: string | null
+          mpn?: string | null
           name: string
           reorder_level?: number | null
           supplier_id?: string | null
@@ -287,6 +293,9 @@ export type Database = {
           description?: string | null
           hsn_code?: string | null
           id?: string
+          item_code?: string | null
+          make?: string | null
+          mpn?: string | null
           name?: string
           reorder_level?: number | null
           supplier_id?: string | null

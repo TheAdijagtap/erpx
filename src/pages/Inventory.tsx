@@ -176,6 +176,26 @@ function ItemViewDialog({ itemId, children }: { itemId: string; children: React.
                 <div className="font-medium">{item.sku}</div>
               </div>
             )}
+            <div className="grid grid-cols-3 gap-4">
+              {item.itemCode && (
+                <div>
+                  <div className="text-muted-foreground">Item Code</div>
+                  <div className="font-medium">{item.itemCode}</div>
+                </div>
+              )}
+              {item.make && (
+                <div>
+                  <div className="text-muted-foreground">Make</div>
+                  <div className="font-medium">{item.make}</div>
+                </div>
+              )}
+              {item.mpn && (
+                <div>
+                  <div className="text-muted-foreground">MPN</div>
+                  <div className="font-medium">{item.mpn}</div>
+                </div>
+              )}
+            </div>
             <div>
               <div className="text-muted-foreground">Description</div>
               <div className="font-medium">{item.description}</div>
@@ -346,6 +366,9 @@ function CreateItemDialog({ children }: { children: React.ReactNode }) {
     description: "",
     category: "",
     hsnCode: "",
+    itemCode: "",
+    make: "",
+    mpn: "",
     currentStock: 0,
     minStock: 0,
     maxStock: 0,
@@ -364,13 +387,16 @@ function CreateItemDialog({ children }: { children: React.ReactNode }) {
       id: Date.now().toString(),
       ...formData,
       sku: formData.hsnCode || "", // Use HSN code as SKU
+      itemCode: formData.itemCode || undefined,
+      make: formData.make || undefined,
+      mpn: formData.mpn || undefined,
       createdAt: new Date(),
       updatedAt: new Date()
     };
 
     addItem(item);
     toast({ title: "Success", description: "Item added successfully!" });
-    setFormData({ name: "", description: "", category: "", hsnCode: "", currentStock: 0, minStock: 0, maxStock: 0, unitPrice: 0, unit: "pcs" });
+    setFormData({ name: "", description: "", category: "", hsnCode: "", itemCode: "", make: "", mpn: "", currentStock: 0, minStock: 0, maxStock: 0, unitPrice: 0, unit: "pcs" });
     setOpen(false);
   };
 
@@ -420,6 +446,35 @@ function CreateItemDialog({ children }: { children: React.ReactNode }) {
                 value={formData.hsnCode}
                 onChange={(e) => setFormData({ ...formData, hsnCode: e.target.value })}
                 placeholder="e.g., 8471"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="itemCode">Item Code</Label>
+              <Input 
+                id="itemCode"
+                value={formData.itemCode}
+                onChange={(e) => setFormData({ ...formData, itemCode: e.target.value })}
+                placeholder="Optional"
+              />
+            </div>
+            <div>
+              <Label htmlFor="make">Make</Label>
+              <Input 
+                id="make"
+                value={formData.make}
+                onChange={(e) => setFormData({ ...formData, make: e.target.value })}
+                placeholder="Manufacturer"
+              />
+            </div>
+            <div>
+              <Label htmlFor="mpn">MPN</Label>
+              <Input 
+                id="mpn"
+                value={formData.mpn}
+                onChange={(e) => setFormData({ ...formData, mpn: e.target.value })}
+                placeholder="Part Number"
               />
             </div>
           </div>

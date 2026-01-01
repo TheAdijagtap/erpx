@@ -1,7 +1,7 @@
 export interface InventoryItem {
   id: string;
   name: string;
-  sku: string; // Auto-generated or legacy field
+  sku: string; // Auto-generated or legacy field (HSN Code)
   description: string;
   category: string;
   currentStock: number;
@@ -10,6 +10,9 @@ export interface InventoryItem {
   unitPrice: number;
   unit: string; // kg, pieces, liters, etc.
   supplier?: string;
+  itemCode?: string; // Optional item code
+  make?: string; // Optional manufacturer/make
+  mpn?: string; // Optional Manufacturer Part Number
   createdAt: Date;
   updatedAt: Date;
 }
