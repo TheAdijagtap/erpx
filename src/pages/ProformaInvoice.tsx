@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Receipt, Eye, Edit, Printer, Trash2, Calendar, CheckCircle, Send, TrendingUp, Download, MessageCircle } from "lucide-react";
+import { Plus, Search, Receipt, Eye, Edit, Printer, Trash2, Calendar, CheckCircle, Send, TrendingUp, Download } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
@@ -502,7 +502,6 @@ const ProformaInvoicesTab = ({ proformaProducts }: { proformaProducts: ProformaP
                 <ViewProformaDialog invoice={invoice} />
                 <EditProformaDialog invoice={invoice} proformaProducts={proformaProducts} />
                 <PrintProformaButton id={invoice.id} />
-                <SharePIWhatsAppButton invoice={invoice} businessName={businessInfo.name} />
                 <DeleteProformaDialog id={invoice.id} />
               </div>
             </div>
@@ -1533,7 +1532,6 @@ const ViewProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
           <Button variant="outline" onClick={() => setOpen(false)}>
             Close
           </Button>
-          <SharePIWhatsAppButton invoice={invoice} businessName={businessInfo.name} />
           <Button onClick={handlePrint}>
             <Printer className="w-4 h-4 mr-2" />
             Print
@@ -2188,91 +2186,5 @@ const DeleteProformaDialog = ({ id }: { id: string }) => {
     </Dialog>
   );
 };
-
-function SharePIWhatsAppButton({ invoice, businessName }: { invoice: ProformaInvoiceType; businessName: string }) {
-  const { businessInfo } = useData();
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleShare = async () => {
-    const phone = invoice.buyerInfo?.phone?.replace(/\D/g, '') || '';
-    if (!phone) {
-      alert('Customer phone number not available');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      // Generate PDF
-      const { generateProformaPDF } = await import('@/lib/pdfGenerator');
-      const doc = generateProformaPDF(invoice, businessInfo);
-      const pdfBlob = doc.output('blob');
-      
-      // Upload to Supabase Storage
-      const { supabase } = await import('@/integrations/supabase/client');
-      const fileName = `${invoice.proformaNumber.replace(/[^a-zA-Z0-9]/g, '-')}-${Date.now()}.pdf`;
-      const filePath = `pi/${fileName}`;
-      
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('shared-documents')
-        .upload(filePath, pdfBlob, {
-          contentType: 'application/pdf',
-          upsert: true
-        });
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('shared-documents')
-        .getPublicUrl(filePath);
-
-      const pdfUrl = urlData.publicUrl;
-
-      const message = `Dear ${invoice.buyerInfo.name},
-
-Greetings from ${businessName}!
-
-Please find below the details of *Quotation ${invoice.proformaNumber}*:
-
-📅 *Date:* ${formatDateIN(invoice.date)}
-${invoice.validUntil ? `⏰ *Valid Until:* ${formatDateIN(invoice.validUntil)}` : ''}
-📦 *Items:* ${invoice.items.length} item(s)
-💰 *Total Amount:* ${formatINR(invoice.total)}
-📋 *Status:* ${invoice.status}
-${invoice.paymentTerms ? `💳 *Payment Terms:* ${invoice.paymentTerms}` : ''}
-
-📎 *Download PDF:* ${pdfUrl}
-
-We hope this quotation meets your requirements. Please feel free to reach out for any clarifications.
-
-We look forward to your positive response.
-
-Best Regards,
-${businessName}`;
-
-      const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, '_blank');
-    } catch (error) {
-      console.error('Error generating/uploading PDF:', error);
-      alert('Failed to generate PDF. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={handleShare}
-      disabled={isLoading}
-      className="gap-1 text-green-600 border-green-600 hover:bg-green-50 hover:text-green-700"
-    >
-      <MessageCircle className="w-4 h-4" /> {isLoading ? 'Generating...' : 'WhatsApp'}
-    </Button>
-  );
-}
 
 export default ProformaInvoice;
