@@ -541,19 +541,18 @@ function CreatePODialog() {
     setQuickAddOpen(false);
   };
   const [supplierSearch, setSupplierSearch] = useState("");
-  const [itemSearch, setItemSearch] = useState("");
+  const [itemSearches, setItemSearches] = useState<Record<number, string>>({});
   
   // Debounce search for better performance
   const debouncedSupplierSearch = useDebounce(supplierSearch, 150);
-  const debouncedItemSearch = useDebounce(itemSearch, 150);
 
   const filteredSuppliers = useMemo(() => 
     suppliers.filter(s => s.name.toLowerCase().includes(debouncedSupplierSearch.toLowerCase())),
     [suppliers, debouncedSupplierSearch]
   );
 
-  const filteredItems = useMemo(() => {
-    const search = debouncedItemSearch.toLowerCase().trim();
+  const getFilteredItems = useCallback((rowIndex: number) => {
+    const search = (itemSearches[rowIndex] || "").toLowerCase().trim();
     if (!search) return items;
     return items.filter(i => 
       i.name.toLowerCase().includes(search) ||
@@ -561,7 +560,7 @@ function CreatePODialog() {
       (i.category && i.category.toLowerCase().includes(search)) ||
       (i.sku && i.sku.toLowerCase().includes(search))
     );
-  }, [items, debouncedItemSearch]);
+  }, [items, itemSearches]);
 
   const onAddRow = () => setRows([...rows, { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0, unit: items[0]?.unit || "PCS", hsnCode: isValidHsn(items[0]?.sku) ? (items[0]?.sku || "") : "" }]);
   const onSubmit = () => {
@@ -794,20 +793,20 @@ function CreatePODialog() {
                             <div className="px-2 pb-2 sticky top-0 bg-background">
                               <Input
                                 placeholder="Search items..."
-                                value={itemSearch}
-                                onChange={(e) => setItemSearch(e.target.value)}
+                                value={itemSearches[idx] || ""}
+                                onChange={(e) => setItemSearches(prev => ({ ...prev, [idx]: e.target.value }))}
                                 className="h-8"
                                 onClick={(e) => e.stopPropagation()}
                                 onKeyDown={(e) => e.stopPropagation()}
                                 onFocus={(e) => e.stopPropagation()}
                               />
                             </div>
-                            {filteredItems.length === 0 ? (
+                            {getFilteredItems(idx).length === 0 ? (
                               <div className="px-2 py-4 text-sm text-muted-foreground text-center">
                                 No items found
                               </div>
                             ) : (
-                              filteredItems.map((i) => (
+                              getFilteredItems(idx).map((i) => (
                                 <SelectItem key={i.id} value={i.id}>
                                   <div className="flex flex-col">
                                     <span>{i.name}</span>
