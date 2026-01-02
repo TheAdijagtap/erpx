@@ -118,7 +118,7 @@ const Auth = () => {
           <div className="mx-auto flex items-center justify-center">
             <img 
               src="/assets/reliantops-logo.png" 
-              alt="ReliantOPS Logo" 
+              alt="CORS Logo" 
               className="h-16 object-contain" 
             />
           </div>

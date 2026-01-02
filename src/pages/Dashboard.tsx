@@ -149,7 +149,7 @@ const Dashboard = () => {
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="text-center space-y-6 animate-fade-in">
             <div className="mb-6">
-              <img src="/assets/reliantops-logo.png" alt="ReliantOPS Logo" className="h-20 mx-auto object-contain" />
+              <img src="/assets/reliantops-logo.png" alt="CORS Logo" className="h-20 mx-auto object-contain" />
             </div>
             <div className="inline-block px-4 py-2 bg-primary/10 rounded-full text-primary text-sm font-medium">
               <p>Reliable Operations Management System</p>
@@ -331,7 +331,7 @@ const Dashboard = () => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Why Choose ReliantOPS?
+              Why Choose CORS?
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Experience the benefits of streamlined inventory management
@@ -623,7 +623,7 @@ const Dashboard = () => {
                   <span className="text-sm">+</span>
                 </summary>
                 <p className="text-muted-foreground text-sm mt-4">
-                  ReliantOPS is designed for quick setup. You can start in minutes by configuring your business details, adding suppliers, and creating your first inventory items. Most businesses are fully operational within 30 minutes.
+                  CORS is designed for quick setup. You can start in minutes by configuring your business details, adding suppliers, and creating your first inventory items. Most businesses are fully operational within 30 minutes.
                 </p>
               </details>
             </Card>
@@ -635,7 +635,7 @@ const Dashboard = () => {
                   <span className="text-sm">+</span>
                 </summary>
                 <p className="text-muted-foreground text-sm mt-4">
-                  Yes, ReliantOPS is fully GST compliant for Indian businesses. All invoices and receipts automatically calculate GST based on your configured rates, and you can generate compliant tax reports.
+                  Yes, CORS is fully GST compliant for Indian businesses. All invoices and receipts automatically calculate GST based on your configured rates, and you can generate compliant tax reports.
                 </p>
               </details>
             </Card>
@@ -647,7 +647,7 @@ const Dashboard = () => {
                   <span className="text-sm">+</span>
                 </summary>
                 <p className="text-muted-foreground text-sm mt-4">
-                  There are no limits on the number of items, suppliers, or transactions you can manage. ReliantOPS scales with your business from small operations to large enterprises.
+                  There are no limits on the number of items, suppliers, or transactions you can manage. CORS scales with your business from small operations to large enterprises.
                 </p>
               </details>
             </Card>
@@ -716,7 +716,7 @@ const Dashboard = () => {
                   </li>
                 </ul>
                 <Button asChild className="w-full" size="lg">
-                  <a href="mailto:necrus@yahoo.com?subject=ReliantOPS%20Monthly%20Subscription&body=Hi%2C%20I%20would%20like%20to%20subscribe%20to%20the%20ReliantOPS%20Monthly%20Plan%20(%E2%82%B9250%2Fmonth).%20Please%20share%20the%20payment%20details.">Get Started</a>
+                  <a href="mailto:necrus@yahoo.com?subject=CORS%20Monthly%20Subscription&body=Hi%2C%20I%20would%20like%20to%20subscribe%20to%20the%20CORS%20Monthly%20Plan%20(%E2%82%B9250%2Fmonth).%20Please%20share%20the%20payment%20details.">Get Started</a>
                 </Button>
               </div>
             </Card>
@@ -751,7 +751,7 @@ const Dashboard = () => {
                   </li>
                 </ul>
                 <Button asChild className="w-full" size="lg">
-                  <a href="mailto:necrus@yahoo.com?subject=ReliantOPS%20Yearly%20Subscription&body=Hi%2C%20I%20would%20like%20to%20subscribe%20to%20the%20ReliantOPS%20Yearly%20Plan%20(%E2%82%B92%2C500%2Fyear).%20Please%20share%20the%20payment%20details.">Get Started</a>
+                  <a href="mailto:necrus@yahoo.com?subject=CORS%20Yearly%20Subscription&body=Hi%2C%20I%20would%20like%20to%20subscribe%20to%20the%20CORS%20Yearly%20Plan%20(%E2%82%B92%2C500%2Fyear).%20Please%20share%20the%20payment%20details.">Get Started</a>
                 </Button>
               </div>
             </Card>
@@ -768,7 +768,7 @@ const Dashboard = () => {
                 Ready to Transform Your Business?
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Join hundreds of businesses using ReliantOPS to streamline their inventory management, reduce costs, and scale efficiently.
+                Join hundreds of businesses using CORS to streamline their inventory management, reduce costs, and scale efficiently.
               </p>
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">Get started in three easy steps:</p>
@@ -796,16 +796,16 @@ const Dashboard = () => {
             <div className="flex items-center gap-3">
               <img 
                 src="/assets/reliantops-logo.png" 
-                alt="ReliantOPS Logo" 
+                alt="CORS Logo" 
                 className="h-8 object-contain" 
               />
               <div className="h-6 w-px bg-border" />
               <span className="text-sm text-muted-foreground">
-                A <span className="font-bold text-foreground">Necrus</span> Company
+                A <span className="font-bold text-foreground">Necrus</span> Product
               </span>
             </div>
             <div className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} ReliantOPS - Reliable Operations Management System. All rights reserved.
+              © {new Date().getFullYear()} CORS - Reliable Operations Management System. All rights reserved.
             </div>
           </div>
         </div>
