@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, FileText, Eye, Edit, Printer, Trash2, Download, MessageCircle } from "lucide-react";
+import { Plus, Search, FileText, Eye, Edit, Printer, Trash2, Download } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
@@ -350,7 +350,6 @@ function PurchaseOrdersTab({ filteredOrders, selectedMonthStats }: PurchaseOrder
                 <ViewPODialog id={order.id} />
                 <EditPODialog id={order.id} />
                 <PrintPOButton id={order.id} />
-                <SharePOWhatsAppButton order={order} businessName={businessInfo.name} />
                 <DeletePODialog id={order.id} />
               </div>
             </div>
@@ -1042,7 +1041,6 @@ function ViewPODialog({ id }: { id: string }) {
         </div>
         <SheetFooter className="gap-2 mt-6 flex-wrap">
           <Button variant="outline" onClick={() => printElementById(elId, `PO ${order.poNumber}`)} className="gap-1"><Printer className="w-4 h-4" /> Print</Button>
-          <SharePOWhatsAppButton order={order} businessName={businessInfo.name} />
           <DeletePODialog id={id} />
         </SheetFooter>
       </SheetContent>
@@ -1285,91 +1283,6 @@ function ExportPurchaseDataButton({ orders, monthLabel }: { orders: any[]; month
       disabled={orders.length === 0}
     >
       <Download className="w-4 h-4" /> Export
-    </Button>
-  );
-}
-
-function SharePOWhatsAppButton({ order, businessName }: { order: any; businessName: string }) {
-  const { businessInfo } = useData();
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleShare = async () => {
-    const phone = order.supplier?.phone?.replace(/\D/g, '') || '';
-    if (!phone) {
-      alert('Supplier phone number not available');
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      // Generate PDF
-      const { generatePurchaseOrderPDF } = await import('@/lib/pdfGenerator');
-      const doc = generatePurchaseOrderPDF(order, businessInfo);
-      const pdfBlob = doc.output('blob');
-      
-      // Upload to Supabase Storage
-      const { supabase } = await import('@/integrations/supabase/client');
-      const fileName = `${order.poNumber.replace(/[^a-zA-Z0-9]/g, '-')}-${Date.now()}.pdf`;
-      const filePath = `po/${fileName}`;
-      
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('shared-documents')
-        .upload(filePath, pdfBlob, {
-          contentType: 'application/pdf',
-          upsert: true
-        });
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('shared-documents')
-        .getPublicUrl(filePath);
-
-      const pdfUrl = urlData.publicUrl;
-
-      const message = `Dear ${order.supplier.name},
-
-Greetings from ${businessName}!
-
-Please find below the details of *Purchase Order ${order.poNumber}*:
-
-📅 *Date:* ${formatDateIN(order.date)}
-📦 *Items:* ${order.items.length} item(s)
-💰 *Total Amount:* ${formatINR(order.total)}
-📋 *Status:* ${order.status}
-${order.paymentTerms ? `💳 *Payment Terms:* ${order.paymentTerms}` : ''}
-
-📎 *Download PDF:* ${pdfUrl}
-
-Kindly acknowledge receipt of this order and confirm the delivery schedule.
-
-Thank you for your continued partnership.
-
-Best Regards,
-${businessName}`;
-
-      const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, '_blank');
-    } catch (error) {
-      console.error('Error generating/uploading PDF:', error);
-      alert('Failed to generate PDF. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={handleShare}
-      disabled={isLoading}
-      className="gap-1 text-green-600 border-green-600 hover:bg-green-50 hover:text-green-700"
-    >
-      <MessageCircle className="w-4 h-4" /> {isLoading ? 'Generating...' : 'WhatsApp'}
     </Button>
   );
 }
