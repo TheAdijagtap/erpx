@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, FileText, Eye, Edit, Printer, Trash2, Download } from "lucide-react";
+import { Plus, Search, FileText, Eye, Edit, Printer, Trash2, Download, MessageCircle } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
@@ -1038,8 +1038,9 @@ function ViewPODialog({ id }: { id: string }) {
           
           {order.notes && <div className="footer">Notes: {order.notes}</div>}
         </div>
-        <SheetFooter className="gap-2 mt-6">
+        <SheetFooter className="gap-2 mt-6 flex-wrap">
           <Button variant="outline" onClick={() => printElementById(elId, `PO ${order.poNumber}`)} className="gap-1"><Printer className="w-4 h-4" /> Print</Button>
+          <SharePOWhatsAppButton order={order} businessName={businessInfo.name} />
           <DeletePODialog id={id} />
         </SheetFooter>
       </SheetContent>
@@ -1282,6 +1283,50 @@ function ExportPurchaseDataButton({ orders, monthLabel }: { orders: any[]; month
       disabled={orders.length === 0}
     >
       <Download className="w-4 h-4" /> Export
+    </Button>
+  );
+}
+
+function SharePOWhatsAppButton({ order, businessName }: { order: any; businessName: string }) {
+  const handleShare = () => {
+    const phone = order.supplier?.phone?.replace(/\D/g, '') || '';
+    if (!phone) {
+      alert('Supplier phone number not available');
+      return;
+    }
+    
+    const message = `Dear ${order.supplier.name},
+
+Greetings from ${businessName}!
+
+Please find below the details of *Purchase Order ${order.poNumber}*:
+
+📅 *Date:* ${formatDateIN(order.date)}
+📦 *Items:* ${order.items.length} item(s)
+💰 *Total Amount:* ${formatINR(order.total)}
+📋 *Status:* ${order.status}
+${order.paymentTerms ? `💳 *Payment Terms:* ${order.paymentTerms}` : ''}
+
+Kindly acknowledge receipt of this order and confirm the delivery schedule.
+
+For the detailed PDF document, please let us know and we will share it with you.
+
+Thank you for your continued partnership.
+
+Best Regards,
+${businessName}`;
+
+    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  return (
+    <Button
+      variant="outline"
+      onClick={handleShare}
+      className="gap-1 text-green-600 border-green-600 hover:bg-green-50 hover:text-green-700"
+    >
+      <MessageCircle className="w-4 h-4" /> WhatsApp
     </Button>
   );
 }
