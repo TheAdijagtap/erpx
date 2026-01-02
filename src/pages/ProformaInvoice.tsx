@@ -2190,14 +2190,47 @@ const DeleteProformaDialog = ({ id }: { id: string }) => {
 };
 
 function SharePIWhatsAppButton({ invoice, businessName }: { invoice: ProformaInvoiceType; businessName: string }) {
-  const handleShare = () => {
+  const { businessInfo } = useData();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleShare = async () => {
     const phone = invoice.buyerInfo?.phone?.replace(/\D/g, '') || '';
     if (!phone) {
       alert('Customer phone number not available');
       return;
     }
-    
-    const message = `Dear ${invoice.buyerInfo.name},
+
+    setIsLoading(true);
+    try {
+      // Generate PDF
+      const { generateProformaPDF } = await import('@/lib/pdfGenerator');
+      const doc = generateProformaPDF(invoice, businessInfo);
+      const pdfBlob = doc.output('blob');
+      
+      // Upload to Supabase Storage
+      const { supabase } = await import('@/integrations/supabase/client');
+      const fileName = `${invoice.proformaNumber.replace(/[^a-zA-Z0-9]/g, '-')}-${Date.now()}.pdf`;
+      const filePath = `pi/${fileName}`;
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('shared-documents')
+        .upload(filePath, pdfBlob, {
+          contentType: 'application/pdf',
+          upsert: true
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('shared-documents')
+        .getPublicUrl(filePath);
+
+      const pdfUrl = urlData.publicUrl;
+
+      const message = `Dear ${invoice.buyerInfo.name},
 
 Greetings from ${businessName}!
 
@@ -2210,26 +2243,34 @@ ${invoice.validUntil ? `⏰ *Valid Until:* ${formatDateIN(invoice.validUntil)}` 
 📋 *Status:* ${invoice.status}
 ${invoice.paymentTerms ? `💳 *Payment Terms:* ${invoice.paymentTerms}` : ''}
 
-We hope this quotation meets your requirements. Please feel free to reach out for any clarifications or modifications.
+📎 *Download PDF:* ${pdfUrl}
 
-For the detailed PDF document, please let us know and we will share it with you.
+We hope this quotation meets your requirements. Please feel free to reach out for any clarifications.
 
 We look forward to your positive response.
 
 Best Regards,
 ${businessName}`;
 
-    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+      const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
+    } catch (error) {
+      console.error('Error generating/uploading PDF:', error);
+      alert('Failed to generate PDF. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <Button
       variant="outline"
+      size="sm"
       onClick={handleShare}
+      disabled={isLoading}
       className="gap-1 text-green-600 border-green-600 hover:bg-green-50 hover:text-green-700"
     >
-      <MessageCircle className="w-4 h-4" /> WhatsApp
+      <MessageCircle className="w-4 h-4" /> {isLoading ? 'Generating...' : 'WhatsApp'}
     </Button>
   );
 }

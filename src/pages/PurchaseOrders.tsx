@@ -1290,14 +1290,47 @@ function ExportPurchaseDataButton({ orders, monthLabel }: { orders: any[]; month
 }
 
 function SharePOWhatsAppButton({ order, businessName }: { order: any; businessName: string }) {
-  const handleShare = () => {
+  const { businessInfo } = useData();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleShare = async () => {
     const phone = order.supplier?.phone?.replace(/\D/g, '') || '';
     if (!phone) {
       alert('Supplier phone number not available');
       return;
     }
-    
-    const message = `Dear ${order.supplier.name},
+
+    setIsLoading(true);
+    try {
+      // Generate PDF
+      const { generatePurchaseOrderPDF } = await import('@/lib/pdfGenerator');
+      const doc = generatePurchaseOrderPDF(order, businessInfo);
+      const pdfBlob = doc.output('blob');
+      
+      // Upload to Supabase Storage
+      const { supabase } = await import('@/integrations/supabase/client');
+      const fileName = `${order.poNumber.replace(/[^a-zA-Z0-9]/g, '-')}-${Date.now()}.pdf`;
+      const filePath = `po/${fileName}`;
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('shared-documents')
+        .upload(filePath, pdfBlob, {
+          contentType: 'application/pdf',
+          upsert: true
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('shared-documents')
+        .getPublicUrl(filePath);
+
+      const pdfUrl = urlData.publicUrl;
+
+      const message = `Dear ${order.supplier.name},
 
 Greetings from ${businessName}!
 
@@ -1309,26 +1342,34 @@ Please find below the details of *Purchase Order ${order.poNumber}*:
 📋 *Status:* ${order.status}
 ${order.paymentTerms ? `💳 *Payment Terms:* ${order.paymentTerms}` : ''}
 
-Kindly acknowledge receipt of this order and confirm the delivery schedule.
+📎 *Download PDF:* ${pdfUrl}
 
-For the detailed PDF document, please let us know and we will share it with you.
+Kindly acknowledge receipt of this order and confirm the delivery schedule.
 
 Thank you for your continued partnership.
 
 Best Regards,
 ${businessName}`;
 
-    const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+      const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
+    } catch (error) {
+      console.error('Error generating/uploading PDF:', error);
+      alert('Failed to generate PDF. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <Button
       variant="outline"
+      size="sm"
       onClick={handleShare}
+      disabled={isLoading}
       className="gap-1 text-green-600 border-green-600 hover:bg-green-50 hover:text-green-700"
     >
-      <MessageCircle className="w-4 h-4" /> WhatsApp
+      <MessageCircle className="w-4 h-4" /> {isLoading ? 'Generating...' : 'WhatsApp'}
     </Button>
   );
 }
