@@ -117,8 +117,8 @@ const Auth = () => {
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto flex items-center justify-center">
             <img 
-              src="https://cdn.builder.io/api/v1/image/assets%2Fc53d55d6e77f4fc3a0917324bbf678cd%2F327ce537ca7a4e5bb4b15a6a6569900e?format=webp&width=800" 
-              alt="CORS Logo" 
+              src="/assets/reliantops-logo.png" 
+              alt="ReliantOPS Logo" 
               className="h-16 object-contain" 
             />
           </div>

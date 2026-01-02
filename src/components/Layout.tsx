@@ -34,7 +34,7 @@ const Layout = () => {
 
   const handleSubscribe = () => {
     const message = encodeURIComponent(
-      "Hi! I would like to subscribe to CORS Inventory app. Please share the subscription details."
+      "Hi! I would like to subscribe to ReliantOPS app. Please share the subscription details."
     );
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, "_blank");
   };
@@ -49,7 +49,7 @@ const Layout = () => {
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="px-6 py-5 border-b border-sidebar-border flex items-center justify-center">
-            <img src="https://cdn.builder.io/api/v1/image/assets%2Fc53d55d6e77f4fc3a0917324bbf678cd%2F327ce537ca7a4e5bb4b15a6a6569900e?format=webp&width=800" alt="CORS Logo" className="h-10 object-contain" />
+            <img src="/assets/reliantops-logo.png" alt="ReliantOPS Logo" className="h-10 object-contain" />
           </div>
           {/* Navigation */}
           <nav className="flex-1 space-y-0.5 px-3 pt-6 pb-6">
@@ -87,7 +87,7 @@ const Layout = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  const message = encodeURIComponent("Hi! I need support with CORS Inventory app.");
+                  const message = encodeURIComponent("Hi! I need support with ReliantOPS app.");
                   window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, "_blank");
                 }}
                 className="justify-start text-green-600 hover:text-green-700 hover:bg-green-50"
@@ -101,7 +101,7 @@ const Layout = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => window.open("mailto:necrus@yahoo.com?subject=Help Request - CORS Inventory", "_blank")}
+                  onClick={() => window.open("mailto:necrus@yahoo.com?subject=Help Request - ReliantOPS", "_blank")}
                   className="flex-1 justify-start text-muted-foreground hover:text-foreground"
                 >
                   <HelpCircle className="mr-3 h-4 w-4" />
