@@ -429,7 +429,7 @@ function ProformaInsightsTab({ stats, monthlyInsights, yearlyInsights, selectedM
 }
 
 const ProformaInvoicesTab = ({ proformaProducts }: { proformaProducts: ProformaProduct[] }) => {
-  const { proformaInvoices } = useData();
+  const { proformaInvoices, businessInfo } = useData();
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebounce(searchTerm, 150);
 
@@ -502,6 +502,7 @@ const ProformaInvoicesTab = ({ proformaProducts }: { proformaProducts: ProformaP
                 <ViewProformaDialog invoice={invoice} />
                 <EditProformaDialog invoice={invoice} proformaProducts={proformaProducts} />
                 <PrintProformaButton id={invoice.id} />
+                <SharePIWhatsAppButton invoice={invoice} businessName={businessInfo.name} />
                 <DeleteProformaDialog id={invoice.id} />
               </div>
             </div>

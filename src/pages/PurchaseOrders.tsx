@@ -279,6 +279,7 @@ interface PurchaseOrdersTabProps {
 }
 
 function PurchaseOrdersTab({ filteredOrders, selectedMonthStats }: PurchaseOrdersTabProps) {
+  const { businessInfo } = useData();
   const [searchTerm, setSearchTerm] = useState("");
 
   const ordersFiltered = useMemo(() => {
@@ -349,6 +350,7 @@ function PurchaseOrdersTab({ filteredOrders, selectedMonthStats }: PurchaseOrder
                 <ViewPODialog id={order.id} />
                 <EditPODialog id={order.id} />
                 <PrintPOButton id={order.id} />
+                <SharePOWhatsAppButton order={order} businessName={businessInfo.name} />
                 <DeletePODialog id={order.id} />
               </div>
             </div>
