@@ -919,7 +919,7 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
       item: {
         id: proformaProducts[0].id,
         name: proformaProducts[0].name,
-        sku: proformaProducts[0].id, // Use ID as SKU for proforma products
+        sku: proformaProducts[0].hsnCode || "",
         description: proformaProducts[0].description,
         category: "Proforma Product",
         currentStock: 0,
@@ -945,7 +945,7 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
         const selectedItem = {
           id: selectedProduct.id,
           name: selectedProduct.name,
-          sku: selectedProduct.id,
+          sku: selectedProduct.hsnCode || "",
           description: selectedProduct.description,
           category: "Proforma Product",
           currentStock: 0,
@@ -1591,7 +1591,7 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
       item: {
         id: proformaProducts[0].id,
         name: proformaProducts[0].name,
-        sku: proformaProducts[0].id,
+        sku: proformaProducts[0].hsnCode || "",
         description: proformaProducts[0].description,
         category: "Proforma Product",
         currentStock: 0,
@@ -1617,7 +1617,7 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
         const selectedItem = {
           id: selectedProduct.id,
           name: selectedProduct.name,
-          sku: selectedProduct.id,
+          sku: selectedProduct.hsnCode || "",
           description: selectedProduct.description,
           category: "Proforma Product",
           currentStock: 0,
