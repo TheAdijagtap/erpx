@@ -92,6 +92,12 @@ const defaultBusinessInfo: BusinessInfo = {
 
 const defaultGstSettings: GSTSettings = { enabled: true, sgstRate: 9, cgstRate: 9 };
 
+const sanitizeHsn = (value: unknown): string | null => {
+  const v = typeof value === "string" ? value.trim() : "";
+  if (!v) return null;
+  return /^\d+$/.test(v) ? v : null;
+};
+
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -314,7 +320,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             item: { 
               id: "", 
               name: item.item_name || "Item", 
-              sku: item.hsn_code || "", 
+              sku: sanitizeHsn(item.hsn_code) || "",
               description: item.description || "", 
               category: "", 
               currentStock: 0, 
@@ -328,7 +334,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             quantity: Number(item.quantity),
             unitPrice: Number(item.rate),
             total: Number(item.amount),
-            hsnCode: item.hsn_code || undefined,
+            hsnCode: sanitizeHsn(item.hsn_code) || undefined,
           })),
           additionalCharges: (piAny.proforma_invoice_additional_charges || []).map((charge: any) => ({
             id: charge.id,
@@ -904,7 +910,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       proforma_invoice_id: data.id,
       item_name: item.item?.name || "Item",
       description: item.item?.description || "",
-      hsn_code: item.item?.sku || "",
+      hsn_code: sanitizeHsn(item.hsnCode ?? item.item?.sku),
       quantity: item.quantity,
       rate: item.unitPrice,
       amount: item.total,
@@ -969,7 +975,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         proforma_invoice_id: id,
         item_name: item.item?.name || "Item",
         description: item.item?.description || "",
-        hsn_code: item.item?.sku || "",
+        hsn_code: sanitizeHsn(item.hsnCode ?? item.item?.sku),
         quantity: item.quantity,
         rate: item.unitPrice,
         amount: item.total,
