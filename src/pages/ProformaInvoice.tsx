@@ -1549,7 +1549,9 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
   const [date, setDate] = useState(invoice.date instanceof Date ? invoice.date.toISOString().split('T')[0] : new Date(invoice.date).toISOString().split('T')[0]);
   const [validUntil, setValidUntil] = useState(invoice.validUntil ? (invoice.validUntil instanceof Date ? invoice.validUntil.toISOString().split('T')[0] : new Date(invoice.validUntil).toISOString().split('T')[0]) : "");
   const [paymentTerms, setPaymentTerms] = useState(invoice.paymentTerms || "");
-  const [items, setItems] = useState<ProformaInvoiceItem[]>(invoice.items);
+  const [items, setItems] = useState<ProformaInvoiceItem[]>(
+    invoice.items.map((it) => ({ ...it, hsnCode: undefined }))
+  );
   const [additionalCharges, setAdditionalCharges] = useState<Array<{ name: string; amount: number }>>(
     (invoice.additionalCharges || []).map(charge => ({ name: charge.name, amount: charge.amount }))
   );
@@ -1634,7 +1636,7 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
           item: selectedItem,
           unitPrice: selectedProduct.price,
           total: newItems[index].quantity * selectedProduct.price,
-          hsnCode: selectedProduct.hsnCode || undefined,
+          hsnCode: undefined,
         };
       }
     } else if (field === 'itemName') {
@@ -1669,10 +1671,11 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
     if (!buyerInfo.name || items.length === 0) return;
 
     const { subtotal, sgst, cgst, total } = calcTotals();
+    const itemsWithoutHsn = items.map((it) => ({ ...it, hsnCode: undefined }));
 
     updateProformaInvoice(invoice.id, {
       buyerInfo,
-      items,
+      items: itemsWithoutHsn,
       additionalCharges: additionalCharges.map(charge => ({
         id: crypto.randomUUID(),
         name: charge.name,
@@ -1858,7 +1861,6 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
               <TableHeader>
                 <TableRow>
                   <TableHead>Item</TableHead>
-                  <TableHead>HSN (Optional)</TableHead>
                   <TableHead>Quantity</TableHead>
                   <TableHead>Unit Price</TableHead>
                   <TableHead>Total</TableHead>
@@ -1909,14 +1911,6 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
                           </Select>
                         )}
                       </div>
-                    </TableCell>
-                    <TableCell className="min-w-[100px]">
-                      <Input
-                        value={item.hsnCode || ""}
-                        onChange={(e) => updateItem(index, 'hsnCode', e.target.value)}
-                        placeholder="HSN"
-                        className="w-24"
-                      />
                     </TableCell>
                     <TableCell className="min-w-[100px]">
                       <Input
