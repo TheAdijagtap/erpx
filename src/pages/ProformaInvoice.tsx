@@ -1609,7 +1609,7 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
     }]);
   };
 
-  const updateItem = (index: number, field: keyof ProformaInvoiceItem, value: any) => {
+  const updateItem = (index: number, field: keyof ProformaInvoiceItem | 'itemName', value: any) => {
     const newItems = [...items];
     if (field === 'itemId') {
       const selectedProduct = proformaProducts?.find(product => product.id === value);
@@ -1637,6 +1637,12 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
           hsnCode: selectedProduct.hsnCode || undefined,
         };
       }
+    } else if (field === 'itemName') {
+      // Update item name directly for existing items
+      newItems[index] = {
+        ...newItems[index],
+        item: { ...newItems[index].item, name: value },
+      };
     } else if (field === 'quantity' || field === 'unitPrice') {
       newItems[index] = { ...newItems[index], [field]: value };
       newItems[index].total = newItems[index].quantity * newItems[index].unitPrice;
@@ -1863,38 +1869,45 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
                 {items.map((item, index) => (
                   <TableRow key={item.id}>
                     <TableCell className="min-w-[200px]">
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
-                        <Select
-                          value={item.itemId}
-                          onValueChange={(value) => updateItem(index, 'itemId', value)}
-                        >
-                          <SelectTrigger className="pl-10">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="z-50">
-                            <div className="px-2 pb-2 sticky top-0 bg-background">
-                              <Input
-                                placeholder="Search products..."
-                                value={itemSearch}
-                                onChange={(e) => setItemSearch(e.target.value)}
-                                className="h-8"
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            </div>
-                            {filteredProducts.length === 0 ? (
-                              <div className="px-2 py-4 text-sm text-muted-foreground text-center">
-                                No products found
+                      <div className="space-y-2">
+                        <Input
+                          value={item.item?.name || ""}
+                          onChange={(e) => updateItem(index, 'itemName', e.target.value)}
+                          placeholder="Item name"
+                          className="w-full"
+                        />
+                        {proformaProducts && proformaProducts.length > 0 && (
+                          <Select
+                            value={item.itemId || ""}
+                            onValueChange={(value) => updateItem(index, 'itemId', value)}
+                          >
+                            <SelectTrigger className="h-8 text-xs">
+                              <SelectValue placeholder="Or select from products..." />
+                            </SelectTrigger>
+                            <SelectContent className="z-50">
+                              <div className="px-2 pb-2 sticky top-0 bg-background">
+                                <Input
+                                  placeholder="Search products..."
+                                  value={itemSearch}
+                                  onChange={(e) => setItemSearch(e.target.value)}
+                                  className="h-8"
+                                  onClick={(e) => e.stopPropagation()}
+                                />
                               </div>
-                            ) : (
-                              filteredProducts.map((product) => (
-                                <SelectItem key={product.id} value={product.id}>
-                                  {product.name} ({product.unit})
-                                </SelectItem>
-                              ))
-                            )}
-                          </SelectContent>
-                        </Select>
+                              {filteredProducts.length === 0 ? (
+                                <div className="px-2 py-4 text-sm text-muted-foreground text-center">
+                                  No products found
+                                </div>
+                              ) : (
+                                filteredProducts.map((product) => (
+                                  <SelectItem key={product.id} value={product.id}>
+                                    {product.name} ({product.unit})
+                                  </SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell className="min-w-[100px]">
