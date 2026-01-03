@@ -1556,6 +1556,7 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
   const [notes, setNotes] = useState(invoice.notes || "");
   const [status, setStatus] = useState(invoice.status);
   const [applyGST, setApplyGST] = useState<boolean>(invoice.sgst > 0 || invoice.cgst > 0);
+  const [itemSearch, setItemSearch] = useState("");
   
   // Calculate GST rate percentage from the stored SGST/CGST amounts
   const initialGstRate = useMemo(() => {
@@ -1569,6 +1570,17 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
   }, [invoice.sgst, invoice.cgst, invoice.subtotal, invoice.additionalCharges]);
   
   const [gstRate, setGstRate] = useState<number>(initialGstRate);
+
+  const filteredProducts = useMemo(() => {
+    if (!proformaProducts) return [];
+    if (!itemSearch) return proformaProducts;
+    const searchLower = itemSearch.toLowerCase();
+    return proformaProducts.filter(product =>
+      product.name.toLowerCase().includes(searchLower) ||
+      product.unit.toLowerCase().includes(searchLower) ||
+      (product.hsnCode && product.hsnCode.toLowerCase().includes(searchLower))
+    );
+  }, [proformaProducts, itemSearch]);
 
   const addRow = () => {
     if (!proformaProducts || proformaProducts.length === 0) return;
@@ -1850,24 +1862,42 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
               <TableBody>
                 {items.map((item, index) => (
                   <TableRow key={item.id}>
-                    <TableCell>
-                      <Select
-                        value={item.itemId}
-                        onValueChange={(value) => updateItem(index, 'itemId', value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {proformaProducts?.map((product) => (
-                            <SelectItem key={product.id} value={product.id}>
-                              {product.name} ({product.unit})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                    <TableCell className="min-w-[200px]">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+                        <Select
+                          value={item.itemId}
+                          onValueChange={(value) => updateItem(index, 'itemId', value)}
+                        >
+                          <SelectTrigger className="pl-10">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="z-50">
+                            <div className="px-2 pb-2 sticky top-0 bg-background">
+                              <Input
+                                placeholder="Search products..."
+                                value={itemSearch}
+                                onChange={(e) => setItemSearch(e.target.value)}
+                                className="h-8"
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
+                            {filteredProducts.length === 0 ? (
+                              <div className="px-2 py-4 text-sm text-muted-foreground text-center">
+                                No products found
+                              </div>
+                            ) : (
+                              filteredProducts.map((product) => (
+                                <SelectItem key={product.id} value={product.id}>
+                                  {product.name} ({product.unit})
+                                </SelectItem>
+                              ))
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="min-w-[100px]">
                       <Input
                         value={item.hsnCode || ""}
                         onChange={(e) => updateItem(index, 'hsnCode', e.target.value)}
@@ -1875,25 +1905,27 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
                         className="w-24"
                       />
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="min-w-[100px]">
                       <Input
                         type="number"
                         value={item.quantity}
                         onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
                         min="0"
                         step="0.01"
+                        className="w-24"
                       />
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="min-w-[120px]">
                       <Input
                         type="number"
                         value={item.unitPrice}
                         onChange={(e) => updateItem(index, 'unitPrice', parseFloat(e.target.value) || 0)}
                         min="0"
                         step="0.01"
+                        className="w-28"
                       />
                     </TableCell>
-                    <TableCell>{formatINR(item.total)}</TableCell>
+                    <TableCell className="min-w-[100px]">{formatINR(item.total)}</TableCell>
                     <TableCell>
                       <Button
                         variant="outline"
