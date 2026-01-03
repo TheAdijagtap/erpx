@@ -551,6 +551,8 @@ function ViewGRDialog({ id }: { id: string }) {
                 <tr>
                   <th>#</th>
                   <th>Description</th>
+                  {receipt.items.some(it => it.item.make) && <th>Make</th>}
+                  {receipt.items.some(it => it.item.mpn) && <th>MPN</th>}
                   {receipt.items.some(it => it.batchNumber) && <th>Batch/Lot</th>}
                   {receipt.items.some(it => isValidHsn(it.item.sku)) && <th>HSN</th>}
                   <th>Ordered</th>
@@ -568,6 +570,8 @@ function ViewGRDialog({ id }: { id: string }) {
                       <div style={{fontWeight: '600'}}>{it.item.name}</div>
                       {it.item.description && <div style={{fontSize: '12px', color: '#64748b', marginTop: '2px'}}>{it.item.description}</div>}
                     </td>
+                    {receipt.items.some(i => i.item.make) && <td>{it.item.make || '-'}</td>}
+                    {receipt.items.some(i => i.item.mpn) && <td>{it.item.mpn || '-'}</td>}
                     {receipt.items.some(i => i.batchNumber) && <td>{it.batchNumber || '-'}</td>}
                     {receipt.items.some(i => isValidHsn(i.item.sku)) && <td>{isValidHsn(it.item.sku) ? it.item.sku : '-'}</td>}
                     <td>{it.orderedQuantity || '-'}</td>
@@ -752,6 +756,8 @@ function PrintGRButton({ id }: { id: string }) {
             <tr>
               <th>#</th>
               <th>Description</th>
+              ${receipt.items.some(it => it.item.make) ? '<th>Make</th>' : ''}
+              ${receipt.items.some(it => it.item.mpn) ? '<th>MPN</th>' : ''}
               ${receipt.items.some(it => it.batchNumber) ? '<th>Batch/Lot</th>' : ''}
               ${receipt.items.some(it => isValidHsn(it.item.sku)) ? '<th>HSN</th>' : ''}
               <th>Ordered</th>
@@ -769,6 +775,8 @@ function PrintGRButton({ id }: { id: string }) {
                   <div style="font-weight: 600">${escapeHtml(it.item.name)}</div>
                   ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${escapeHtml(it.item.description)}</div>` : ''}
                 </td>
+                ${receipt.items.some(i => i.item.make) ? `<td>${it.item.make ? escapeHtml(it.item.make) : '-'}</td>` : ''}
+                ${receipt.items.some(i => i.item.mpn) ? `<td>${it.item.mpn ? escapeHtml(it.item.mpn) : '-'}</td>` : ''}
                 ${receipt.items.some(i => i.batchNumber) ? `<td>${it.batchNumber ? escapeHtml(it.batchNumber) : '-'}</td>` : ''}
                 ${receipt.items.some(i => isValidHsn(i.item.sku)) ? `<td>${isValidHsn(it.item.sku) ? escapeHtml(it.item.sku) : '-'}</td>` : ''}
                 <td>${it.orderedQuantity || '-'}</td>
