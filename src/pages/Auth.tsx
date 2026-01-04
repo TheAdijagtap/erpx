@@ -117,8 +117,8 @@ const Auth = () => {
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto flex items-center justify-center">
             <img 
-              src="/assets/reliantops-logo.png" 
-              alt="CORS Logo" 
+              src="/assets/erpace-logo.png" 
+              alt="ERPace Logo" 
               className="h-16 object-contain" 
             />
           </div>
