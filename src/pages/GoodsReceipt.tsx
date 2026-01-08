@@ -969,11 +969,11 @@ function TCodeDialog({ id }: { id: string }) {
       <head>
         <title>T-Code Stickers - ${receipt.grNumber}</title>
         <style>
-          @page { size: 80mm 50mm; margin: 2mm; }
+          @page { size: 75mm 50mm; margin: 2mm; }
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body { font-family: 'Arial', sans-serif; }
           .sticker {
-            width: 76mm;
+            width: 71mm;
             height: 46mm;
             border: 1px solid #000;
             padding: 2mm;
