@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Building, Upload, Save, Settings } from "lucide-react";
+import { Building, Upload, Save, Settings, X } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
 import { toast } from "@/hooks/use-toast";
 
@@ -124,13 +124,23 @@ const BusinessSetup = () => {
                     <Building className="w-8 h-8 text-muted-foreground" />
                   )}
                 </div>
-                <div>
+                <div className="flex gap-2">
                   <input id="logo" type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'logo')} className="hidden" />
                   <Button asChild variant="outline" size="sm" className="gap-2">
                     <label htmlFor="logo" className="cursor-pointer">
                       <Upload className="w-4 h-4 inline mr-1" /> Upload Logo
                     </label>
                   </Button>
+                  {localInfo.logo && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="gap-1 text-destructive hover:text-destructive"
+                      onClick={() => handleLocalChange('logo', '')}
+                    >
+                      <X className="w-4 h-4" /> Remove
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
@@ -198,7 +208,7 @@ const BusinessSetup = () => {
                     <div className="text-xs text-muted-foreground">No signature</div>
                   )}
                 </div>
-                <div>
+                <div className="flex gap-2">
                   <input 
                     id="signature" 
                     type="file" 
@@ -211,6 +221,16 @@ const BusinessSetup = () => {
                       <Upload className="w-4 h-4 inline mr-1" /> Upload Signature
                     </label>
                   </Button>
+                  {localInfo.signature && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="gap-1 text-destructive hover:text-destructive"
+                      onClick={() => handleLocalChange('signature', '')}
+                    >
+                      <X className="w-4 h-4" /> Remove
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
