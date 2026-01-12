@@ -34,7 +34,7 @@ const Layout = () => {
 
   const handleSubscribe = () => {
     const message = encodeURIComponent(
-      "Hi! I would like to subscribe to ERPace app. Please share the subscription details."
+      "Hi! I would like to subscribe to CORS app. Please share the subscription details."
     );
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, "_blank");
   };
@@ -49,7 +49,7 @@ const Layout = () => {
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="px-6 py-5 border-b border-sidebar-border flex items-center justify-center">
-            <img src="/assets/erpace-logo.png" alt="ERPace Logo" className="h-10 object-contain" />
+            <img src="/assets/cors-logo.png" alt="CORS Logo" className="h-10 object-contain" />
           </div>
           {/* Navigation */}
           <nav className="flex-1 space-y-0.5 px-3 pt-6 pb-6">
@@ -87,7 +87,7 @@ const Layout = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  const message = encodeURIComponent("Hi! I need support with ERPace app.");
+                  const message = encodeURIComponent("Hi! I need support with CORS app.");
                   window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, "_blank");
                 }}
                 className="justify-start text-green-600 hover:text-green-700 hover:bg-green-50"
@@ -101,7 +101,7 @@ const Layout = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => window.open("mailto:necrus@yahoo.com?subject=Help Request - ERPace", "_blank")}
+                  onClick={() => window.open("mailto:necrus@yahoo.com?subject=Help Request - CORS", "_blank")}
                   className="flex-1 justify-start text-muted-foreground hover:text-foreground"
                 >
                   <HelpCircle className="mr-3 h-4 w-4" />
