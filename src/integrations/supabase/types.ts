@@ -566,6 +566,7 @@ export type Database = {
           invoice_number: string
           notes: string | null
           payment_terms: string | null
+          status: string
           subtotal: number
           tax_amount: number | null
           total: number
@@ -582,6 +583,7 @@ export type Database = {
           invoice_number: string
           notes?: string | null
           payment_terms?: string | null
+          status?: string
           subtotal: number
           tax_amount?: number | null
           total: number
@@ -598,6 +600,7 @@ export type Database = {
           invoice_number?: string
           notes?: string | null
           payment_terms?: string | null
+          status?: string
           subtotal?: number
           tax_amount?: number | null
           total?: number
