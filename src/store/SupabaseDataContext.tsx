@@ -955,6 +955,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
     if (patch.total !== undefined) updateData.total = patch.total;
     if (patch.paymentTerms !== undefined) updateData.payment_terms = patch.paymentTerms;
+    if (patch.status !== undefined) updateData.status = patch.status;
     if (patch.buyerInfo !== undefined) {
       updateData.customer_name = patch.buyerInfo.name;
       updateData.customer_address = patch.buyerInfo.address;
