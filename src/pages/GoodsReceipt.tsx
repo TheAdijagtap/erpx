@@ -31,19 +31,19 @@ const GoodsReceiptPage = () => {
   ), [goodsReceipts, debouncedSearch]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Goods Receipt</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Goods Receipt</h1>
+          <p className="text-muted-foreground mt-1 text-sm">
             Track and manage incoming goods from suppliers.
           </p>
         </div>
         <CreateGRDialog />
       </div>
 
-      <Card className="p-6">
-        <div className="flex items-center gap-4">
+      <Card className="p-4 md:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
@@ -56,7 +56,7 @@ const GoodsReceiptPage = () => {
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {filteredReceipts.map((receipt) => (
           <Card key={receipt.id} className="p-4 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
             <div className="space-y-3">
@@ -75,7 +75,7 @@ const GoodsReceiptPage = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <div>
                   <p className="text-xs font-medium text-muted-foreground">Items</p>
                   <p className="text-sm font-semibold">{receipt.items.length}</p>
@@ -284,7 +284,7 @@ function CreateGRDialog() {
           <Plus className="w-4 h-4" /> Create New GR
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto w-[95vw] md:w-auto">
         <DialogHeader>
           <DialogTitle>Create Goods Receipt</DialogTitle>
         </DialogHeader>

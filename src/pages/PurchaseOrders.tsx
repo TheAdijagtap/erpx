@@ -218,21 +218,21 @@ const PurchaseOrders = () => {
   }, [purchaseOrders, selectedMonth, monthlyOrdersFiltered, searchTerm]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Purchase Orders</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Purchase Orders</h1>
+          <p className="text-muted-foreground mt-1 text-sm">
             Create and manage purchase orders for your suppliers.
           </p>
         </div>
         <CreatePODialog />
       </div>
 
-      <div className="flex gap-4 border-b">
+      <div className="flex gap-2 sm:gap-4 border-b overflow-x-auto">
         <button
           onClick={() => setActiveTab("orders")}
-          className={`pb-2 px-1 border-b-2 transition-colors ${
+          className={`pb-2 px-1 border-b-2 transition-colors whitespace-nowrap text-sm sm:text-base ${
             activeTab === "orders"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -242,7 +242,7 @@ const PurchaseOrders = () => {
         </button>
         <button
           onClick={() => setActiveTab("insights")}
-          className={`pb-2 px-1 border-b-2 transition-colors ${
+          className={`pb-2 px-1 border-b-2 transition-colors whitespace-nowrap text-sm sm:text-base ${
             activeTab === "insights"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -291,9 +291,9 @@ function PurchaseOrdersTab({ filteredOrders, selectedMonthStats }: PurchaseOrder
   }, [filteredOrders, searchTerm]);
 
   return (
-    <div className="space-y-6">
-      <Card className="p-6">
-        <div className="flex items-center gap-4">
+    <div className="space-y-4 md:space-y-6">
+      <Card className="p-4 md:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
@@ -310,7 +310,7 @@ function PurchaseOrdersTab({ filteredOrders, selectedMonthStats }: PurchaseOrder
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {ordersFiltered.map((order) => (
           <Card key={order.id} className="p-4 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
             <div className="space-y-3">
@@ -329,7 +329,7 @@ function PurchaseOrdersTab({ filteredOrders, selectedMonthStats }: PurchaseOrder
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
                 <div>
                   <p className="text-xs font-medium text-muted-foreground">Items</p>
                   <p className="text-sm font-semibold">{order.items.length}</p>
