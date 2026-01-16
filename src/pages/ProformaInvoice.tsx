@@ -138,21 +138,21 @@ const ProformaInvoice = () => {
   const yearlyInsights = stats.yearlyTotals;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Proforma Invoice</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Proforma Invoice</h1>
+          <p className="text-muted-foreground mt-1 text-sm">
             Create and manage proforma invoices for your customers.
           </p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-4 border-b">
+      <div className="flex gap-2 sm:gap-4 border-b overflow-x-auto">
         <button
           onClick={() => setActiveTab("invoices")}
-          className={`pb-2 px-1 border-b-2 transition-colors ${
+          className={`pb-2 px-1 border-b-2 transition-colors whitespace-nowrap text-sm sm:text-base ${
             activeTab === "invoices"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -162,7 +162,7 @@ const ProformaInvoice = () => {
         </button>
         <button
           onClick={() => setActiveTab("insights")}
-          className={`pb-2 px-1 border-b-2 transition-colors ${
+          className={`pb-2 px-1 border-b-2 transition-colors whitespace-nowrap text-sm sm:text-base ${
             activeTab === "insights"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -172,7 +172,7 @@ const ProformaInvoice = () => {
         </button>
         <button
           onClick={() => setActiveTab("products")}
-          className={`pb-2 px-1 border-b-2 transition-colors ${
+          className={`pb-2 px-1 border-b-2 transition-colors whitespace-nowrap text-sm sm:text-base ${
             activeTab === "products"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -307,25 +307,25 @@ function ProformaInsightsTab({ stats, monthlyInsights, yearlyInsights, selectedM
   };
 
   return (
-    <Card className="p-6 space-y-6">
+    <Card className="p-4 md:p-6 space-y-6">
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-1">
-          <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+          <h2 className="text-lg md:text-xl font-semibold text-foreground flex items-center gap-2">
             <TrendingUp className="w-5 h-5" /> Proforma Insights
           </h2>
           <p className="text-sm text-muted-foreground">
             Track your proforma invoice activity with totals, averages, and trend breakdowns.
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" onClick={exportToCSV} className="gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <Button variant="outline" size="sm" onClick={exportToCSV} className="gap-2 w-full sm:w-auto">
             <Download className="w-4 h-4" /> Export CSV
           </Button>
           {monthlyInsights.length > 0 && (
-            <div className="flex items-center gap-3 ml-auto">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 sm:ml-auto">
               <label className="text-sm font-medium text-muted-foreground">View by Month:</label>
               <Select value={selectedMonth || "all"} onValueChange={(value) => setSelectedMonth(value === "all" ? null : value)}>
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="w-full sm:w-48">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="z-50">
@@ -354,7 +354,7 @@ function ProformaInsightsTab({ stats, monthlyInsights, yearlyInsights, selectedM
       </div>
 
       {/* Status Breakdown */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
         <div className="rounded-lg border border-border/60 bg-background p-4">
           <div className="flex items-center gap-2 mb-2">
             <Badge className="bg-gray-400 text-gray-900">Draft</Badge>
@@ -379,7 +379,7 @@ function ProformaInsightsTab({ stats, monthlyInsights, yearlyInsights, selectedM
       </div>
 
       {/* Monthly & Yearly Breakdown */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
         <div>
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Monthly Revenue</h3>
