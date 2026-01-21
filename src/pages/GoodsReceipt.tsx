@@ -8,8 +8,9 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Package, Eye, Edit, Printer, CheckCircle, XCircle, Trash2, Tag } from "lucide-react";
+import { Plus, Search, Package, Eye, Edit, Printer, CheckCircle, XCircle, Trash2, Tag, Download } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
+import { downloadAsPdf } from "@/lib/downloadPdf";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
 import { numberToWords } from "@/lib/numberToWords";
@@ -103,6 +104,7 @@ const GoodsReceiptPage = () => {
                 <ViewGRDialog id={receipt.id} />
                 <EditGRDialog id={receipt.id} />
                 <PrintGRButton id={receipt.id} />
+                <DownloadGRButton id={receipt.id} />
                 <TCodeDialog id={receipt.id} />
                 <DeleteGRDialog id={receipt.id} />
                 {receipt.status === 'QUALITY_CHECK' && (
@@ -937,6 +939,97 @@ function PrintGRButton({ id }: { id: string }) {
   return (
     <Button variant="outline" size="sm" className="gap-1" onClick={handlePrint}>
       <Printer className="w-4 h-4" /> Print/PDF
+    </Button>
+  );
+}
+
+function DownloadGRButton({ id }: { id: string }) {
+  const { goodsReceipts, businessInfo, gstSettings } = useData();
+  const receipt = goodsReceipts.find(g => g.id === id)!;
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const handleDownload = async () => {
+    setIsLoading(true);
+    try {
+      const htmlContent = `
+        <div class="section">
+          <div class="header">
+            ${businessInfo.logo ? `<img src="${escapeHtml(businessInfo.logo)}" alt="Logo" />` : ''}
+            <div>
+              <div class="brand">${escapeHtml(businessInfo.name)}</div>
+              <div class="muted">${escapeHtml(businessInfo.address)}</div>
+              <div class="muted">${escapeHtml(businessInfo.email)} · ${escapeHtml(businessInfo.phone)}</div>
+              ${businessInfo.gstNumber ? `<div class="muted">GST: ${escapeHtml(businessInfo.gstNumber)}</div>` : ''}
+            </div>
+          </div>
+        </div>
+        <div class="section"><h2>Goods Receipt ${escapeHtml(receipt.grNumber)}</h2></div>
+        <div class="section">
+          <div class="grid">
+            <div>
+              <strong>Supplier Details</strong>
+              <div>${escapeHtml(receipt.supplier.name)}</div>
+              <div class="muted">${escapeHtml(receipt.supplier.address)}</div>
+              <div class="muted">${escapeHtml(receipt.supplier.email)} · ${escapeHtml(receipt.supplier.phone)}</div>
+            </div>
+            <div>
+              <strong>Receipt Details</strong>
+              <div>Date: ${formatDateIN(receipt.date)}</div>
+              <div>Status: ${escapeHtml(receipt.status)}</div>
+              ${receipt.qcDate ? `<div>QC Date: ${formatDateIN(receipt.qcDate)}</div>` : ''}
+            </div>
+          </div>
+        </div>
+        <div class="section">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Description</th>
+                <th>Batch</th>
+                <th>Ordered</th>
+                <th>Received</th>
+                <th>Rate</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${receipt.items.map((it, idx) => `
+                <tr>
+                  <td>${idx + 1}</td>
+                  <td>${escapeHtml(it.item.name)}</td>
+                  <td>${it.batchNumber ? escapeHtml(it.batchNumber) : '-'}</td>
+                  <td>${it.orderedQuantity || 0}</td>
+                  <td>${it.receivedQuantity}</td>
+                  <td>${formatINR(it.unitPrice)}</td>
+                  <td>${formatINR(it.total)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div class="section">
+          <table class="totals">
+            <tbody>
+              <tr><td class="label">Subtotal</td><td class="value">${formatINR(receipt.subtotal)}</td></tr>
+              ${(receipt.additionalCharges ?? []).map(charge => `<tr><td class="label">${escapeHtml(charge.name)}</td><td class="value">${formatINR(charge.amount)}</td></tr>`).join('')}
+              <tr><td class="label">SGST</td><td class="value">${formatINR(receipt.sgst)}</td></tr>
+              <tr><td class="label">CGST</td><td class="value">${formatINR(receipt.cgst)}</td></tr>
+              <tr><td class="label"><strong>Total Amount</strong></td><td class="value"><strong>${formatINR(receipt.total)}</strong></td></tr>
+            </tbody>
+          </table>
+          <div class="amount-words">Amount in Words: ${numberToWords(receipt.total)}</div>
+        </div>
+      `;
+      await downloadAsPdf(htmlContent, `GR-${receipt.grNumber}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  return (
+    <Button variant="outline" size="sm" className="gap-1 h-8 w-8 p-0" onClick={handleDownload} disabled={isLoading} title="Download PDF">
+      <Download className="w-4 h-4" />
     </Button>
   );
 }
