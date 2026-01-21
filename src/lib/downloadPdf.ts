@@ -1,6 +1,7 @@
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
+
 /**
  * Generates a PDF from an HTML element and downloads it
  * @param htmlContent - The HTML string to render
