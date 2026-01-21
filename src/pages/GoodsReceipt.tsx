@@ -2,6 +2,7 @@ import { useMemo, useState, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet";
@@ -345,22 +346,23 @@ function CreateGRDialog() {
             </div>
           </div>
 
-          <div className="rounded-md border overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden md:block rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Item</TableHead>
-                  <TableHead>Batch/Lot No.</TableHead>
-                  <TableHead>Ordered Qty</TableHead>
-                  <TableHead>Received Qty</TableHead>
-                  <TableHead>Unit Price</TableHead>
+                  <TableHead>Batch/Lot</TableHead>
+                  <TableHead>Ordered</TableHead>
+                  <TableHead>Received</TableHead>
+                  <TableHead>Price</TableHead>
                   <TableHead>Total</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {rows.map((row, idx) => (
                   <TableRow key={idx}>
-                    <TableCell className="min-w-[220px]">
+                    <TableCell className="min-w-[180px]">
                       <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
                         <Select value={row.itemId} onValueChange={(v) => {
@@ -402,13 +404,14 @@ function CreateGRDialog() {
                     </TableCell>
                     <TableCell>
                       <Input
-                        placeholder="Batch/Lot"
+                        placeholder="Batch"
                         value={row.batchNumber || ""}
                         onChange={(e) => {
                           const next = [...rows];
                           next[idx] = { ...row, batchNumber: e.target.value };
                           setRows(next);
                         }}
+                        className="w-28"
                       />
                     </TableCell>
                     <TableCell>
@@ -416,21 +419,21 @@ function CreateGRDialog() {
                         const next = [...rows];
                         next[idx] = { ...row, orderedQuantity: parseFloat(e.target.value) || 0 };
                         setRows(next);
-                      }} />
+                      }} className="w-20" />
                     </TableCell>
                     <TableCell>
                       <Input type="number" min={0} step="0.01" value={row.receivedQuantity} onChange={(e) => {
                         const next = [...rows];
                         next[idx] = { ...row, receivedQuantity: parseFloat(e.target.value) || 0 };
                         setRows(next);
-                      }} />
+                      }} className="w-20" />
                     </TableCell>
                     <TableCell>
                       <Input type="number" min={0} step="0.01" value={row.unitPrice} onChange={(e) => {
                         const next = [...rows];
                         next[idx] = { ...row, unitPrice: parseFloat(e.target.value) || 0 };
                         setRows(next);
-                      }} />
+                      }} className="w-24" />
                     </TableCell>
                     <TableCell className="font-medium">{formatINR((row.receivedQuantity) * row.unitPrice)}</TableCell>
                   </TableRow>
@@ -439,13 +442,115 @@ function CreateGRDialog() {
             </Table>
           </div>
 
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-3">
+            {rows.map((row, idx) => (
+              <div key={idx} className="border rounded-lg p-3 space-y-3 bg-muted/30">
+                <div className="flex justify-between items-start">
+                  <span className="text-xs text-muted-foreground">Item #{idx + 1}</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setRows(rows.filter((_, i) => i !== idx))}
+                    className="h-7 w-7 p-0"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+                <div>
+                  <Label className="text-xs">Item</Label>
+                  <Select value={row.itemId} onValueChange={(v) => {
+                    const it = items.find(i => i.id === v)!;
+                    const next = [...rows];
+                    next[idx] = { ...row, itemId: v, unitPrice: it.unitPrice };
+                    setRows(next);
+                  }}>
+                    <SelectTrigger className="mt-1"><SelectValue placeholder="Select item" /></SelectTrigger>
+                    <SelectContent className="z-50 max-h-64">
+                      <div className="px-2 pb-2 sticky top-0 bg-background">
+                        <Input
+                          placeholder="Search items..."
+                          value={itemSearch}
+                          onChange={(e) => setItemSearch(e.target.value)}
+                          className="h-8"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                      {filteredItems.length === 0 ? (
+                        <div className="px-2 py-4 text-sm text-muted-foreground text-center">
+                          No items found
+                        </div>
+                      ) : (
+                        filteredItems.map((i) => (
+                          <SelectItem key={i.id} value={i.id}>
+                            <div className="flex flex-col">
+                              <span>{i.name}</span>
+                              {i.description && (
+                                <span className="text-xs text-muted-foreground">{i.description}</span>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs">Batch/Lot No.</Label>
+                  <Input
+                    placeholder="Batch/Lot"
+                    value={row.batchNumber || ""}
+                    onChange={(e) => {
+                      const next = [...rows];
+                      next[idx] = { ...row, batchNumber: e.target.value };
+                      setRows(next);
+                    }}
+                    className="mt-1"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label className="text-xs">Ordered Qty</Label>
+                    <Input type="number" min={0} value={row.orderedQuantity || 0} onChange={(e) => {
+                      const next = [...rows];
+                      next[idx] = { ...row, orderedQuantity: parseFloat(e.target.value) || 0 };
+                      setRows(next);
+                    }} className="mt-1" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Received Qty</Label>
+                    <Input type="number" min={0} step="0.01" value={row.receivedQuantity} onChange={(e) => {
+                      const next = [...rows];
+                      next[idx] = { ...row, receivedQuantity: parseFloat(e.target.value) || 0 };
+                      setRows(next);
+                    }} className="mt-1" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label className="text-xs">Unit Price</Label>
+                    <Input type="number" min={0} step="0.01" value={row.unitPrice} onChange={(e) => {
+                      const next = [...rows];
+                      next[idx] = { ...row, unitPrice: parseFloat(e.target.value) || 0 };
+                      setRows(next);
+                    }} className="mt-1" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Total</Label>
+                    <div className="mt-1 h-10 flex items-center font-medium">{formatINR((row.receivedQuantity) * row.unitPrice)}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
           <Button variant="outline" className="gap-2" onClick={onAddRow}><Plus className="w-4 h-4" /> Add Item</Button>
 
           <div className="mt-6">
             <h4 className="font-medium mb-3">Additional Charges</h4>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {additionalCharges.map((charge, idx) => (
-                <div key={idx} className="flex gap-2">
+                <div key={idx} className="flex flex-col sm:flex-row gap-2">
                   <Input
                     placeholder="Charge name (e.g., Freight)"
                     value={charge.name}
@@ -454,27 +559,31 @@ function CreateGRDialog() {
                       next[idx] = { ...charge, name: e.target.value };
                       setAdditionalCharges(next);
                     }}
+                    className="flex-1"
                   />
-                  <Input
-                    type="number"
-                    placeholder="Amount"
-                    value={charge.amount}
-                    onChange={(e) => {
-                      const next = [...additionalCharges];
-                      next[idx] = { ...charge, amount: parseFloat(e.target.value) || 0 };
-                      setAdditionalCharges(next);
-                    }}
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const next = additionalCharges.filter((_, i) => i !== idx);
-                      setAdditionalCharges(next);
-                    }}
-                  >
-                    Remove
-                  </Button>
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      placeholder="Amount"
+                      value={charge.amount}
+                      onChange={(e) => {
+                        const next = [...additionalCharges];
+                        next[idx] = { ...charge, amount: parseFloat(e.target.value) || 0 };
+                        setAdditionalCharges(next);
+                      }}
+                      className="w-full sm:w-32"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const next = additionalCharges.filter((_, i) => i !== idx);
+                        setAdditionalCharges(next);
+                      }}
+                    >
+                      Remove
+                    </Button>
+                  </div>
                 </div>
               ))}
               <Button
