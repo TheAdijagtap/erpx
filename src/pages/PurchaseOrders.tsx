@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet";
@@ -628,7 +629,7 @@ function CreatePODialog() {
           <Plus className="w-4 h-4" /> Create New PO
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-2xl lg:max-w-4xl overflow-y-auto">
+      <SheetContent side="right" className="w-full sm:max-w-2xl lg:max-w-4xl overflow-y-auto p-4 sm:p-6">
         <SheetHeader>
           <SheetTitle>Create Purchase Order</SheetTitle>
         </SheetHeader>
@@ -761,7 +762,8 @@ function CreatePODialog() {
               </DialogContent>
             </Dialog>
           </div>
-          <div className="rounded-md border overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden md:block rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -838,21 +840,21 @@ function CreatePODialog() {
                         const next = [...rows];
                         next[idx] = { ...row, quantity: parseFloat(e.target.value) || 0 };
                         setRows(next);
-                      }} />
+                      }} className="w-20" />
                     </TableCell>
                     <TableCell>
                       <Input value={row.unit} onChange={(e) => {
                         const next = [...rows];
                         next[idx] = { ...row, unit: e.target.value };
                         setRows(next);
-                      }} />
+                      }} className="w-16" />
                     </TableCell>
                     <TableCell>
                       <Input type="number" min={0} step="0.01" value={row.unitPrice} onChange={(e) => {
                         const next = [...rows];
                         next[idx] = { ...row, unitPrice: parseFloat(e.target.value) || 0 };
                         setRows(next);
-                      }} />
+                      }} className="w-24" />
                     </TableCell>
                     <TableCell className="font-medium">{formatINR(row.quantity * row.unitPrice)}</TableCell>
                   </TableRow>
@@ -860,14 +862,121 @@ function CreatePODialog() {
               </TableBody>
             </Table>
           </div>
+          
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-3">
+            {rows.map((row, idx) => (
+              <div key={idx} className="border rounded-lg p-3 space-y-3 bg-muted/30">
+                <div className="flex justify-between items-start">
+                  <span className="text-xs text-muted-foreground">Item #{idx + 1}</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setRows(rows.filter((_, i) => i !== idx))}
+                    className="h-7 w-7 p-0"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+                <div>
+                  <Label className="text-xs">Item</Label>
+                  <Select value={row.itemId} onValueChange={(v) => {
+                    const it = items.find(i => i.id === v);
+                    if (!it) return;
+                    const next = [...rows];
+                    next[idx] = { ...row, itemId: v, unitPrice: it.unitPrice || 0, unit: it.unit || "PCS", hsnCode: isValidHsn(it.sku) ? it.sku : "" };
+                    setRows(next);
+                  }}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Select item" />
+                    </SelectTrigger>
+                    <SelectContent className="z-50 max-h-64" onCloseAutoFocus={(e) => e.preventDefault()}>
+                      <div className="px-2 pb-2 sticky top-0 bg-background">
+                        <Input
+                          placeholder="Search items..."
+                          value={itemSearches[idx] || ""}
+                          onChange={(e) => setItemSearches(prev => ({ ...prev, [idx]: e.target.value }))}
+                          className="h-8"
+                          onClick={(e) => e.stopPropagation()}
+                          onKeyDown={(e) => e.stopPropagation()}
+                          onFocus={(e) => e.stopPropagation()}
+                        />
+                      </div>
+                      {getFilteredItems(idx).length === 0 ? (
+                        <div className="px-2 py-4 text-sm text-muted-foreground text-center">
+                          No items found
+                        </div>
+                      ) : (
+                        getFilteredItems(idx).map((i) => (
+                          <SelectItem key={i.id} value={i.id}>
+                            <div className="flex flex-col">
+                              <span>{i.name}</span>
+                              {i.description && (
+                                <span className="text-xs text-muted-foreground">{i.description}</span>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label className="text-xs">HSN</Label>
+                    <Input 
+                      value={row.hsnCode} 
+                      onChange={(e) => {
+                        const next = [...rows];
+                        next[idx] = { ...row, hsnCode: e.target.value };
+                        setRows(next);
+                      }} 
+                      placeholder="HSN"
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Unit</Label>
+                    <Input value={row.unit} onChange={(e) => {
+                      const next = [...rows];
+                      next[idx] = { ...row, unit: e.target.value };
+                      setRows(next);
+                    }} className="mt-1" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label className="text-xs">Quantity</Label>
+                    <Input type="number" min={0} step="0.01" value={row.quantity} onChange={(e) => {
+                      const next = [...rows];
+                      next[idx] = { ...row, quantity: parseFloat(e.target.value) || 0 };
+                      setRows(next);
+                    }} className="mt-1" />
+                  </div>
+                  <div>
+                    <Label className="text-xs">Unit Price</Label>
+                    <Input type="number" min={0} step="0.01" value={row.unitPrice} onChange={(e) => {
+                      const next = [...rows];
+                      next[idx] = { ...row, unitPrice: parseFloat(e.target.value) || 0 };
+                      setRows(next);
+                    }} className="mt-1" />
+                  </div>
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t">
+                  <span className="text-xs text-muted-foreground">Total</span>
+                  <span className="font-medium">{formatINR(row.quantity * row.unitPrice)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
 
           <Button variant="outline" className="gap-2" onClick={onAddRow}><Plus className="w-4 h-4" /> Add Item</Button>
 
           <div className="mt-6">
             <h4 className="font-medium mb-3">Additional Charges</h4>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {additionalCharges.map((charge, idx) => (
-                <div key={idx} className="flex gap-2">
+                <div key={idx} className="flex flex-col sm:flex-row gap-2">
                   <Input
                     placeholder="Charge name (e.g., Freight)"
                     value={charge.name}
@@ -876,27 +985,31 @@ function CreatePODialog() {
                       next[idx] = { ...charge, name: e.target.value };
                       setAdditionalCharges(next);
                     }}
+                    className="flex-1"
                   />
-                  <Input
-                    type="number"
-                    placeholder="Amount"
-                    value={charge.amount}
-                    onChange={(e) => {
-                      const next = [...additionalCharges];
-                      next[idx] = { ...charge, amount: parseFloat(e.target.value) || 0 };
-                      setAdditionalCharges(next);
-                    }}
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      const next = additionalCharges.filter((_, i) => i !== idx);
-                      setAdditionalCharges(next);
-                    }}
-                  >
-                    Remove
-                  </Button>
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      placeholder="Amount"
+                      value={charge.amount}
+                      onChange={(e) => {
+                        const next = [...additionalCharges];
+                        next[idx] = { ...charge, amount: parseFloat(e.target.value) || 0 };
+                        setAdditionalCharges(next);
+                      }}
+                      className="w-full sm:w-32"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const next = additionalCharges.filter((_, i) => i !== idx);
+                        setAdditionalCharges(next);
+                      }}
+                    >
+                      Remove
+                    </Button>
+                  </div>
                 </div>
               ))}
               <Button
