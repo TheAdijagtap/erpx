@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Plus, Search, Receipt, Eye, Edit, Printer, Trash2, Calendar, CheckCircle, Send, TrendingUp, Download } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
+import { downloadAsPdf } from "@/lib/downloadPdf";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
 import { numberToWords } from "@/lib/numberToWords";
@@ -502,6 +503,7 @@ const ProformaInvoicesTab = ({ proformaProducts }: { proformaProducts: ProformaP
                 <ViewProformaDialog invoice={invoice} />
                 <EditProformaDialog invoice={invoice} proformaProducts={proformaProducts} />
                 <PrintProformaButton id={invoice.id} />
+                <DownloadProformaButton id={invoice.id} />
                 <DeleteProformaDialog id={invoice.id} />
               </div>
             </div>
@@ -2294,6 +2296,96 @@ const PrintProformaButton = ({ id }: { id: string }) => {
     <Button variant="outline" size="sm" onClick={handlePrint}>
       <Printer className="w-4 h-4 mr-2" />
       Print
+    </Button>
+  );
+};
+
+const DownloadProformaButton = ({ id }: { id: string }) => {
+  const { proformaInvoices, businessInfo } = useData();
+  const invoice = proformaInvoices.find(p => p.id === id)!;
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const handleDownload = async () => {
+    setIsLoading(true);
+    try {
+      const htmlContent = `
+        <div class="section">
+          <div class="header">
+            ${businessInfo.logo ? `<img src="${escapeHtml(businessInfo.logo)}" alt="Logo" />` : ''}
+            <div>
+              <div class="brand">${escapeHtml(businessInfo.name)}</div>
+              <div class="muted">${escapeHtml(businessInfo.address)}</div>
+              <div class="muted">${escapeHtml(businessInfo.email)} · ${escapeHtml(businessInfo.phone)}</div>
+              ${businessInfo.gstNumber ? `<div class="muted">GST: ${escapeHtml(businessInfo.gstNumber)}</div>` : ''}
+            </div>
+          </div>
+        </div>
+        <div class="section"><h2>Quotation Cum Proforma ${escapeHtml(invoice.proformaNumber)}</h2></div>
+        <div class="section">
+          <div class="grid">
+            <div>
+              <strong>Buyer Details</strong>
+              <div>${escapeHtml(invoice.buyerInfo.name)}</div>
+              ${invoice.buyerInfo.contactPerson ? `<div>${escapeHtml(invoice.buyerInfo.contactPerson)}</div>` : ''}
+              <div class="muted">${escapeHtml(invoice.buyerInfo.address)}</div>
+              <div class="muted">${escapeHtml(invoice.buyerInfo.email)} · ${escapeHtml(invoice.buyerInfo.phone)}</div>
+            </div>
+            <div>
+              <strong>Invoice Details</strong>
+              <div>Date: ${formatDateIN(invoice.date)}</div>
+              <div>Status: ${escapeHtml(invoice.status)}</div>
+              ${invoice.validUntil ? `<div>Valid Until: ${formatDateIN(invoice.validUntil)}</div>` : ''}
+            </div>
+          </div>
+        </div>
+        <div class="section">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Description</th>
+                <th>HSN</th>
+                <th>Qty</th>
+                <th>Rate</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${invoice.items.map((it, idx) => `
+                <tr>
+                  <td>${idx + 1}</td>
+                  <td>${escapeHtml(it.item.name)}</td>
+                  <td>${it.hsnCode ? escapeHtml(it.hsnCode) : '-'}</td>
+                  <td>${it.quantity}</td>
+                  <td>${formatINR(it.unitPrice)}</td>
+                  <td>${formatINR(it.total)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div class="section">
+          <table class="totals">
+            <tbody>
+              <tr><td class="label">Subtotal</td><td class="value">${formatINR(invoice.subtotal)}</td></tr>
+              ${(invoice.additionalCharges ?? []).map(charge => `<tr><td class="label">${escapeHtml(charge.name)}</td><td class="value">${formatINR(charge.amount)}</td></tr>`).join('')}
+              <tr><td class="label">SGST</td><td class="value">${formatINR(invoice.sgst)}</td></tr>
+              <tr><td class="label">CGST</td><td class="value">${formatINR(invoice.cgst)}</td></tr>
+              <tr><td class="label"><strong>Total Amount</strong></td><td class="value"><strong>${formatINR(invoice.total)}</strong></td></tr>
+            </tbody>
+          </table>
+          <div class="amount-words">Amount in Words: ${numberToWords(invoice.total)}</div>
+        </div>
+      `;
+      await downloadAsPdf(htmlContent, `PI-${invoice.proformaNumber}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  return (
+    <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={handleDownload} disabled={isLoading} title="Download PDF">
+      <Download className="w-4 h-4" />
     </Button>
   );
 };

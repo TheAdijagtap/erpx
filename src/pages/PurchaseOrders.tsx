@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Search, FileText, Eye, Edit, Printer, Trash2, Download } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
+import { downloadAsPdf } from "@/lib/downloadPdf";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
 import { numberToWords } from "@/lib/numberToWords";
@@ -351,6 +352,7 @@ function PurchaseOrdersTab({ filteredOrders, selectedMonthStats }: PurchaseOrder
                 <ViewPODialog id={order.id} />
                 <EditPODialog id={order.id} />
                 <PrintPOButton id={order.id} />
+                <DownloadPOButton id={order.id} />
                 <DeletePODialog id={order.id} />
               </div>
             </div>
@@ -1317,6 +1319,98 @@ function PrintPOButton({ id }: { id: string }) {
   return (
     <Button variant="outline" size="sm" className="gap-1" onClick={handlePrint}>
       <Printer className="w-4 h-4" /> Print/PDF
+    </Button>
+  );
+}
+
+function DownloadPOButton({ id }: { id: string }) {
+  const { purchaseOrders, businessInfo, gstSettings } = useData();
+  const order = purchaseOrders.find(p => p.id === id)!;
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const handleDownload = async () => {
+    setIsLoading(true);
+    try {
+      const htmlContent = `
+        <div class="section">
+          <div class="header">
+            ${businessInfo.logo ? `<img src="${escapeHtml(businessInfo.logo)}" alt="Logo" />` : ''}
+            <div>
+              <div class="brand">${escapeHtml(businessInfo.name)}</div>
+              <div class="muted">${escapeHtml(businessInfo.address)}</div>
+              <div class="muted">${escapeHtml(businessInfo.email)} · ${escapeHtml(businessInfo.phone)}</div>
+              ${businessInfo.gstNumber ? `<div class="muted">GST: ${escapeHtml(businessInfo.gstNumber)}</div>` : ''}
+            </div>
+          </div>
+        </div>
+        <div class="section"><h2>Purchase Order ${escapeHtml(order.poNumber)}</h2></div>
+        <div class="section">
+          <div class="grid">
+            <div>
+              <strong>Supplier Details</strong>
+              <div>${escapeHtml(order.supplier.name)}</div>
+              <div class="muted">${escapeHtml(order.supplier.address)}</div>
+              <div class="muted">${escapeHtml(order.supplier.email)} · ${escapeHtml(order.supplier.phone)}</div>
+              ${order.supplier.gstNumber ? `<div class="muted">GST: ${escapeHtml(order.supplier.gstNumber)}</div>` : ''}
+            </div>
+            <div>
+              <strong>Order Details</strong>
+              <div>Date: ${formatDateIN(order.date)}</div>
+              <div>Status: ${escapeHtml(order.status)}</div>
+              <div>Payment Terms: ${escapeHtml(order.paymentTerms || "30 days from invoice date")}</div>
+            </div>
+          </div>
+        </div>
+        <div class="section">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Description</th>
+                ${order.items.some(it => isValidHsn(it.hsnCode)) ? '<th>HSN</th>' : ''}
+                <th>Qty</th>
+                <th>Unit</th>
+                <th>Rate</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${order.items.map((it, idx) => `
+                <tr>
+                  <td>${idx + 1}</td>
+                  <td>${escapeHtml(it.item.name)}</td>
+                  ${order.items.some(i => isValidHsn(i.hsnCode)) ? `<td>${isValidHsn(it.hsnCode) ? escapeHtml(it.hsnCode) : '-'}</td>` : ''}
+                  <td>${it.quantity}</td>
+                  <td>${escapeHtml(it.item.unit)}</td>
+                  <td>${formatINR(it.unitPrice)}</td>
+                  <td>${formatINR(it.total)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div class="section">
+          <table class="totals">
+            <tbody>
+              <tr><td class="label">Subtotal</td><td class="value">${formatINR(order.subtotal)}</td></tr>
+              ${(order.additionalCharges ?? []).map(charge => `<tr><td class="label">${escapeHtml(charge.name)}</td><td class="value">${formatINR(charge.amount)}</td></tr>`).join('')}
+              <tr><td class="label">SGST</td><td class="value">${formatINR(order.sgst)}</td></tr>
+              <tr><td class="label">CGST</td><td class="value">${formatINR(order.cgst)}</td></tr>
+              <tr><td class="label"><strong>Total Amount</strong></td><td class="value"><strong>${formatINR(order.total)}</strong></td></tr>
+            </tbody>
+          </table>
+          <div class="amount-words">Amount in Words: ${numberToWords(order.total)}</div>
+        </div>
+      `;
+      await downloadAsPdf(htmlContent, `PO-${order.poNumber}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  return (
+    <Button variant="outline" size="sm" className="gap-1 h-8 w-8 p-0" onClick={handleDownload} disabled={isLoading} title="Download PDF">
+      <Download className="w-4 h-4" />
     </Button>
   );
 }
