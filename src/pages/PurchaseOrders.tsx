@@ -1331,6 +1331,7 @@ function DownloadPOButton({ id }: { id: string }) {
   const handleDownload = async () => {
     setIsLoading(true);
     try {
+      // Use EXACT same HTML template as PrintPOButton for consistent formatting
       const htmlContent = `
         <div class="section">
           <div class="header">
@@ -1358,10 +1359,12 @@ function DownloadPOButton({ id }: { id: string }) {
               <div>Date: ${formatDateIN(order.date)}</div>
               <div>Status: ${escapeHtml(order.status)}</div>
               <div>Payment Terms: ${escapeHtml(order.paymentTerms || "30 days from invoice date")}</div>
+              <div>GST: ${order.sgst + order.cgst > 0 ? `${gstSettings.sgstRate + gstSettings.cgstRate}%` : 'Not Applied'}</div>
             </div>
           </div>
         </div>
         <div class="section">
+          <p style="margin-bottom: 8px; font-style: italic">Please supply following goods in accordance with terms and conditions prescribed hereunder :</p>
           <table>
             <thead>
               <tr>
@@ -1378,7 +1381,10 @@ function DownloadPOButton({ id }: { id: string }) {
               ${order.items.map((it, idx) => `
                 <tr>
                   <td>${idx + 1}</td>
-                  <td>${escapeHtml(it.item.name)}</td>
+                  <td>
+                    <div style="font-weight: 600">${escapeHtml(it.item.name)}</div>
+                    ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${escapeHtml(it.item.description)}</div>` : ''}
+                  </td>
                   ${order.items.some(i => isValidHsn(i.hsnCode)) ? `<td>${isValidHsn(it.hsnCode) ? escapeHtml(it.hsnCode) : '-'}</td>` : ''}
                   <td>${it.quantity}</td>
                   <td>${escapeHtml(it.item.unit)}</td>
@@ -1401,6 +1407,24 @@ function DownloadPOButton({ id }: { id: string }) {
           </table>
           <div class="amount-words">Amount in Words: ${numberToWords(order.total)}</div>
         </div>
+        <div class="section terms">
+          <strong>Terms & Conditions:</strong>
+          <div class="muted" style="margin-top: 8px; line-height: 1.4">
+            1. Payment terms: ${escapeHtml(order.paymentTerms || "30 days from invoice date")}<br />
+            2. Furnish Transporter copy of the invoice at the time of delivery of material.<br />
+            3. Please mentioned our GSTIN on your tax invoice.<br />
+            4. Any damaged Due To Manufacturer Transit Needs To be Replace At Free Of Cost<br />
+            5. Please mentioned PO Number & PO date all corrosponding documents
+          </div>
+        </div>
+        ${businessInfo.signature ? `
+          <div class="signature-section">
+            <div>Authorized Signatory</div>
+            <img src="${escapeHtml(businessInfo.signature)}" alt="Authorized Signature" class="signature-image" style="margin-top: 8px" />
+            <div class="muted">${escapeHtml(businessInfo.name)}</div>
+          </div>
+        ` : ''}
+        ${order.notes ? `<div class="footer">Notes: ${escapeHtml(order.notes)}</div>` : ''}
       `;
       await downloadAsPdf(htmlContent, `PO-${order.poNumber}`);
     } finally {

@@ -2308,6 +2308,7 @@ const DownloadProformaButton = ({ id }: { id: string }) => {
   const handleDownload = async () => {
     setIsLoading(true);
     try {
+      // Use EXACT same HTML template as PrintProformaButton for consistent formatting
       const htmlContent = `
         <div class="section">
           <div class="header">
@@ -2329,23 +2330,27 @@ const DownloadProformaButton = ({ id }: { id: string }) => {
               ${invoice.buyerInfo.contactPerson ? `<div>${escapeHtml(invoice.buyerInfo.contactPerson)}</div>` : ''}
               <div class="muted">${escapeHtml(invoice.buyerInfo.address)}</div>
               <div class="muted">${escapeHtml(invoice.buyerInfo.email)} · ${escapeHtml(invoice.buyerInfo.phone)}</div>
+              ${invoice.buyerInfo.gstNumber ? `<div class="muted">GST: ${escapeHtml(invoice.buyerInfo.gstNumber)}</div>` : ''}
             </div>
             <div>
               <strong>Invoice Details</strong>
               <div>Date: ${formatDateIN(invoice.date)}</div>
-              <div>Status: ${escapeHtml(invoice.status)}</div>
               ${invoice.validUntil ? `<div>Valid Until: ${formatDateIN(invoice.validUntil)}</div>` : ''}
+              <div>Status: ${escapeHtml(invoice.status)}</div>
+              ${invoice.paymentTerms ? `<div>Payment Terms: ${escapeHtml(invoice.paymentTerms)}</div>` : ''}
             </div>
           </div>
         </div>
         <div class="section">
+          <p style="margin-bottom: 8px; font-style: italic">We are pleased to submit our quotation for the following items :</p>
           <table>
             <thead>
               <tr>
                 <th>#</th>
                 <th>Description</th>
-                <th>HSN</th>
+                ${invoice.items.some(it => isValidHsn(it.hsnCode)) ? '<th>HSN</th>' : ''}
                 <th>Qty</th>
+                <th>Unit</th>
                 <th>Rate</th>
                 <th>Total</th>
               </tr>
@@ -2354,9 +2359,13 @@ const DownloadProformaButton = ({ id }: { id: string }) => {
               ${invoice.items.map((it, idx) => `
                 <tr>
                   <td>${idx + 1}</td>
-                  <td>${escapeHtml(it.item.name)}</td>
-                  <td>${it.hsnCode ? escapeHtml(it.hsnCode) : '-'}</td>
+                  <td>
+                    <div style="font-weight: 600">${escapeHtml(it.item.name)}</div>
+                    ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${escapeHtml(it.item.description)}</div>` : ''}
+                  </td>
+                  ${invoice.items.some(i => isValidHsn(i.hsnCode)) ? `<td>${isValidHsn(it.hsnCode) ? escapeHtml(it.hsnCode) : '-'}</td>` : ''}
                   <td>${it.quantity}</td>
+                  <td>${escapeHtml(it.item.unit)}</td>
                   <td>${formatINR(it.unitPrice)}</td>
                   <td>${formatINR(it.total)}</td>
                 </tr>
@@ -2369,13 +2378,45 @@ const DownloadProformaButton = ({ id }: { id: string }) => {
             <tbody>
               <tr><td class="label">Subtotal</td><td class="value">${formatINR(invoice.subtotal)}</td></tr>
               ${(invoice.additionalCharges ?? []).map(charge => `<tr><td class="label">${escapeHtml(charge.name)}</td><td class="value">${formatINR(charge.amount)}</td></tr>`).join('')}
-              <tr><td class="label">SGST</td><td class="value">${formatINR(invoice.sgst)}</td></tr>
-              <tr><td class="label">CGST</td><td class="value">${formatINR(invoice.cgst)}</td></tr>
+              ${invoice.sgst > 0 || invoice.cgst > 0 ? `
+                <tr><td class="label">SGST (${((invoice.sgst / (invoice.subtotal + (invoice.additionalCharges?.reduce((sum, c) => sum + c.amount, 0) ?? 0))) * 100).toFixed(2)}%)</td><td class="value">${formatINR(invoice.sgst)}</td></tr>
+                <tr><td class="label">CGST (${((invoice.cgst / (invoice.subtotal + (invoice.additionalCharges?.reduce((sum, c) => sum + c.amount, 0) ?? 0))) * 100).toFixed(2)}%)</td><td class="value">${formatINR(invoice.cgst)}</td></tr>
+              ` : `<tr><td class="label">GST</td><td class="value">Not Applied</td></tr>`}
               <tr><td class="label"><strong>Total Amount</strong></td><td class="value"><strong>${formatINR(invoice.total)}</strong></td></tr>
             </tbody>
           </table>
           <div class="amount-words">Amount in Words: ${numberToWords(invoice.total)}</div>
         </div>
+        <div class="section terms">
+          <strong>Terms & Conditions:</strong>
+          <div class="muted" style="margin-top: 8px; line-height: 1.4">
+            1. Payment terms: ${escapeHtml(invoice.paymentTerms || "As agreed")}<br />
+            2. Prices are valid until: ${invoice.validUntil ? formatDateIN(invoice.validUntil) : "Further notice"}<br />
+            3. All prices are subject to change without prior notice<br />
+            4. This is a proforma invoice and not a tax invoice<br />
+            5. All rates are inclusive of applicable taxes
+          </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 24px">
+          ${businessInfo.bankDetails ? `
+            <div class="section">
+              <strong>Bank Details:</strong>
+              <div class="muted" style="margin-top: 8px; line-height: 1.6">
+                Bank Name: ${escapeHtml(businessInfo.bankDetails.bankName)}<br />
+                Account No: ${escapeHtml(businessInfo.bankDetails.accountNumber)}<br />
+                IFSC Code: ${escapeHtml(businessInfo.bankDetails.ifscCode)}
+              </div>
+            </div>
+          ` : ''}
+          ${businessInfo.signature ? `
+            <div class="signature-section">
+              <div>Authorized Signatory</div>
+              <img src="${escapeHtml(businessInfo.signature)}" alt="Authorized Signature" class="signature-image" style="margin-top: 8px" />
+              <div class="muted">${escapeHtml(businessInfo.name)}</div>
+            </div>
+          ` : ''}
+        </div>
+        ${invoice.notes ? `<div class="footer">Notes: ${escapeHtml(invoice.notes)}</div>` : ''}
       `;
       await downloadAsPdf(htmlContent, `PI-${invoice.proformaNumber}`);
     } finally {

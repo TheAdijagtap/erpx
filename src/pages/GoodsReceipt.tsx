@@ -951,6 +951,7 @@ function DownloadGRButton({ id }: { id: string }) {
   const handleDownload = async () => {
     setIsLoading(true);
     try {
+      // Use EXACT same HTML template as PrintGRButton for consistent formatting
       const htmlContent = `
         <div class="section">
           <div class="header">
@@ -971,24 +972,28 @@ function DownloadGRButton({ id }: { id: string }) {
               <div>${escapeHtml(receipt.supplier.name)}</div>
               <div class="muted">${escapeHtml(receipt.supplier.address)}</div>
               <div class="muted">${escapeHtml(receipt.supplier.email)} · ${escapeHtml(receipt.supplier.phone)}</div>
+              ${receipt.supplier.gstNumber ? `<div class="muted">GST: ${escapeHtml(receipt.supplier.gstNumber)}</div>` : ''}
             </div>
             <div>
               <strong>Receipt Details</strong>
               <div>Date: ${formatDateIN(receipt.date)}</div>
               <div>Status: ${escapeHtml(receipt.status)}</div>
-              ${receipt.qcDate ? `<div>QC Date: ${formatDateIN(receipt.qcDate)}</div>` : ''}
+              <div>GST: ${receipt.sgst + receipt.cgst > 0 ? `${gstSettings.sgstRate + gstSettings.cgstRate}%` : 'Not Applied'}</div>
             </div>
           </div>
         </div>
         <div class="section">
+          <p style="margin-bottom: 8px; font-style: italic">Following goods have been received and verified :</p>
           <table>
             <thead>
               <tr>
                 <th>#</th>
                 <th>Description</th>
-                <th>Batch</th>
+                ${receipt.items.some(it => it.batchNumber) ? '<th>Batch/Lot</th>' : ''}
+                ${receipt.items.some(it => isValidHsn(it.item.sku)) ? '<th>HSN</th>' : ''}
                 <th>Ordered</th>
                 <th>Received</th>
+                <th>Unit</th>
                 <th>Rate</th>
                 <th>Total</th>
               </tr>
@@ -997,10 +1002,16 @@ function DownloadGRButton({ id }: { id: string }) {
               ${receipt.items.map((it, idx) => `
                 <tr>
                   <td>${idx + 1}</td>
-                  <td>${escapeHtml(it.item.name)}</td>
-                  <td>${it.batchNumber ? escapeHtml(it.batchNumber) : '-'}</td>
-                  <td>${it.orderedQuantity || 0}</td>
+                  <td>
+                    <div style="font-weight: 600">${escapeHtml(it.item.name)}</div>
+                    ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${escapeHtml(it.item.description)}</div>` : ''}
+                    ${(it.item.make || it.item.mpn) ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${it.item.make ? `Make: ${escapeHtml(it.item.make)}` : ''}${it.item.make && it.item.mpn ? ' | ' : ''}${it.item.mpn ? `MPN: ${escapeHtml(it.item.mpn)}` : ''}</div>` : ''}
+                  </td>
+                  ${receipt.items.some(i => i.batchNumber) ? `<td>${it.batchNumber ? escapeHtml(it.batchNumber) : '-'}</td>` : ''}
+                  ${receipt.items.some(i => isValidHsn(i.item.sku)) ? `<td>${isValidHsn(it.item.sku) ? escapeHtml(it.item.sku) : '-'}</td>` : ''}
+                  <td>${it.orderedQuantity || '-'}</td>
                   <td>${it.receivedQuantity}</td>
+                  <td>${escapeHtml(it.item.unit)}</td>
                   <td>${formatINR(it.unitPrice)}</td>
                   <td>${formatINR(it.total)}</td>
                 </tr>
@@ -1020,6 +1031,24 @@ function DownloadGRButton({ id }: { id: string }) {
           </table>
           <div class="amount-words">Amount in Words: ${numberToWords(receipt.total)}</div>
         </div>
+        <div class="section terms">
+          <strong>Terms & Conditions:</strong>
+          <div class="muted" style="margin-top: 8px; line-height: 1.4">
+            1. All goods have been inspected upon receipt<br />
+            2. Quality check completed as per standards<br />
+            3. Quantities verified and confirmed<br />
+            4. Any discrepancies noted in remarks section<br />
+            5. Goods accepted in good condition
+          </div>
+        </div>
+        ${businessInfo.signature ? `
+          <div class="signature-section">
+            <div>Authorized Signatory</div>
+            <img src="${escapeHtml(businessInfo.signature)}" alt="Authorized Signature" class="signature-image" style="margin-top: 8px" />
+            <div class="muted">${escapeHtml(businessInfo.name)}</div>
+          </div>
+        ` : ''}
+        ${receipt.notes ? `<div class="footer">Notes: ${escapeHtml(receipt.notes)}</div>` : ''}
       `;
       await downloadAsPdf(htmlContent, `GR-${receipt.grNumber}`);
     } finally {
