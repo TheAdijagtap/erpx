@@ -70,56 +70,53 @@ const Inventory = () => {
         />
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-2">
         {filteredItems.map((item) => {
           const stockStatus = getStockStatus(item.currentStock, item.minStock);
           return (
-            <Card key={item.id} className="p-5 border border-border hover:shadow-[var(--shadow-medium)] transition-shadow">
-              <div className="flex items-start gap-4">
-                <div className="p-2.5 bg-primary-light rounded-md shrink-0">
+            <Card key={item.id} className="p-3 border border-border hover:shadow-sm transition-shadow">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary-light rounded-md shrink-0">
                   <Package className="w-4 h-4 text-primary" />
                 </div>
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-2">
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-semibold text-foreground truncate text-sm">{item.name}</h3>
-                      <p className="text-xs text-muted-foreground truncate mt-0.5">{item.description}</p>
-                      <p className="text-xs text-muted-foreground truncate">{item.category}</p>
-                    </div>
-                    <div className="shrink-0">
+                <div className="flex-1 min-w-0 flex items-center gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-medium text-foreground truncate text-sm">{item.name}</h3>
                       {getStockBadge(stockStatus)}
                     </div>
+                    <p className="text-xs text-muted-foreground truncate">{item.category}</p>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
-                    <div>
-                      <div className="text-xs text-muted-foreground mb-0.5">Stock</div>
-                      <div className="text-sm font-medium text-foreground">{item.currentStock} {item.unit}</div>
+                  <div className="hidden sm:flex items-center gap-6 text-sm shrink-0">
+                    <div className="text-right">
+                      <div className="font-medium text-foreground">{item.currentStock} {item.unit}</div>
+                      <div className="text-xs text-muted-foreground">Stock</div>
                     </div>
-                    <div>
-                      <div className="text-xs text-muted-foreground mb-0.5">Price</div>
-                      <div className="text-sm font-medium text-foreground">{formatINR(item.unitPrice)}</div>
+                    <div className="text-right">
+                      <div className="font-medium text-foreground">{formatINR(item.unitPrice)}</div>
+                      <div className="text-xs text-muted-foreground">Price</div>
                     </div>
                   </div>
 
-                  <div className="flex gap-2 flex-wrap">
+                  <div className="flex gap-1 shrink-0">
                     <ItemViewDialog itemId={item.id}>
-                      <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-                        <Eye className="w-4 h-4" />
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                        <Eye className="w-3.5 h-3.5" />
                       </Button>
                     </ItemViewDialog>
                     <ItemTransactDialog itemId={item.id} type="OUT">
-                      <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-                        <Minus className="w-4 h-4" />
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                        <Minus className="w-3.5 h-3.5" />
                       </Button>
                     </ItemTransactDialog>
-                    <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => {
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => {
                       if (confirm(`Are you sure you want to delete ${item.name}?`)) {
                         removeItem(item.id);
                       }
                     }}>
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                   </div>
                 </div>
