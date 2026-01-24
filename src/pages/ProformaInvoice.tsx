@@ -274,6 +274,30 @@ function CustomersTab() {
     );
   }, [customers, debouncedSearch]);
 
+  const exportToCSV = () => {
+    const data = filteredCustomers.map(customer => ({
+      "Company Name": customer.companyName,
+      "Contact Person": customer.contactPerson || "",
+      "Phone": customer.phone || "",
+      "Total Invoices": customer.totalInvoices,
+      "Total Value": customer.totalValue,
+    }));
+    
+    const headers = Object.keys(data[0] || {});
+    const csvContent = [
+      headers.join(","),
+      ...data.map(row => headers.map(h => `"${row[h as keyof typeof row]}"`).join(","))
+    ].join("\n");
+    
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `proforma-customers-${format(new Date(), "yyyy-MM-dd")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <Card className="p-6 space-y-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -281,14 +305,19 @@ function CustomersTab() {
           <Users className="w-5 h-5 text-primary" />
           <h2 className="text-xl font-semibold text-foreground">Customers from Proforma Invoices</h2>
         </div>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search customers..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 w-64"
-          />
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="sm" onClick={exportToCSV} disabled={filteredCustomers.length === 0} className="gap-2">
+            <Download className="w-4 h-4" /> Export CSV
+          </Button>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search customers..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 w-64"
+            />
+          </div>
         </div>
       </div>
 
