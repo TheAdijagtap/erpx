@@ -308,9 +308,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           proformaNumber: pi.invoice_number,
           buyerInfo: {
             name: pi.customer_name,
-            contactPerson: "",
-            email: "",
-            phone: "",
+            contactPerson: piAny.contact_person || "",
+            email: piAny.customer_email || "",
+            phone: piAny.customer_phone || "",
             address: pi.customer_address || "",
             gstNumber: pi.customer_gst || "",
           },
@@ -895,6 +895,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       customer_name: pi.buyerInfo.name,
       customer_address: pi.buyerInfo.address,
       customer_gst: pi.buyerInfo.gstNumber,
+      contact_person: pi.buyerInfo.contactPerson || null,
+      customer_phone: pi.buyerInfo.phone || null,
+      customer_email: pi.buyerInfo.email || null,
       date: pi.date.toISOString().split("T")[0],
       status: (pi.status || "SENT") as any,
       subtotal: totals.subtotal,
@@ -961,6 +964,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       updateData.customer_name = patch.buyerInfo.name;
       updateData.customer_address = patch.buyerInfo.address;
       updateData.customer_gst = patch.buyerInfo.gstNumber;
+      updateData.contact_person = patch.buyerInfo.contactPerson || null;
+      updateData.customer_phone = patch.buyerInfo.phone || null;
+      updateData.customer_email = patch.buyerInfo.email || null;
     }
     if (patch.date !== undefined) {
       updateData.date = patch.date.toISOString().split("T")[0];
