@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Receipt, Eye, Edit, Printer, Trash2, Calendar, CheckCircle, Send, TrendingUp, Download } from "lucide-react";
+import { Plus, Search, Receipt, Eye, Edit, Printer, Trash2, Calendar, CheckCircle, Send, TrendingUp, Download, Users, Phone, Building2 } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
@@ -48,7 +48,7 @@ interface ProformaStatsSummary {
 
 const ProformaInvoice = () => {
   const { proformaInvoices, proformaProducts } = useData();
-  const [activeTab, setActiveTab] = useState<"invoices" | "insights" | "products">("invoices");
+  const [activeTab, setActiveTab] = useState<"invoices" | "insights" | "products" | "customers">("invoices");
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
 
   // Calculate stats
@@ -180,6 +180,16 @@ const ProformaInvoice = () => {
         >
           Products
         </button>
+        <button
+          onClick={() => setActiveTab("customers")}
+          className={`pb-2 px-1 border-b-2 transition-colors ${
+            activeTab === "customers"
+              ? "border-primary text-primary"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          Customers
+        </button>
       </div>
 
       {activeTab === "invoices" ? (
@@ -192,12 +202,157 @@ const ProformaInvoice = () => {
           selectedMonth={selectedMonth}
           setSelectedMonth={setSelectedMonth}
         />
-      ) : (
+      ) : activeTab === "products" ? (
         <ProductsTab proformaProducts={proformaProducts} />
+      ) : (
+        <CustomersTab />
       )}
     </div>
   );
 };
+
+// Customers Tab Component
+interface CustomerFromPI {
+  id: string;
+  companyName: string;
+  contactPerson: string;
+  phone: string;
+  totalInvoices: number;
+  totalValue: number;
+}
+
+function CustomersTab() {
+  const { proformaInvoices } = useData();
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 150);
+
+  const customers = useMemo<CustomerFromPI[]>(() => {
+    const customerMap = new Map<string, CustomerFromPI>();
+
+    proformaInvoices.forEach((invoice) => {
+      const companyName = invoice.buyerInfo.name?.trim() || "";
+      if (!companyName) return;
+
+      const key = companyName.toLowerCase();
+      const existing = customerMap.get(key);
+
+      if (existing) {
+        existing.totalInvoices += 1;
+        existing.totalValue += invoice.total ?? 0;
+        // Update contact person and phone if they were missing
+        if (!existing.contactPerson && invoice.buyerInfo.contactPerson) {
+          existing.contactPerson = invoice.buyerInfo.contactPerson;
+        }
+        if (!existing.phone && invoice.buyerInfo.phone) {
+          existing.phone = invoice.buyerInfo.phone;
+        }
+      } else {
+        customerMap.set(key, {
+          id: key,
+          companyName,
+          contactPerson: invoice.buyerInfo.contactPerson || "",
+          phone: invoice.buyerInfo.phone || "",
+          totalInvoices: 1,
+          totalValue: invoice.total ?? 0,
+        });
+      }
+    });
+
+    return Array.from(customerMap.values()).sort((a, b) => 
+      b.totalValue - a.totalValue
+    );
+  }, [proformaInvoices]);
+
+  const filteredCustomers = useMemo(() => {
+    if (!debouncedSearch) return customers;
+    const search = debouncedSearch.toLowerCase();
+    return customers.filter(
+      (c) =>
+        c.companyName.toLowerCase().includes(search) ||
+        c.contactPerson.toLowerCase().includes(search) ||
+        c.phone.toLowerCase().includes(search)
+    );
+  }, [customers, debouncedSearch]);
+
+  return (
+    <Card className="p-6 space-y-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2">
+          <Users className="w-5 h-5 text-primary" />
+          <h2 className="text-xl font-semibold text-foreground">Customers from Proforma Invoices</h2>
+        </div>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search customers..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 w-64"
+          />
+        </div>
+      </div>
+
+      <p className="text-sm text-muted-foreground">
+        Total {customers.length} customers found from {proformaInvoices.length} proforma invoices
+      </p>
+
+      {filteredCustomers.length === 0 ? (
+        <div className="text-center py-12">
+          <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-foreground">No customers found</h3>
+          <p className="text-muted-foreground">
+            {customers.length === 0
+              ? "Create proforma invoices to see customers here"
+              : "Try adjusting your search term"}
+          </p>
+        </div>
+      ) : (
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Company Name</TableHead>
+                <TableHead>Contact Person</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead className="text-right">Total Invoices</TableHead>
+                <TableHead className="text-right">Total Value</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredCustomers.map((customer) => (
+                <TableRow key={customer.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Building2 className="w-4 h-4 text-muted-foreground" />
+                      <span className="font-medium">{customer.companyName}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>{customer.contactPerson || "-"}</TableCell>
+                  <TableCell>
+                    {customer.phone ? (
+                      <div className="flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-muted-foreground" />
+                        {customer.phone}
+                      </div>
+                    ) : (
+                      "-"
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Badge variant="secondary">{customer.totalInvoices}</Badge>
+                  </TableCell>
+                  <TableCell className="text-right font-medium">
+                    {formatINR(customer.totalValue)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+    </Card>
+  );
+}
 
 // Insights Tab Component
 interface ProformaInsightsTabProps {
