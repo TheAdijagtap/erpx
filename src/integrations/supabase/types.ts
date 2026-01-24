@@ -556,11 +556,14 @@ export type Database = {
       }
       proforma_invoices: {
         Row: {
+          contact_person: string | null
           created_at: string
           customer_address: string | null
+          customer_email: string | null
           customer_gst: string | null
           customer_id: string | null
           customer_name: string
+          customer_phone: string | null
           date: string
           id: string
           invoice_number: string
@@ -573,11 +576,14 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          contact_person?: string | null
           created_at?: string
           customer_address?: string | null
+          customer_email?: string | null
           customer_gst?: string | null
           customer_id?: string | null
           customer_name: string
+          customer_phone?: string | null
           date: string
           id?: string
           invoice_number: string
@@ -590,11 +596,14 @@ export type Database = {
           user_id: string
         }
         Update: {
+          contact_person?: string | null
           created_at?: string
           customer_address?: string | null
+          customer_email?: string | null
           customer_gst?: string | null
           customer_id?: string | null
           customer_name?: string
+          customer_phone?: string | null
           date?: string
           id?: string
           invoice_number?: string
