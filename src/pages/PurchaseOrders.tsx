@@ -3,7 +3,6 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet";
@@ -11,7 +10,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Search, FileText, Eye, Edit, Printer, Trash2, Download } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
-import { downloadAsPdf } from "@/lib/downloadPdf";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
 import { numberToWords } from "@/lib/numberToWords";
@@ -220,21 +218,21 @@ const PurchaseOrders = () => {
   }, [purchaseOrders, selectedMonth, monthlyOrdersFiltered, searchTerm]);
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Purchase Orders</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
+          <h1 className="text-3xl font-bold text-foreground">Purchase Orders</h1>
+          <p className="text-muted-foreground mt-1">
             Create and manage purchase orders for your suppliers.
           </p>
         </div>
         <CreatePODialog />
       </div>
 
-      <div className="flex gap-2 sm:gap-4 border-b overflow-x-auto">
+      <div className="flex gap-4 border-b">
         <button
           onClick={() => setActiveTab("orders")}
-          className={`pb-2 px-1 border-b-2 transition-colors whitespace-nowrap text-sm sm:text-base ${
+          className={`pb-2 px-1 border-b-2 transition-colors ${
             activeTab === "orders"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -244,7 +242,7 @@ const PurchaseOrders = () => {
         </button>
         <button
           onClick={() => setActiveTab("insights")}
-          className={`pb-2 px-1 border-b-2 transition-colors whitespace-nowrap text-sm sm:text-base ${
+          className={`pb-2 px-1 border-b-2 transition-colors ${
             activeTab === "insights"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -293,9 +291,9 @@ function PurchaseOrdersTab({ filteredOrders, selectedMonthStats }: PurchaseOrder
   }, [filteredOrders, searchTerm]);
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <Card className="p-4 md:p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+    <div className="space-y-6">
+      <Card className="p-6">
+        <div className="flex items-center gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
@@ -312,7 +310,7 @@ function PurchaseOrdersTab({ filteredOrders, selectedMonthStats }: PurchaseOrder
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         {ordersFiltered.map((order) => (
           <Card key={order.id} className="p-4 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
             <div className="space-y-3">
@@ -331,7 +329,7 @@ function PurchaseOrdersTab({ filteredOrders, selectedMonthStats }: PurchaseOrder
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
                   <p className="text-xs font-medium text-muted-foreground">Items</p>
                   <p className="text-sm font-semibold">{order.items.length}</p>
@@ -352,7 +350,6 @@ function PurchaseOrdersTab({ filteredOrders, selectedMonthStats }: PurchaseOrder
                 <ViewPODialog id={order.id} />
                 <EditPODialog id={order.id} />
                 <PrintPOButton id={order.id} />
-                <DownloadPOButton id={order.id} />
                 <DeletePODialog id={order.id} />
               </div>
             </div>
@@ -631,7 +628,7 @@ function CreatePODialog() {
           <Plus className="w-4 h-4" /> Create New PO
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-2xl lg:max-w-4xl overflow-y-auto p-4 sm:p-6">
+      <SheetContent side="right" className="w-full sm:max-w-2xl lg:max-w-4xl overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Create Purchase Order</SheetTitle>
         </SheetHeader>
@@ -764,8 +761,7 @@ function CreatePODialog() {
               </DialogContent>
             </Dialog>
           </div>
-          {/* Desktop Table View */}
-          <div className="hidden md:block rounded-md border overflow-x-auto">
+          <div className="rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -842,21 +838,21 @@ function CreatePODialog() {
                         const next = [...rows];
                         next[idx] = { ...row, quantity: parseFloat(e.target.value) || 0 };
                         setRows(next);
-                      }} className="w-20" />
+                      }} />
                     </TableCell>
                     <TableCell>
                       <Input value={row.unit} onChange={(e) => {
                         const next = [...rows];
                         next[idx] = { ...row, unit: e.target.value };
                         setRows(next);
-                      }} className="w-16" />
+                      }} />
                     </TableCell>
                     <TableCell>
                       <Input type="number" min={0} step="0.01" value={row.unitPrice} onChange={(e) => {
                         const next = [...rows];
                         next[idx] = { ...row, unitPrice: parseFloat(e.target.value) || 0 };
                         setRows(next);
-                      }} className="w-24" />
+                      }} />
                     </TableCell>
                     <TableCell className="font-medium">{formatINR(row.quantity * row.unitPrice)}</TableCell>
                   </TableRow>
@@ -864,121 +860,14 @@ function CreatePODialog() {
               </TableBody>
             </Table>
           </div>
-          
-          {/* Mobile Card View */}
-          <div className="md:hidden space-y-3">
-            {rows.map((row, idx) => (
-              <div key={idx} className="border rounded-lg p-3 space-y-3 bg-muted/30">
-                <div className="flex justify-between items-start">
-                  <span className="text-xs text-muted-foreground">Item #{idx + 1}</span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setRows(rows.filter((_, i) => i !== idx))}
-                    className="h-7 w-7 p-0"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </Button>
-                </div>
-                <div>
-                  <Label className="text-xs">Item</Label>
-                  <Select value={row.itemId} onValueChange={(v) => {
-                    const it = items.find(i => i.id === v);
-                    if (!it) return;
-                    const next = [...rows];
-                    next[idx] = { ...row, itemId: v, unitPrice: it.unitPrice || 0, unit: it.unit || "PCS", hsnCode: isValidHsn(it.sku) ? it.sku : "" };
-                    setRows(next);
-                  }}>
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Select item" />
-                    </SelectTrigger>
-                    <SelectContent className="z-50 max-h-64" onCloseAutoFocus={(e) => e.preventDefault()}>
-                      <div className="px-2 pb-2 sticky top-0 bg-background">
-                        <Input
-                          placeholder="Search items..."
-                          value={itemSearches[idx] || ""}
-                          onChange={(e) => setItemSearches(prev => ({ ...prev, [idx]: e.target.value }))}
-                          className="h-8"
-                          onClick={(e) => e.stopPropagation()}
-                          onKeyDown={(e) => e.stopPropagation()}
-                          onFocus={(e) => e.stopPropagation()}
-                        />
-                      </div>
-                      {getFilteredItems(idx).length === 0 ? (
-                        <div className="px-2 py-4 text-sm text-muted-foreground text-center">
-                          No items found
-                        </div>
-                      ) : (
-                        getFilteredItems(idx).map((i) => (
-                          <SelectItem key={i.id} value={i.id}>
-                            <div className="flex flex-col">
-                              <span>{i.name}</span>
-                              {i.description && (
-                                <span className="text-xs text-muted-foreground">{i.description}</span>
-                              )}
-                            </div>
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <Label className="text-xs">HSN</Label>
-                    <Input 
-                      value={row.hsnCode} 
-                      onChange={(e) => {
-                        const next = [...rows];
-                        next[idx] = { ...row, hsnCode: e.target.value };
-                        setRows(next);
-                      }} 
-                      placeholder="HSN"
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Unit</Label>
-                    <Input value={row.unit} onChange={(e) => {
-                      const next = [...rows];
-                      next[idx] = { ...row, unit: e.target.value };
-                      setRows(next);
-                    }} className="mt-1" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <Label className="text-xs">Quantity</Label>
-                    <Input type="number" min={0} step="0.01" value={row.quantity} onChange={(e) => {
-                      const next = [...rows];
-                      next[idx] = { ...row, quantity: parseFloat(e.target.value) || 0 };
-                      setRows(next);
-                    }} className="mt-1" />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Unit Price</Label>
-                    <Input type="number" min={0} step="0.01" value={row.unitPrice} onChange={(e) => {
-                      const next = [...rows];
-                      next[idx] = { ...row, unitPrice: parseFloat(e.target.value) || 0 };
-                      setRows(next);
-                    }} className="mt-1" />
-                  </div>
-                </div>
-                <div className="flex justify-between items-center pt-2 border-t">
-                  <span className="text-xs text-muted-foreground">Total</span>
-                  <span className="font-medium">{formatINR(row.quantity * row.unitPrice)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
 
           <Button variant="outline" className="gap-2" onClick={onAddRow}><Plus className="w-4 h-4" /> Add Item</Button>
 
           <div className="mt-6">
             <h4 className="font-medium mb-3">Additional Charges</h4>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {additionalCharges.map((charge, idx) => (
-                <div key={idx} className="flex flex-col sm:flex-row gap-2">
+                <div key={idx} className="flex gap-2">
                   <Input
                     placeholder="Charge name (e.g., Freight)"
                     value={charge.name}
@@ -987,31 +876,27 @@ function CreatePODialog() {
                       next[idx] = { ...charge, name: e.target.value };
                       setAdditionalCharges(next);
                     }}
-                    className="flex-1"
                   />
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Amount"
-                      value={charge.amount}
-                      onChange={(e) => {
-                        const next = [...additionalCharges];
-                        next[idx] = { ...charge, amount: parseFloat(e.target.value) || 0 };
-                        setAdditionalCharges(next);
-                      }}
-                      className="w-full sm:w-32"
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const next = additionalCharges.filter((_, i) => i !== idx);
-                        setAdditionalCharges(next);
-                      }}
-                    >
-                      Remove
-                    </Button>
-                  </div>
+                  <Input
+                    type="number"
+                    placeholder="Amount"
+                    value={charge.amount}
+                    onChange={(e) => {
+                      const next = [...additionalCharges];
+                      next[idx] = { ...charge, amount: parseFloat(e.target.value) || 0 };
+                      setAdditionalCharges(next);
+                    }}
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const next = additionalCharges.filter((_, i) => i !== idx);
+                      setAdditionalCharges(next);
+                    }}
+                  >
+                    Remove
+                  </Button>
                 </div>
               ))}
               <Button
@@ -1319,122 +1204,6 @@ function PrintPOButton({ id }: { id: string }) {
   return (
     <Button variant="outline" size="sm" className="gap-1" onClick={handlePrint}>
       <Printer className="w-4 h-4" /> Print/PDF
-    </Button>
-  );
-}
-
-function DownloadPOButton({ id }: { id: string }) {
-  const { purchaseOrders, businessInfo, gstSettings } = useData();
-  const order = purchaseOrders.find(p => p.id === id)!;
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const handleDownload = async () => {
-    setIsLoading(true);
-    try {
-      // Use EXACT same HTML template as PrintPOButton for consistent formatting
-      const htmlContent = `
-        <div class="section">
-          <div class="header">
-            ${businessInfo.logo ? `<img src="${escapeHtml(businessInfo.logo)}" alt="Logo" />` : ''}
-            <div>
-              <div class="brand">${escapeHtml(businessInfo.name)}</div>
-              <div class="muted">${escapeHtml(businessInfo.address)}</div>
-              <div class="muted">${escapeHtml(businessInfo.email)} · ${escapeHtml(businessInfo.phone)}</div>
-              ${businessInfo.gstNumber ? `<div class="muted">GST: ${escapeHtml(businessInfo.gstNumber)}</div>` : ''}
-            </div>
-          </div>
-        </div>
-        <div class="section"><h2>Purchase Order ${escapeHtml(order.poNumber)}</h2></div>
-        <div class="section">
-          <div class="grid">
-            <div>
-              <strong>Supplier Details</strong>
-              <div>${escapeHtml(order.supplier.name)}</div>
-              <div class="muted">${escapeHtml(order.supplier.address)}</div>
-              <div class="muted">${escapeHtml(order.supplier.email)} · ${escapeHtml(order.supplier.phone)}</div>
-              ${order.supplier.gstNumber ? `<div class="muted">GST: ${escapeHtml(order.supplier.gstNumber)}</div>` : ''}
-            </div>
-            <div>
-              <strong>Order Details</strong>
-              <div>Date: ${formatDateIN(order.date)}</div>
-              <div>Status: ${escapeHtml(order.status)}</div>
-              <div>Payment Terms: ${escapeHtml(order.paymentTerms || "30 days from invoice date")}</div>
-              <div>GST: ${order.sgst + order.cgst > 0 ? `${gstSettings.sgstRate + gstSettings.cgstRate}%` : 'Not Applied'}</div>
-            </div>
-          </div>
-        </div>
-        <div class="section">
-          <p style="margin-bottom: 8px; font-style: italic">Please supply following goods in accordance with terms and conditions prescribed hereunder :</p>
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Description</th>
-                ${order.items.some(it => isValidHsn(it.hsnCode)) ? '<th>HSN</th>' : ''}
-                <th>Qty</th>
-                <th>Unit</th>
-                <th>Rate</th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${order.items.map((it, idx) => `
-                <tr>
-                  <td>${idx + 1}</td>
-                  <td>
-                    <div style="font-weight: 600">${escapeHtml(it.item.name)}</div>
-                    ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${escapeHtml(it.item.description)}</div>` : ''}
-                  </td>
-                  ${order.items.some(i => isValidHsn(i.hsnCode)) ? `<td>${isValidHsn(it.hsnCode) ? escapeHtml(it.hsnCode) : '-'}</td>` : ''}
-                  <td>${it.quantity}</td>
-                  <td>${escapeHtml(it.item.unit)}</td>
-                  <td>${formatINR(it.unitPrice)}</td>
-                  <td>${formatINR(it.total)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-        <div class="section">
-          <table class="totals">
-            <tbody>
-              <tr><td class="label">Subtotal</td><td class="value">${formatINR(order.subtotal)}</td></tr>
-              ${(order.additionalCharges ?? []).map(charge => `<tr><td class="label">${escapeHtml(charge.name)}</td><td class="value">${formatINR(charge.amount)}</td></tr>`).join('')}
-              <tr><td class="label">SGST</td><td class="value">${formatINR(order.sgst)}</td></tr>
-              <tr><td class="label">CGST</td><td class="value">${formatINR(order.cgst)}</td></tr>
-              <tr><td class="label"><strong>Total Amount</strong></td><td class="value"><strong>${formatINR(order.total)}</strong></td></tr>
-            </tbody>
-          </table>
-          <div class="amount-words">Amount in Words: ${numberToWords(order.total)}</div>
-        </div>
-        <div class="section terms">
-          <strong>Terms & Conditions:</strong>
-          <div class="muted" style="margin-top: 8px; line-height: 1.4">
-            1. Payment terms: ${escapeHtml(order.paymentTerms || "30 days from invoice date")}<br />
-            2. Furnish Transporter copy of the invoice at the time of delivery of material.<br />
-            3. Please mentioned our GSTIN on your tax invoice.<br />
-            4. Any damaged Due To Manufacturer Transit Needs To be Replace At Free Of Cost<br />
-            5. Please mentioned PO Number & PO date all corrosponding documents
-          </div>
-        </div>
-        ${businessInfo.signature ? `
-          <div class="signature-section">
-            <div>Authorized Signatory</div>
-            <img src="${escapeHtml(businessInfo.signature)}" alt="Authorized Signature" class="signature-image" style="margin-top: 8px" />
-            <div class="muted">${escapeHtml(businessInfo.name)}</div>
-          </div>
-        ` : ''}
-        ${order.notes ? `<div class="footer">Notes: ${escapeHtml(order.notes)}</div>` : ''}
-      `;
-      await downloadAsPdf(htmlContent, `PO-${order.poNumber}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  return (
-    <Button variant="outline" size="sm" className="gap-1 h-8 w-8 p-0" onClick={handleDownload} disabled={isLoading} title="Download PDF">
-      <Download className="w-4 h-4" />
     </Button>
   );
 }

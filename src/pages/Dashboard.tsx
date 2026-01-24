@@ -144,35 +144,35 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-accent/5 py-10 md:py-20 px-4 md:px-6">
+      <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-accent/5 py-20 px-6">
         <div className="absolute inset-0 bg-grid-pattern opacity-5" />
         <div className="max-w-6xl mx-auto relative z-10">
-          <div className="text-center space-y-4 md:space-y-6 animate-fade-in">
-            <div className="mb-4 md:mb-6">
-              <img src="/assets/cors-logo.png" alt="CORS Logo" className="h-14 md:h-20 mx-auto object-contain" />
+          <div className="text-center space-y-6 animate-fade-in">
+            <div className="mb-6">
+              <img src="/assets/cors-logo.png" alt="CORS Logo" className="h-20 mx-auto object-contain" />
             </div>
-            <div className="inline-block px-3 md:px-4 py-1.5 md:py-2 bg-primary/10 rounded-full text-primary text-xs md:text-sm font-medium">
+            <div className="inline-block px-4 py-2 bg-primary/10 rounded-full text-primary text-sm font-medium">
               <p>Smart Operations Management System</p>
             </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
+            <h1 className="text-5xl md:text-6xl font-bold text-foreground leading-tight">
               Manage Your Inventory
               <br />
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 Like Never Before
               </span>
             </h1>
-            <p className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Streamline your inventory operations with powerful tools for purchase orders, 
               goods receipts, and real-time tracking. Built for Indian businesses.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center pt-2 md:pt-4 px-4">
-              <Button asChild size="lg" className="text-base md:text-lg px-6 md:px-8 group w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+              <Button asChild size="lg" className="text-lg px-8 group">
                 <Link to="/auth">
                   Sign In / Sign Up
-                  <ArrowRight className="ml-2 h-4 md:h-5 w-4 md:w-5 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="text-base md:text-lg px-6 md:px-8 w-full sm:w-auto">
+              <Button asChild size="lg" variant="outline" className="text-lg px-8">
                 <Link to="/dashboard">Go to Dashboard</Link>
               </Button>
             </div>
@@ -181,70 +181,70 @@ const Dashboard = () => {
       </section>
 
       {/* Real-Time Statistics Section */}
-      <section className="py-10 md:py-16 px-4 md:px-6 bg-gradient-to-br from-primary/5 via-background to-accent/5">
+      <section className="py-16 px-6 bg-gradient-to-br from-primary/5 via-background to-accent/5">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-8 md:mb-12">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-3 md:mb-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               Your Business at a Glance
             </h2>
-            <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Sample statistics showcasing system capabilities
             </p>
           </div>
           
           {/* Main Stats Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8">
-            <Card className="p-4 md:p-6 hover:shadow-lg transition-shadow border-l-4 border-l-primary">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card className="p-6 hover:shadow-lg transition-shadow border-l-4 border-l-primary">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs md:text-sm font-medium text-muted-foreground mb-1">Total Inventory</p>
-                  <p className="text-xl md:text-3xl font-bold text-foreground">{stats.totalItems}</p>
-                  <p className="text-xs text-muted-foreground mt-1 md:mt-2 hidden sm:block">
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Total Inventory Items</p>
+                  <p className="text-3xl font-bold text-foreground">{stats.totalItems}</p>
+                  <p className="text-xs text-muted-foreground mt-2">
                     Value: {formatINR(stats.totalInventoryValue)}
                   </p>
                 </div>
-                <div className="p-2 md:p-3 bg-primary/10 rounded-lg">
-                  <Package className="w-4 md:w-6 h-4 md:h-6 text-primary" />
+                <div className="p-3 bg-primary/10 rounded-lg">
+                  <Package className="w-6 h-6 text-primary" />
                 </div>
               </div>
             </Card>
 
-            <Card className="p-4 md:p-6 hover:shadow-lg transition-shadow border-l-4 border-l-blue-500">
+            <Card className="p-6 hover:shadow-lg transition-shadow border-l-4 border-l-blue-500">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs md:text-sm font-medium text-muted-foreground mb-1">Purchase Orders</p>
-                  <p className="text-xl md:text-3xl font-bold text-foreground">{stats.totalPurchaseOrders}</p>
-                  <p className="text-xs text-muted-foreground mt-1 md:mt-2">
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Purchase Orders</p>
+                  <p className="text-3xl font-bold text-foreground">{stats.totalPurchaseOrders}</p>
+                  <p className="text-xs text-muted-foreground mt-2">
                     {stats.pendingPOs} pending
                   </p>
                 </div>
-                <div className="p-2 md:p-3 bg-blue-500/10 rounded-lg">
-                  <ShoppingCart className="w-4 md:w-6 h-4 md:h-6 text-blue-500" />
+                <div className="p-3 bg-blue-500/10 rounded-lg">
+                  <ShoppingCart className="w-6 h-6 text-blue-500" />
                 </div>
               </div>
             </Card>
 
-            <Card className="p-4 md:p-6 hover:shadow-lg transition-shadow border-l-4 border-l-green-500">
+            <Card className="p-6 hover:shadow-lg transition-shadow border-l-4 border-l-green-500">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs md:text-sm font-medium text-muted-foreground mb-1">Goods Receipts</p>
-                  <p className="text-xl md:text-3xl font-bold text-foreground">{stats.totalGoodsReceipts}</p>
-                  <p className="text-xs text-muted-foreground mt-1 md:mt-2">
-                    {stats.pendingGRs} in QC
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Goods Receipts</p>
+                  <p className="text-3xl font-bold text-foreground">{stats.totalGoodsReceipts}</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {stats.pendingGRs} in quality check
                   </p>
                 </div>
-                <div className="p-2 md:p-3 bg-green-500/10 rounded-lg">
-                  <Receipt className="w-4 md:w-6 h-4 md:h-6 text-green-500" />
+                <div className="p-3 bg-green-500/10 rounded-lg">
+                  <Receipt className="w-6 h-6 text-green-500" />
                 </div>
               </div>
             </Card>
 
-            <Card className="p-4 md:p-6 hover:shadow-lg transition-shadow border-l-4 border-l-purple-500">
+            <Card className="p-6 hover:shadow-lg transition-shadow border-l-4 border-l-purple-500">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs md:text-sm font-medium text-muted-foreground mb-1">Proforma Invoices</p>
-                  <p className="text-xl md:text-3xl font-bold text-foreground">{stats.totalProformaInvoices}</p>
-                  <p className="text-xs text-muted-foreground mt-1 md:mt-2">
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Proforma Invoices</p>
+                  <p className="text-3xl font-bold text-foreground">{stats.totalProformaInvoices}</p>
+                  <p className="text-xs text-muted-foreground mt-2">
                     {stats.pendingProformas} pending
                   </p>
                 </div>

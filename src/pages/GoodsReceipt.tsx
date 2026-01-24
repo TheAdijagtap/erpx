@@ -2,15 +2,13 @@ import { useMemo, useState, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Package, Eye, Edit, Printer, CheckCircle, XCircle, Trash2, Tag, Download } from "lucide-react";
+import { Plus, Search, Package, Eye, Edit, Printer, CheckCircle, XCircle, Trash2, Tag } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
-import { downloadAsPdf } from "@/lib/downloadPdf";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
 import { numberToWords } from "@/lib/numberToWords";
@@ -33,19 +31,19 @@ const GoodsReceiptPage = () => {
   ), [goodsReceipts, debouncedSearch]);
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Goods Receipt</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
+          <h1 className="text-3xl font-bold text-foreground">Goods Receipt</h1>
+          <p className="text-muted-foreground mt-1">
             Track and manage incoming goods from suppliers.
           </p>
         </div>
         <CreateGRDialog />
       </div>
 
-      <Card className="p-4 md:p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+      <Card className="p-6">
+        <div className="flex items-center gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
@@ -58,7 +56,7 @@ const GoodsReceiptPage = () => {
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         {filteredReceipts.map((receipt) => (
           <Card key={receipt.id} className="p-4 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
             <div className="space-y-3">
@@ -77,7 +75,7 @@ const GoodsReceiptPage = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div className="grid grid-cols-4 gap-2">
                 <div>
                   <p className="text-xs font-medium text-muted-foreground">Items</p>
                   <p className="text-sm font-semibold">{receipt.items.length}</p>
@@ -104,7 +102,6 @@ const GoodsReceiptPage = () => {
                 <ViewGRDialog id={receipt.id} />
                 <EditGRDialog id={receipt.id} />
                 <PrintGRButton id={receipt.id} />
-                <DownloadGRButton id={receipt.id} />
                 <TCodeDialog id={receipt.id} />
                 <DeleteGRDialog id={receipt.id} />
                 {receipt.status === 'QUALITY_CHECK' && (
@@ -287,7 +284,7 @@ function CreateGRDialog() {
           <Plus className="w-4 h-4" /> Create New GR
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto w-[95vw] md:w-auto">
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>Create Goods Receipt</DialogTitle>
         </DialogHeader>
@@ -348,23 +345,22 @@ function CreateGRDialog() {
             </div>
           </div>
 
-          {/* Desktop Table View */}
-          <div className="hidden md:block rounded-md border overflow-x-auto">
+          <div className="rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Item</TableHead>
-                  <TableHead>Batch/Lot</TableHead>
-                  <TableHead>Ordered</TableHead>
-                  <TableHead>Received</TableHead>
-                  <TableHead>Price</TableHead>
+                  <TableHead>Batch/Lot No.</TableHead>
+                  <TableHead>Ordered Qty</TableHead>
+                  <TableHead>Received Qty</TableHead>
+                  <TableHead>Unit Price</TableHead>
                   <TableHead>Total</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {rows.map((row, idx) => (
                   <TableRow key={idx}>
-                    <TableCell className="min-w-[180px]">
+                    <TableCell className="min-w-[220px]">
                       <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
                         <Select value={row.itemId} onValueChange={(v) => {
@@ -406,14 +402,13 @@ function CreateGRDialog() {
                     </TableCell>
                     <TableCell>
                       <Input
-                        placeholder="Batch"
+                        placeholder="Batch/Lot"
                         value={row.batchNumber || ""}
                         onChange={(e) => {
                           const next = [...rows];
                           next[idx] = { ...row, batchNumber: e.target.value };
                           setRows(next);
                         }}
-                        className="w-28"
                       />
                     </TableCell>
                     <TableCell>
@@ -421,21 +416,21 @@ function CreateGRDialog() {
                         const next = [...rows];
                         next[idx] = { ...row, orderedQuantity: parseFloat(e.target.value) || 0 };
                         setRows(next);
-                      }} className="w-20" />
+                      }} />
                     </TableCell>
                     <TableCell>
                       <Input type="number" min={0} step="0.01" value={row.receivedQuantity} onChange={(e) => {
                         const next = [...rows];
                         next[idx] = { ...row, receivedQuantity: parseFloat(e.target.value) || 0 };
                         setRows(next);
-                      }} className="w-20" />
+                      }} />
                     </TableCell>
                     <TableCell>
                       <Input type="number" min={0} step="0.01" value={row.unitPrice} onChange={(e) => {
                         const next = [...rows];
                         next[idx] = { ...row, unitPrice: parseFloat(e.target.value) || 0 };
                         setRows(next);
-                      }} className="w-24" />
+                      }} />
                     </TableCell>
                     <TableCell className="font-medium">{formatINR((row.receivedQuantity) * row.unitPrice)}</TableCell>
                   </TableRow>
@@ -444,115 +439,13 @@ function CreateGRDialog() {
             </Table>
           </div>
 
-          {/* Mobile Card View */}
-          <div className="md:hidden space-y-3">
-            {rows.map((row, idx) => (
-              <div key={idx} className="border rounded-lg p-3 space-y-3 bg-muted/30">
-                <div className="flex justify-between items-start">
-                  <span className="text-xs text-muted-foreground">Item #{idx + 1}</span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setRows(rows.filter((_, i) => i !== idx))}
-                    className="h-7 w-7 p-0"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </Button>
-                </div>
-                <div>
-                  <Label className="text-xs">Item</Label>
-                  <Select value={row.itemId} onValueChange={(v) => {
-                    const it = items.find(i => i.id === v)!;
-                    const next = [...rows];
-                    next[idx] = { ...row, itemId: v, unitPrice: it.unitPrice };
-                    setRows(next);
-                  }}>
-                    <SelectTrigger className="mt-1"><SelectValue placeholder="Select item" /></SelectTrigger>
-                    <SelectContent className="z-50 max-h-64">
-                      <div className="px-2 pb-2 sticky top-0 bg-background">
-                        <Input
-                          placeholder="Search items..."
-                          value={itemSearch}
-                          onChange={(e) => setItemSearch(e.target.value)}
-                          className="h-8"
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </div>
-                      {filteredItems.length === 0 ? (
-                        <div className="px-2 py-4 text-sm text-muted-foreground text-center">
-                          No items found
-                        </div>
-                      ) : (
-                        filteredItems.map((i) => (
-                          <SelectItem key={i.id} value={i.id}>
-                            <div className="flex flex-col">
-                              <span>{i.name}</span>
-                              {i.description && (
-                                <span className="text-xs text-muted-foreground">{i.description}</span>
-                              )}
-                            </div>
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label className="text-xs">Batch/Lot No.</Label>
-                  <Input
-                    placeholder="Batch/Lot"
-                    value={row.batchNumber || ""}
-                    onChange={(e) => {
-                      const next = [...rows];
-                      next[idx] = { ...row, batchNumber: e.target.value };
-                      setRows(next);
-                    }}
-                    className="mt-1"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <Label className="text-xs">Ordered Qty</Label>
-                    <Input type="number" min={0} value={row.orderedQuantity || 0} onChange={(e) => {
-                      const next = [...rows];
-                      next[idx] = { ...row, orderedQuantity: parseFloat(e.target.value) || 0 };
-                      setRows(next);
-                    }} className="mt-1" />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Received Qty</Label>
-                    <Input type="number" min={0} step="0.01" value={row.receivedQuantity} onChange={(e) => {
-                      const next = [...rows];
-                      next[idx] = { ...row, receivedQuantity: parseFloat(e.target.value) || 0 };
-                      setRows(next);
-                    }} className="mt-1" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <Label className="text-xs">Unit Price</Label>
-                    <Input type="number" min={0} step="0.01" value={row.unitPrice} onChange={(e) => {
-                      const next = [...rows];
-                      next[idx] = { ...row, unitPrice: parseFloat(e.target.value) || 0 };
-                      setRows(next);
-                    }} className="mt-1" />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Total</Label>
-                    <div className="mt-1 h-10 flex items-center font-medium">{formatINR((row.receivedQuantity) * row.unitPrice)}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
           <Button variant="outline" className="gap-2" onClick={onAddRow}><Plus className="w-4 h-4" /> Add Item</Button>
 
           <div className="mt-6">
             <h4 className="font-medium mb-3">Additional Charges</h4>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {additionalCharges.map((charge, idx) => (
-                <div key={idx} className="flex flex-col sm:flex-row gap-2">
+                <div key={idx} className="flex gap-2">
                   <Input
                     placeholder="Charge name (e.g., Freight)"
                     value={charge.name}
@@ -561,31 +454,27 @@ function CreateGRDialog() {
                       next[idx] = { ...charge, name: e.target.value };
                       setAdditionalCharges(next);
                     }}
-                    className="flex-1"
                   />
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Amount"
-                      value={charge.amount}
-                      onChange={(e) => {
-                        const next = [...additionalCharges];
-                        next[idx] = { ...charge, amount: parseFloat(e.target.value) || 0 };
-                        setAdditionalCharges(next);
-                      }}
-                      className="w-full sm:w-32"
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const next = additionalCharges.filter((_, i) => i !== idx);
-                        setAdditionalCharges(next);
-                      }}
-                    >
-                      Remove
-                    </Button>
-                  </div>
+                  <Input
+                    type="number"
+                    placeholder="Amount"
+                    value={charge.amount}
+                    onChange={(e) => {
+                      const next = [...additionalCharges];
+                      next[idx] = { ...charge, amount: parseFloat(e.target.value) || 0 };
+                      setAdditionalCharges(next);
+                    }}
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const next = additionalCharges.filter((_, i) => i !== idx);
+                      setAdditionalCharges(next);
+                    }}
+                  >
+                    Remove
+                  </Button>
                 </div>
               ))}
               <Button
@@ -939,126 +828,6 @@ function PrintGRButton({ id }: { id: string }) {
   return (
     <Button variant="outline" size="sm" className="gap-1" onClick={handlePrint}>
       <Printer className="w-4 h-4" /> Print/PDF
-    </Button>
-  );
-}
-
-function DownloadGRButton({ id }: { id: string }) {
-  const { goodsReceipts, businessInfo, gstSettings } = useData();
-  const receipt = goodsReceipts.find(g => g.id === id)!;
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const handleDownload = async () => {
-    setIsLoading(true);
-    try {
-      // Use EXACT same HTML template as PrintGRButton for consistent formatting
-      const htmlContent = `
-        <div class="section">
-          <div class="header">
-            ${businessInfo.logo ? `<img src="${escapeHtml(businessInfo.logo)}" alt="Logo" />` : ''}
-            <div>
-              <div class="brand">${escapeHtml(businessInfo.name)}</div>
-              <div class="muted">${escapeHtml(businessInfo.address)}</div>
-              <div class="muted">${escapeHtml(businessInfo.email)} · ${escapeHtml(businessInfo.phone)}</div>
-              ${businessInfo.gstNumber ? `<div class="muted">GST: ${escapeHtml(businessInfo.gstNumber)}</div>` : ''}
-            </div>
-          </div>
-        </div>
-        <div class="section"><h2>Goods Receipt ${escapeHtml(receipt.grNumber)}</h2></div>
-        <div class="section">
-          <div class="grid">
-            <div>
-              <strong>Supplier Details</strong>
-              <div>${escapeHtml(receipt.supplier.name)}</div>
-              <div class="muted">${escapeHtml(receipt.supplier.address)}</div>
-              <div class="muted">${escapeHtml(receipt.supplier.email)} · ${escapeHtml(receipt.supplier.phone)}</div>
-              ${receipt.supplier.gstNumber ? `<div class="muted">GST: ${escapeHtml(receipt.supplier.gstNumber)}</div>` : ''}
-            </div>
-            <div>
-              <strong>Receipt Details</strong>
-              <div>Date: ${formatDateIN(receipt.date)}</div>
-              <div>Status: ${escapeHtml(receipt.status)}</div>
-              <div>GST: ${receipt.sgst + receipt.cgst > 0 ? `${gstSettings.sgstRate + gstSettings.cgstRate}%` : 'Not Applied'}</div>
-            </div>
-          </div>
-        </div>
-        <div class="section">
-          <p style="margin-bottom: 8px; font-style: italic">Following goods have been received and verified :</p>
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Description</th>
-                ${receipt.items.some(it => it.batchNumber) ? '<th>Batch/Lot</th>' : ''}
-                ${receipt.items.some(it => isValidHsn(it.item.sku)) ? '<th>HSN</th>' : ''}
-                <th>Ordered</th>
-                <th>Received</th>
-                <th>Unit</th>
-                <th>Rate</th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${receipt.items.map((it, idx) => `
-                <tr>
-                  <td>${idx + 1}</td>
-                  <td>
-                    <div style="font-weight: 600">${escapeHtml(it.item.name)}</div>
-                    ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${escapeHtml(it.item.description)}</div>` : ''}
-                    ${(it.item.make || it.item.mpn) ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${it.item.make ? `Make: ${escapeHtml(it.item.make)}` : ''}${it.item.make && it.item.mpn ? ' | ' : ''}${it.item.mpn ? `MPN: ${escapeHtml(it.item.mpn)}` : ''}</div>` : ''}
-                  </td>
-                  ${receipt.items.some(i => i.batchNumber) ? `<td>${it.batchNumber ? escapeHtml(it.batchNumber) : '-'}</td>` : ''}
-                  ${receipt.items.some(i => isValidHsn(i.item.sku)) ? `<td>${isValidHsn(it.item.sku) ? escapeHtml(it.item.sku) : '-'}</td>` : ''}
-                  <td>${it.orderedQuantity || '-'}</td>
-                  <td>${it.receivedQuantity}</td>
-                  <td>${escapeHtml(it.item.unit)}</td>
-                  <td>${formatINR(it.unitPrice)}</td>
-                  <td>${formatINR(it.total)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-        <div class="section">
-          <table class="totals">
-            <tbody>
-              <tr><td class="label">Subtotal</td><td class="value">${formatINR(receipt.subtotal)}</td></tr>
-              ${(receipt.additionalCharges ?? []).map(charge => `<tr><td class="label">${escapeHtml(charge.name)}</td><td class="value">${formatINR(charge.amount)}</td></tr>`).join('')}
-              <tr><td class="label">SGST</td><td class="value">${formatINR(receipt.sgst)}</td></tr>
-              <tr><td class="label">CGST</td><td class="value">${formatINR(receipt.cgst)}</td></tr>
-              <tr><td class="label"><strong>Total Amount</strong></td><td class="value"><strong>${formatINR(receipt.total)}</strong></td></tr>
-            </tbody>
-          </table>
-          <div class="amount-words">Amount in Words: ${numberToWords(receipt.total)}</div>
-        </div>
-        <div class="section terms">
-          <strong>Terms & Conditions:</strong>
-          <div class="muted" style="margin-top: 8px; line-height: 1.4">
-            1. All goods have been inspected upon receipt<br />
-            2. Quality check completed as per standards<br />
-            3. Quantities verified and confirmed<br />
-            4. Any discrepancies noted in remarks section<br />
-            5. Goods accepted in good condition
-          </div>
-        </div>
-        ${businessInfo.signature ? `
-          <div class="signature-section">
-            <div>Authorized Signatory</div>
-            <img src="${escapeHtml(businessInfo.signature)}" alt="Authorized Signature" class="signature-image" style="margin-top: 8px" />
-            <div class="muted">${escapeHtml(businessInfo.name)}</div>
-          </div>
-        ` : ''}
-        ${receipt.notes ? `<div class="footer">Notes: ${escapeHtml(receipt.notes)}</div>` : ''}
-      `;
-      await downloadAsPdf(htmlContent, `GR-${receipt.grNumber}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  return (
-    <Button variant="outline" size="sm" className="gap-1 h-8 w-8 p-0" onClick={handleDownload} disabled={isLoading} title="Download PDF">
-      <Download className="w-4 h-4" />
     </Button>
   );
 }

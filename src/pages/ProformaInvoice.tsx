@@ -11,7 +11,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Plus, Search, Receipt, Eye, Edit, Printer, Trash2, Calendar, CheckCircle, Send, TrendingUp, Download } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
-import { downloadAsPdf } from "@/lib/downloadPdf";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
 import { numberToWords } from "@/lib/numberToWords";
@@ -139,21 +138,21 @@ const ProformaInvoice = () => {
   const yearlyInsights = stats.yearlyTotals;
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground">Proforma Invoice</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
+          <h1 className="text-3xl font-bold text-foreground">Proforma Invoice</h1>
+          <p className="text-muted-foreground mt-1">
             Create and manage proforma invoices for your customers.
           </p>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 sm:gap-4 border-b overflow-x-auto">
+      <div className="flex gap-4 border-b">
         <button
           onClick={() => setActiveTab("invoices")}
-          className={`pb-2 px-1 border-b-2 transition-colors whitespace-nowrap text-sm sm:text-base ${
+          className={`pb-2 px-1 border-b-2 transition-colors ${
             activeTab === "invoices"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -163,7 +162,7 @@ const ProformaInvoice = () => {
         </button>
         <button
           onClick={() => setActiveTab("insights")}
-          className={`pb-2 px-1 border-b-2 transition-colors whitespace-nowrap text-sm sm:text-base ${
+          className={`pb-2 px-1 border-b-2 transition-colors ${
             activeTab === "insights"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -173,7 +172,7 @@ const ProformaInvoice = () => {
         </button>
         <button
           onClick={() => setActiveTab("products")}
-          className={`pb-2 px-1 border-b-2 transition-colors whitespace-nowrap text-sm sm:text-base ${
+          className={`pb-2 px-1 border-b-2 transition-colors ${
             activeTab === "products"
               ? "border-primary text-primary"
               : "border-transparent text-muted-foreground hover:text-foreground"
@@ -308,25 +307,25 @@ function ProformaInsightsTab({ stats, monthlyInsights, yearlyInsights, selectedM
   };
 
   return (
-    <Card className="p-4 md:p-6 space-y-6">
+    <Card className="p-6 space-y-6">
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-1">
-          <h2 className="text-lg md:text-xl font-semibold text-foreground flex items-center gap-2">
+          <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
             <TrendingUp className="w-5 h-5" /> Proforma Insights
           </h2>
           <p className="text-sm text-muted-foreground">
             Track your proforma invoice activity with totals, averages, and trend breakdowns.
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-          <Button variant="outline" size="sm" onClick={exportToCSV} className="gap-2 w-full sm:w-auto">
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="sm" onClick={exportToCSV} className="gap-2">
             <Download className="w-4 h-4" /> Export CSV
           </Button>
           {monthlyInsights.length > 0 && (
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 sm:ml-auto">
+            <div className="flex items-center gap-3 ml-auto">
               <label className="text-sm font-medium text-muted-foreground">View by Month:</label>
               <Select value={selectedMonth || "all"} onValueChange={(value) => setSelectedMonth(value === "all" ? null : value)}>
-                <SelectTrigger className="w-full sm:w-48">
+                <SelectTrigger className="w-48">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="z-50">
@@ -355,7 +354,7 @@ function ProformaInsightsTab({ stats, monthlyInsights, yearlyInsights, selectedM
       </div>
 
       {/* Status Breakdown */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-lg border border-border/60 bg-background p-4">
           <div className="flex items-center gap-2 mb-2">
             <Badge className="bg-gray-400 text-gray-900">Draft</Badge>
@@ -380,7 +379,7 @@ function ProformaInsightsTab({ stats, monthlyInsights, yearlyInsights, selectedM
       </div>
 
       {/* Monthly & Yearly Breakdown */}
-      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2">
         <div>
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Monthly Revenue</h3>
@@ -503,7 +502,6 @@ const ProformaInvoicesTab = ({ proformaProducts }: { proformaProducts: ProformaP
                 <ViewProformaDialog invoice={invoice} />
                 <EditProformaDialog invoice={invoice} proformaProducts={proformaProducts} />
                 <PrintProformaButton id={invoice.id} />
-                <DownloadProformaButton id={invoice.id} />
                 <DeleteProformaDialog id={invoice.id} />
               </div>
             </div>
@@ -1039,7 +1037,7 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
           Create Proforma
         </Button>
       </DialogTrigger>
-      <DialogContent className="w-[95vw] max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create Proforma Invoice</DialogTitle>
         </DialogHeader>
@@ -1168,201 +1166,104 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
           </Card>
 
           {/* Items */}
-          <Card className="p-3 md:p-4">
+          <Card className="p-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base md:text-lg font-semibold">Items</h3>
+              <h3 className="text-lg font-semibold">Items</h3>
               <Button onClick={addRow} variant="outline" size="sm">
-                <Plus className="w-4 h-4 mr-1 md:mr-2" />
-                <span className="hidden sm:inline">Add Item</span>
-                <span className="sm:hidden">Add</span>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Item
               </Button>
             </div>
             
-            {/* Desktop Table View */}
-            <div className="hidden md:block overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Item</TableHead>
-                    <TableHead>HSN</TableHead>
-                    <TableHead>Qty</TableHead>
-                    <TableHead>Unit Price</TableHead>
-                    <TableHead>Total</TableHead>
-                    <TableHead className="w-[80px]">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {items.map((item, index) => (
-                    <TableRow key={item.id}>
-                      <TableCell className="min-w-[180px]">
-                        <div className="relative">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
-                          <Select
-                            value={item.itemId}
-                            onValueChange={(value) => updateItem(index, 'itemId', value)}
-                          >
-                            <SelectTrigger className="pl-10">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent className="z-50">
-                              <div className="px-2 pb-2 sticky top-0 bg-background">
-                                <Input
-                                  placeholder="Search products..."
-                                  value={itemSearch}
-                                  onChange={(e) => setItemSearch(e.target.value)}
-                                  className="h-8"
-                                  onClick={(e) => e.stopPropagation()}
-                                />
-                              </div>
-                              {filteredProducts.length === 0 ? (
-                                <div className="px-2 py-4 text-sm text-muted-foreground text-center">
-                                  No products found
-                                </div>
-                              ) : (
-                                filteredProducts.map((product) => (
-                                  <SelectItem key={product.id} value={product.id}>
-                                    {product.name} ({product.unit})
-                                  </SelectItem>
-                                ))
-                              )}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          value={item.hsnCode || ""}
-                          onChange={(e) => updateItem(index, 'hsnCode', e.target.value)}
-                          placeholder="HSN"
-                          className="w-20"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          type="number"
-                          value={item.quantity}
-                          onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
-                          min="0"
-                          step="0.01"
-                          className="w-20"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          type="number"
-                          value={item.unitPrice}
-                          onChange={(e) => updateItem(index, 'unitPrice', parseFloat(e.target.value) || 0)}
-                          min="0"
-                          step="0.01"
-                          className="w-24"
-                        />
-                      </TableCell>
-                      <TableCell>{formatINR(item.total)}</TableCell>
-                      <TableCell>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removeItem(index)}
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Item</TableHead>
+                  <TableHead>HSN (Optional)</TableHead>
+                  <TableHead>Quantity</TableHead>
+                  <TableHead>Unit Price</TableHead>
+                  <TableHead>Total</TableHead>
+                  <TableHead className="w-[100px]">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {items.map((item, index) => (
+                  <TableRow key={item.id}>
+                    <TableCell>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+                        <Select
+                          value={item.itemId}
+                          onValueChange={(value) => updateItem(index, 'itemId', value)}
                         >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-
-            {/* Mobile Card View */}
-            <div className="md:hidden space-y-3">
-              {items.map((item, index) => (
-                <div key={item.id} className="border rounded-lg p-3 space-y-3 bg-muted/30">
-                  <div className="flex justify-between items-start">
-                    <span className="text-xs text-muted-foreground">Item #{index + 1}</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removeItem(index)}
-                      className="h-7 w-7 p-0"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  </div>
-                  <div>
-                    <Label className="text-xs">Product</Label>
-                    <Select
-                      value={item.itemId}
-                      onValueChange={(value) => updateItem(index, 'itemId', value)}
-                    >
-                      <SelectTrigger className="mt-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="z-50">
-                        <div className="px-2 pb-2 sticky top-0 bg-background">
-                          <Input
-                            placeholder="Search products..."
-                            value={itemSearch}
-                            onChange={(e) => setItemSearch(e.target.value)}
-                            className="h-8"
-                            onClick={(e) => e.stopPropagation()}
-                          />
-                        </div>
-                        {filteredProducts.length === 0 ? (
-                          <div className="px-2 py-4 text-sm text-muted-foreground text-center">
-                            No products found
-                          </div>
-                        ) : (
-                          filteredProducts.map((product) => (
-                            <SelectItem key={product.id} value={product.id}>
-                              {product.name} ({product.unit})
-                            </SelectItem>
-                          ))
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Label className="text-xs">HSN</Label>
+                          <SelectTrigger className="pl-10">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="z-50">
+                            <div className="px-2 pb-2 sticky top-0 bg-background">
+                              <Input
+                                placeholder="Search products..."
+                                value={itemSearch}
+                                onChange={(e) => setItemSearch(e.target.value)}
+                                className="h-8"
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
+                            {filteredProducts.length === 0 ? (
+                              <div className="px-2 py-4 text-sm text-muted-foreground text-center">
+                                No products found
+                              </div>
+                            ) : (
+                              filteredProducts.map((product) => (
+                                <SelectItem key={product.id} value={product.id}>
+                                  {product.name} ({product.unit})
+                                </SelectItem>
+                              ))
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </TableCell>
+                    <TableCell>
                       <Input
                         value={item.hsnCode || ""}
                         onChange={(e) => updateItem(index, 'hsnCode', e.target.value)}
                         placeholder="HSN"
-                        className="mt-1"
+                        className="w-24"
                       />
-                    </div>
-                    <div>
-                      <Label className="text-xs">Quantity</Label>
+                    </TableCell>
+                    <TableCell>
                       <Input
                         type="number"
                         value={item.quantity}
                         onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
                         min="0"
                         step="0.01"
-                        className="mt-1"
                       />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Label className="text-xs">Unit Price</Label>
+                    </TableCell>
+                    <TableCell>
                       <Input
                         type="number"
                         value={item.unitPrice}
                         onChange={(e) => updateItem(index, 'unitPrice', parseFloat(e.target.value) || 0)}
                         min="0"
                         step="0.01"
-                        className="mt-1"
                       />
-                    </div>
-                    <div>
-                      <Label className="text-xs">Total</Label>
-                      <div className="mt-1 h-10 flex items-center font-medium">{formatINR(item.total)}</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                    </TableCell>
+                    <TableCell>{formatINR(item.total)}</TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeItem(index)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
 
             {items.length > 0 && (
               <div className="mt-4 space-y-2 border-t pt-4">
@@ -1397,23 +1298,22 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
           </Card>
 
           {/* Additional Charges */}
-          <Card className="p-3 md:p-4">
+          <Card className="p-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base md:text-lg font-semibold">Additional Charges</h3>
+              <h3 className="text-lg font-semibold">Additional Charges</h3>
               <Button
                 onClick={() => setAdditionalCharges([...additionalCharges, { name: "", amount: 0 }])}
                 variant="outline"
                 size="sm"
               >
-                <Plus className="w-4 h-4 mr-1 md:mr-2" />
-                <span className="hidden sm:inline">Add Charge</span>
-                <span className="sm:hidden">Add</span>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Charge
               </Button>
             </div>
             
-            <div className="space-y-3">
+            <div className="space-y-2">
               {additionalCharges.map((charge, idx) => (
-                <div key={idx} className="flex flex-col sm:flex-row gap-2">
+                <div key={idx} className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   <Input
                     placeholder="Charge name (e.g., Freight)"
                     value={charge.name}
@@ -1422,31 +1322,28 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
                       next[idx] = { ...charge, name: e.target.value };
                       setAdditionalCharges(next);
                     }}
-                    className="flex-1"
                   />
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Amount"
-                      value={charge.amount}
-                      onChange={(e) => {
-                        const next = [...additionalCharges];
-                        next[idx] = { ...charge, amount: parseFloat(e.target.value) || 0 };
-                        setAdditionalCharges(next);
-                      }}
-                      className="w-full sm:w-32"
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const next = additionalCharges.filter((_, i) => i !== idx);
-                        setAdditionalCharges(next);
-                      }}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
+                  <Input
+                    type="number"
+                    placeholder="Amount"
+                    value={charge.amount}
+                    onChange={(e) => {
+                      const next = [...additionalCharges];
+                      next[idx] = { ...charge, amount: parseFloat(e.target.value) || 0 };
+                      setAdditionalCharges(next);
+                    }}
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const next = additionalCharges.filter((_, i) => i !== idx);
+                      setAdditionalCharges(next);
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Remove
+                  </Button>
                 </div>
               ))}
             </div>
@@ -2296,137 +2193,6 @@ const PrintProformaButton = ({ id }: { id: string }) => {
     <Button variant="outline" size="sm" onClick={handlePrint}>
       <Printer className="w-4 h-4 mr-2" />
       Print
-    </Button>
-  );
-};
-
-const DownloadProformaButton = ({ id }: { id: string }) => {
-  const { proformaInvoices, businessInfo } = useData();
-  const invoice = proformaInvoices.find(p => p.id === id)!;
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const handleDownload = async () => {
-    setIsLoading(true);
-    try {
-      // Use EXACT same HTML template as PrintProformaButton for consistent formatting
-      const htmlContent = `
-        <div class="section">
-          <div class="header">
-            ${businessInfo.logo ? `<img src="${escapeHtml(businessInfo.logo)}" alt="Logo" />` : ''}
-            <div>
-              <div class="brand">${escapeHtml(businessInfo.name)}</div>
-              <div class="muted">${escapeHtml(businessInfo.address)}</div>
-              <div class="muted">${escapeHtml(businessInfo.email)} · ${escapeHtml(businessInfo.phone)}</div>
-              ${businessInfo.gstNumber ? `<div class="muted">GST: ${escapeHtml(businessInfo.gstNumber)}</div>` : ''}
-            </div>
-          </div>
-        </div>
-        <div class="section"><h2>Quotation Cum Proforma ${escapeHtml(invoice.proformaNumber)}</h2></div>
-        <div class="section">
-          <div class="grid">
-            <div>
-              <strong>Buyer Details</strong>
-              <div>${escapeHtml(invoice.buyerInfo.name)}</div>
-              ${invoice.buyerInfo.contactPerson ? `<div>${escapeHtml(invoice.buyerInfo.contactPerson)}</div>` : ''}
-              <div class="muted">${escapeHtml(invoice.buyerInfo.address)}</div>
-              <div class="muted">${escapeHtml(invoice.buyerInfo.email)} · ${escapeHtml(invoice.buyerInfo.phone)}</div>
-              ${invoice.buyerInfo.gstNumber ? `<div class="muted">GST: ${escapeHtml(invoice.buyerInfo.gstNumber)}</div>` : ''}
-            </div>
-            <div>
-              <strong>Invoice Details</strong>
-              <div>Date: ${formatDateIN(invoice.date)}</div>
-              ${invoice.validUntil ? `<div>Valid Until: ${formatDateIN(invoice.validUntil)}</div>` : ''}
-              <div>Status: ${escapeHtml(invoice.status)}</div>
-              ${invoice.paymentTerms ? `<div>Payment Terms: ${escapeHtml(invoice.paymentTerms)}</div>` : ''}
-            </div>
-          </div>
-        </div>
-        <div class="section">
-          <p style="margin-bottom: 8px; font-style: italic">We are pleased to submit our quotation for the following items :</p>
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Description</th>
-                ${invoice.items.some(it => isValidHsn(it.hsnCode)) ? '<th>HSN</th>' : ''}
-                <th>Qty</th>
-                <th>Unit</th>
-                <th>Rate</th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${invoice.items.map((it, idx) => `
-                <tr>
-                  <td>${idx + 1}</td>
-                  <td>
-                    <div style="font-weight: 600">${escapeHtml(it.item.name)}</div>
-                    ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${escapeHtml(it.item.description)}</div>` : ''}
-                  </td>
-                  ${invoice.items.some(i => isValidHsn(i.hsnCode)) ? `<td>${isValidHsn(it.hsnCode) ? escapeHtml(it.hsnCode) : '-'}</td>` : ''}
-                  <td>${it.quantity}</td>
-                  <td>${escapeHtml(it.item.unit)}</td>
-                  <td>${formatINR(it.unitPrice)}</td>
-                  <td>${formatINR(it.total)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-        <div class="section">
-          <table class="totals">
-            <tbody>
-              <tr><td class="label">Subtotal</td><td class="value">${formatINR(invoice.subtotal)}</td></tr>
-              ${(invoice.additionalCharges ?? []).map(charge => `<tr><td class="label">${escapeHtml(charge.name)}</td><td class="value">${formatINR(charge.amount)}</td></tr>`).join('')}
-              ${invoice.sgst > 0 || invoice.cgst > 0 ? `
-                <tr><td class="label">SGST (${((invoice.sgst / (invoice.subtotal + (invoice.additionalCharges?.reduce((sum, c) => sum + c.amount, 0) ?? 0))) * 100).toFixed(2)}%)</td><td class="value">${formatINR(invoice.sgst)}</td></tr>
-                <tr><td class="label">CGST (${((invoice.cgst / (invoice.subtotal + (invoice.additionalCharges?.reduce((sum, c) => sum + c.amount, 0) ?? 0))) * 100).toFixed(2)}%)</td><td class="value">${formatINR(invoice.cgst)}</td></tr>
-              ` : `<tr><td class="label">GST</td><td class="value">Not Applied</td></tr>`}
-              <tr><td class="label"><strong>Total Amount</strong></td><td class="value"><strong>${formatINR(invoice.total)}</strong></td></tr>
-            </tbody>
-          </table>
-          <div class="amount-words">Amount in Words: ${numberToWords(invoice.total)}</div>
-        </div>
-        <div class="section terms">
-          <strong>Terms & Conditions:</strong>
-          <div class="muted" style="margin-top: 8px; line-height: 1.4">
-            1. Payment terms: ${escapeHtml(invoice.paymentTerms || "As agreed")}<br />
-            2. Prices are valid until: ${invoice.validUntil ? formatDateIN(invoice.validUntil) : "Further notice"}<br />
-            3. All prices are subject to change without prior notice<br />
-            4. This is a proforma invoice and not a tax invoice<br />
-            5. All rates are inclusive of applicable taxes
-          </div>
-        </div>
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 24px">
-          ${businessInfo.bankDetails ? `
-            <div class="section">
-              <strong>Bank Details:</strong>
-              <div class="muted" style="margin-top: 8px; line-height: 1.6">
-                Bank Name: ${escapeHtml(businessInfo.bankDetails.bankName)}<br />
-                Account No: ${escapeHtml(businessInfo.bankDetails.accountNumber)}<br />
-                IFSC Code: ${escapeHtml(businessInfo.bankDetails.ifscCode)}
-              </div>
-            </div>
-          ` : ''}
-          ${businessInfo.signature ? `
-            <div class="signature-section">
-              <div>Authorized Signatory</div>
-              <img src="${escapeHtml(businessInfo.signature)}" alt="Authorized Signature" class="signature-image" style="margin-top: 8px" />
-              <div class="muted">${escapeHtml(businessInfo.name)}</div>
-            </div>
-          ` : ''}
-        </div>
-        ${invoice.notes ? `<div class="footer">Notes: ${escapeHtml(invoice.notes)}</div>` : ''}
-      `;
-      await downloadAsPdf(htmlContent, `PI-${invoice.proformaNumber}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  return (
-    <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={handleDownload} disabled={isLoading} title="Download PDF">
-      <Download className="w-4 h-4" />
     </Button>
   );
 };
