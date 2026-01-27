@@ -9,10 +9,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Receipt, Eye, Edit, Printer, Trash2, Calendar, CheckCircle, Send, TrendingUp, Download, Users, Phone, Building2 } from "lucide-react";
+import { Plus, Search, Receipt, Eye, Edit, Printer, Trash2, Calendar, CheckCircle, Send, TrendingUp, Download, Users, Phone, Building2, Share2 } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
+import { shareAsPdf, isMobileDevice } from "@/lib/sharePdf";
 import { numberToWords } from "@/lib/numberToWords";
 import { escapeHtml } from "@/lib/htmlEscape";
 import { ProformaInvoice as ProformaInvoiceType, ProformaInvoiceItem, BuyerInfo, ProformaProduct } from "@/types/inventory";
@@ -1562,11 +1563,27 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
 const ViewProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
   const { businessInfo } = useData();
   const [open, setOpen] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = () => {
     if (printRef.current) {
       printElementById(`proforma-print-${invoice.id}`, `Quotation Cum Proforma ${invoice.proformaNumber}`);
+    }
+  };
+
+  const handleShare = async () => {
+    setIsSharing(true);
+    try {
+      await shareAsPdf(
+        `proforma-print-${invoice.id}`,
+        `Proforma-${invoice.proformaNumber}`,
+        `Quotation Cum Proforma ${invoice.proformaNumber}`
+      );
+    } catch (error) {
+      console.error("Share failed:", error);
+    } finally {
+      setIsSharing(false);
     }
   };
 
@@ -1715,6 +1732,10 @@ const ViewProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
         <DialogFooter className="gap-2 flex-wrap">
           <Button variant="outline" onClick={() => setOpen(false)}>
             Close
+          </Button>
+          <Button variant="outline" onClick={handleShare} disabled={isSharing}>
+            <Share2 className="w-4 h-4 mr-2" />
+            {isSharing ? "Sharing..." : (isMobileDevice() ? "Share PDF" : "Save PDF")}
           </Button>
           <Button onClick={handlePrint}>
             <Printer className="w-4 h-4 mr-2" />

@@ -8,10 +8,11 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, FileText, Eye, Edit, Printer, Trash2, Download } from "lucide-react";
+import { Plus, Search, FileText, Eye, Edit, Printer, Trash2, Download, Share2 } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
+import { shareAsPdf, isMobileDevice } from "@/lib/sharePdf";
 import { numberToWords } from "@/lib/numberToWords";
 import { escapeHtml } from "@/lib/htmlEscape";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -920,8 +921,21 @@ function CreatePODialog() {
 
 function ViewPODialog({ id }: { id: string }) {
   const { purchaseOrders, businessInfo, gstSettings } = useData();
+  const [isSharing, setIsSharing] = useState(false);
   const order = purchaseOrders.find(p => p.id === id)!;
   const elId = `po-print-${id}`;
+
+  const handleShare = async () => {
+    setIsSharing(true);
+    try {
+      await shareAsPdf(elId, `PO-${order.poNumber}`, `Purchase Order ${order.poNumber}`);
+    } catch (error) {
+      console.error("Share failed:", error);
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -1039,6 +1053,10 @@ function ViewPODialog({ id }: { id: string }) {
           {order.notes && <div className="footer">Notes: {order.notes}</div>}
         </div>
         <SheetFooter className="gap-2 mt-6 flex-wrap">
+          <Button variant="outline" onClick={handleShare} disabled={isSharing} className="gap-1">
+            <Share2 className="w-4 h-4" />
+            {isSharing ? "Sharing..." : (isMobileDevice() ? "Share PDF" : "Save PDF")}
+          </Button>
           <Button variant="outline" onClick={() => printElementById(elId, `PO ${order.poNumber}`)} className="gap-1"><Printer className="w-4 h-4" /> Print</Button>
           <DeletePODialog id={id} />
         </SheetFooter>
