@@ -2,10 +2,8 @@ export function printElementById(id: string, title = "Document") {
   const el = document.getElementById(id);
   if (!el) return;
   const content = el.innerHTML;
-  const win = window.open("", "_blank", "width=1024,height=768");
-  if (!win) return;
-  win.document.open();
-  win.document.write(`<!doctype html><html><head><title>${title}</title>
+  
+  const styles = `<!doctype html><html><head><title>${title}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
       * { box-sizing: border-box; }
@@ -39,7 +37,86 @@ export function printElementById(id: string, title = "Document") {
         h2 { font-size: 16px; }
       }
     </style>
-  </head><body><div class="doc">${content}</div></body></html>`);
+  </head><body><div class="doc">${content}</div></body></html>`;
+  
+  // Check if mobile device
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  
+  if (isMobile) {
+    // Use iframe approach for mobile - more reliable
+    printWithIframe(styles);
+  } else {
+    // Use popup window for desktop
+    printWithPopup(styles);
+  }
+}
+
+function printWithIframe(htmlContent: string) {
+  // Remove any existing print iframe
+  const existingFrame = document.getElementById('print-iframe');
+  if (existingFrame) {
+    existingFrame.remove();
+  }
+  
+  // Create hidden iframe
+  const iframe = document.createElement('iframe');
+  iframe.id = 'print-iframe';
+  iframe.style.position = 'fixed';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = 'none';
+  document.body.appendChild(iframe);
+  
+  const iframeDoc = iframe.contentWindow?.document;
+  if (!iframeDoc) {
+    // Fallback to new tab if iframe fails
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    return;
+  }
+  
+  iframeDoc.open();
+  iframeDoc.write(htmlContent);
+  iframeDoc.close();
+  
+  // Wait for images to load
+  const images = iframeDoc.getElementsByTagName('img');
+  const imageLoadPromises = Array.from(images).map(img => {
+    return new Promise((resolve) => {
+      if (img.complete) {
+        resolve(true);
+      } else {
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(true);
+        setTimeout(() => resolve(true), 1000);
+      }
+    });
+  });
+  
+  Promise.all(imageLoadPromises).then(() => {
+    setTimeout(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      // Clean up after printing
+      setTimeout(() => iframe.remove(), 1000);
+    }, 300);
+  });
+}
+
+function printWithPopup(htmlContent: string) {
+  const win = window.open("", "_blank", "width=1024,height=768");
+  if (!win) {
+    // Fallback to iframe if popup blocked
+    printWithIframe(htmlContent);
+    return;
+  }
+  
+  win.document.open();
+  win.document.write(htmlContent);
   win.document.close();
 
   const images = win.document.getElementsByTagName('img');
