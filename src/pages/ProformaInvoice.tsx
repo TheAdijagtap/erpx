@@ -688,7 +688,7 @@ const ProformaInvoicesTab = ({ proformaProducts }: { proformaProducts: ProformaP
                 <ViewProformaDialog invoice={invoice} />
                 <EditProformaDialog invoice={invoice} proformaProducts={proformaProducts} />
                 <PrintProformaButton id={invoice.id} />
-                <WhatsAppShareButton id={invoice.id} />
+                <ShareButton id={invoice.id} />
                 <DeleteProformaDialog id={invoice.id} />
               </div>
             </div>
@@ -2384,11 +2384,11 @@ const PrintProformaButton = ({ id }: { id: string }) => {
   );
 };
 
-const WhatsAppShareButton = ({ id }: { id: string }) => {
+const ShareButton = ({ id }: { id: string }) => {
   const { proformaInvoices, businessInfo } = useData();
   const invoice = proformaInvoices.find(p => p.id === id)!;
   const [isSharing, setIsSharing] = useState(false);
-  const elId = `proforma-whatsapp-${id}`;
+  const elId = `proforma-share-${id}`;
   
   const handleShare = async () => {
     setIsSharing(true);
@@ -2552,14 +2552,13 @@ const WhatsAppShareButton = ({ id }: { id: string }) => {
       size="sm" 
       onClick={handleShare}
       disabled={isSharing}
-      className="text-green-600 hover:text-green-700 hover:bg-green-50"
     >
       {isSharing ? (
         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
       ) : (
         <Share2 className="w-4 h-4 mr-2" />
       )}
-      {isSharing ? "Preparing..." : "WhatsApp"}
+      {isSharing ? "Preparing..." : "Share"}
     </Button>
   );
 };
