@@ -58,14 +58,14 @@ export async function shareToWhatsApp(
   document.body.removeChild(downloadLink);
   URL.revokeObjectURL(downloadUrl);
 
-  // Then open WhatsApp with a message
+  // Then open WhatsApp Web with a message
   const message = encodeURIComponent(
     options.message ||
       `Please find the ${options.fileName} document. I have downloaded and will share it with you shortly.`
   );
   const whatsappUrl = options.phoneNumber
-    ? `https://wa.me/${options.phoneNumber.replace(/[^0-9]/g, "")}?text=${message}`
-    : `https://wa.me/?text=${message}`;
+    ? `https://web.whatsapp.com/send?phone=${options.phoneNumber.replace(/[^0-9]/g, "")}&text=${message}`
+    : `https://web.whatsapp.com/send?text=${message}`;
 
   window.open(whatsappUrl, "_blank");
 }
