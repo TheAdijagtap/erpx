@@ -117,8 +117,8 @@ const Auth = () => {
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto flex items-center justify-center">
             <img 
-              src="/assets/cors-logo.png" 
-              alt="CORS Logo" 
+              src="/assets/opis-logo.png" 
+              alt="OPIS Logo" 
               className="h-16 object-contain" 
             />
           </div>
