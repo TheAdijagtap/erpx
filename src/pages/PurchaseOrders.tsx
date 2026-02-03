@@ -762,21 +762,21 @@ function CreatePODialog() {
             </Dialog>
           </div>
           <div className="rounded-md border overflow-x-auto">
-            <Table>
+            <Table className="table-fixed w-full">
               <TableHeader>
                 <TableRow>
-                  <TableHead>Item</TableHead>
-                  <TableHead>HSN</TableHead>
-                  <TableHead>Qty</TableHead>
-                  <TableHead>Unit</TableHead>
-                  <TableHead>Unit Price</TableHead>
-                  <TableHead>Total</TableHead>
+                  <TableHead className="w-[35%] min-w-[150px]">Item</TableHead>
+                  <TableHead className="w-[12%] min-w-[80px]">HSN</TableHead>
+                  <TableHead className="w-[10%] min-w-[70px]">Qty</TableHead>
+                  <TableHead className="w-[10%] min-w-[70px]">Unit</TableHead>
+                  <TableHead className="w-[15%] min-w-[90px]">Unit Price</TableHead>
+                  <TableHead className="w-[18%] min-w-[90px]">Total</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {rows.map((row, idx) => (
                   <TableRow key={idx}>
-                    <TableCell className="min-w-[180px]">
+                    <TableCell className="p-1">
                       <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
                         <Select value={row.itemId} onValueChange={(v) => {
@@ -786,10 +786,10 @@ function CreatePODialog() {
                           next[idx] = { ...row, itemId: v, unitPrice: it.unitPrice || 0, unit: it.unit || "PCS", hsnCode: isValidHsn(it.sku) ? it.sku : "" };
                           setRows(next);
                         }}>
-                          <SelectTrigger className="w-full pl-10">
-                            <SelectValue placeholder="Select item" />
+                          <SelectTrigger className="w-full pl-10 truncate">
+                            <SelectValue placeholder="Select item" className="truncate" />
                           </SelectTrigger>
-                          <SelectContent className="z-50 max-h-64" onCloseAutoFocus={(e) => e.preventDefault()}>
+                          <SelectContent className="z-50 max-h-64 max-w-[300px]" onCloseAutoFocus={(e) => e.preventDefault()}>
                             <div className="px-2 pb-2 sticky top-0 bg-background">
                               <Input
                                 placeholder="Search items..."
@@ -808,10 +808,10 @@ function CreatePODialog() {
                             ) : (
                               getFilteredItems(idx).map((i) => (
                                 <SelectItem key={i.id} value={i.id}>
-                                  <div className="flex flex-col">
-                                    <span>{i.name}</span>
+                                  <div className="flex flex-col max-w-[250px]">
+                                    <span className="truncate">{i.name}</span>
                                     {i.description && (
-                                      <span className="text-xs text-muted-foreground">{i.description}</span>
+                                      <span className="text-xs text-muted-foreground truncate">{i.description}</span>
                                     )}
                                   </div>
                                 </SelectItem>
@@ -821,7 +821,7 @@ function CreatePODialog() {
                         </Select>
                       </div>
                     </TableCell>
-                    <TableCell className="min-w-[80px]">
+                    <TableCell className="p-1">
                       <Input 
                         value={row.hsnCode} 
                         onChange={(e) => {
@@ -830,31 +830,31 @@ function CreatePODialog() {
                           setRows(next);
                         }} 
                         placeholder="HSN"
-                        className="w-20"
+                        className="w-full"
                       />
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="p-1">
                       <Input type="number" min={0} step="0.01" value={row.quantity} onChange={(e) => {
                         const next = [...rows];
                         next[idx] = { ...row, quantity: parseFloat(e.target.value) || 0 };
                         setRows(next);
-                      }} />
+                      }} className="w-full" />
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="p-1">
                       <Input value={row.unit} onChange={(e) => {
                         const next = [...rows];
                         next[idx] = { ...row, unit: e.target.value };
                         setRows(next);
-                      }} />
+                      }} className="w-full" />
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="p-1">
                       <Input type="number" min={0} step="0.01" value={row.unitPrice} onChange={(e) => {
                         const next = [...rows];
                         next[idx] = { ...row, unitPrice: parseFloat(e.target.value) || 0 };
                         setRows(next);
-                      }} />
+                      }} className="w-full" />
                     </TableCell>
-                    <TableCell className="font-medium">{formatINR(row.quantity * row.unitPrice)}</TableCell>
+                    <TableCell className="p-1 font-medium text-sm">{formatINR(row.quantity * row.unitPrice)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
