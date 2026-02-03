@@ -93,7 +93,7 @@ export function TrialExpiredOverlay() {
 
   const handleSubscribe = () => {
     const message = encodeURIComponent(
-      "Hi! I would like to subscribe to CORS Inventory app. My trial has expired and I want to continue using the service."
+      "Hi! I would like to subscribe to OPIS app. My trial has expired and I want to continue using the service."
     );
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, "_blank");
   };
@@ -113,7 +113,7 @@ export function TrialExpiredOverlay() {
         <div className="space-y-2">
           <h2 className="text-2xl font-bold text-foreground">Access Expired</h2>
           <p className="text-muted-foreground">
-            Your subscription/trial has ended. To continue using CORS Inventory and access all features, please subscribe to our service.
+            Your subscription/trial has ended. To continue using OPIS and access all features, please subscribe to our service.
           </p>
         </div>
 
