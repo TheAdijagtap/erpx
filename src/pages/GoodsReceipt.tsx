@@ -942,23 +942,21 @@ function TCodeDialog({ id }: { id: string }) {
     if (!printWindow) return;
 
     const stickerHtml = stickers.map((s, idx) => `
-      <div class="sticker" style="page-break-inside: avoid; ${idx > 0 ? 'page-break-before: auto;' : ''}">
-        <div class="header">
+      <div class="sticker" style="page-break-inside: avoid; ${idx > 0 ? 'page-break-before: always;' : ''}">
+        <div class="left-section">
           <div class="qr-code"><img src="${s.qrCode}" alt="QR Code" /></div>
-          <div class="header-text">
-            <div class="tcode">${escapeHtml(s.tCode)}</div>
-            <div class="company">${escapeHtml(s.itemDescription)}</div>
-          </div>
+          <div class="sticker-num">${s.stickerNo} of ${s.totalStickers}</div>
         </div>
-        <table>
-          <tr><td class="label">Item:</td><td class="value">${escapeHtml(s.itemName)}</td></tr>
-          <tr><td class="label">GR No:</td><td class="value">${escapeHtml(s.grNumber)}</td></tr>
-          <tr><td class="label">GR Date:</td><td class="value">${escapeHtml(s.grDate)}</td></tr>
-          <tr><td class="label">QC Date:</td><td class="value">${escapeHtml(s.qcDate)}</td></tr>
-          <tr><td class="label">Batch/Lot:</td><td class="value">${escapeHtml(s.batchNumber)}</td></tr>
-        </table>
-        <div class="footer">
-          <span class="sticker-num">${s.stickerNo} of ${s.totalStickers}</span>
+        <div class="right-section">
+          <div class="tcode">${escapeHtml(s.tCode)}</div>
+          <div class="company">${escapeHtml(s.itemDescription)}</div>
+          <table>
+            <tr><td class="label">Item:</td><td class="value">${escapeHtml(s.itemName)}</td></tr>
+            <tr><td class="label">GR No:</td><td class="value">${escapeHtml(s.grNumber)}</td></tr>
+            <tr><td class="label">GR Date:</td><td class="value">${escapeHtml(s.grDate)}</td></tr>
+            <tr><td class="label">QC Date:</td><td class="value">${escapeHtml(s.qcDate)}</td></tr>
+            <tr><td class="label">Batch:</td><td class="value">${escapeHtml(s.batchNumber)}</td></tr>
+          </table>
         </div>
       </div>
     `).join('');
@@ -969,7 +967,7 @@ function TCodeDialog({ id }: { id: string }) {
       <head>
         <title>T-Code Stickers - ${receipt.grNumber}</title>
         <style>
-          @page { size: 75mm 50mm; margin: 2mm; }
+          @page { size: 75mm 50mm landscape; margin: 2mm; }
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body { font-family: 'Arial', sans-serif; }
           .sticker {
@@ -977,60 +975,69 @@ function TCodeDialog({ id }: { id: string }) {
             height: 46mm;
             border: 1px solid #000;
             padding: 2mm;
-            margin-bottom: 2mm;
             display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-          }
-          .header {
-            display: flex;
-            align-items: center;
+            flex-direction: row;
             gap: 2mm;
           }
-          .qr-code {
+          .left-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             flex-shrink: 0;
+            width: 22mm;
           }
           .qr-code img {
             width: 18mm;
             height: 18mm;
           }
-          .header-text {
+          .sticker-num {
+            font-size: 7px;
+            color: #666;
+            margin-top: 1mm;
+            text-align: center;
+          }
+          .right-section {
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
           }
           .tcode {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
-            padding: 1mm;
+            padding: 0.5mm 1mm;
             background: #f0f0f0;
             border: 1px solid #ccc;
             letter-spacing: 0.5px;
             text-align: center;
+            margin-bottom: 1mm;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
           }
           .company {
-            font-size: 9px;
+            font-size: 8px;
             text-align: center;
             font-weight: bold;
-            margin-top: 1mm;
             color: #333;
+            margin-bottom: 1mm;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
           }
           table {
             width: 100%;
-            font-size: 9px;
-            border-collapse: collapse;
-            margin-top: 1mm;
-          }
-          td { padding: 0.5mm 0; }
-          td.label { font-weight: bold; width: 25%; color: #555; }
-          td.value { color: #000; }
-          .footer {
-            display: flex;
-            justify-content: space-between;
             font-size: 8px;
-            color: #666;
-            margin-top: 1mm;
+            border-collapse: collapse;
           }
+          td { padding: 0.3mm 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          td.label { font-weight: bold; width: 28%; color: #555; }
+          td.value { color: #000; max-width: 0; overflow: hidden; text-overflow: ellipsis; }
           @media print {
-            .sticker { page-break-inside: avoid; }
+            body { margin: 0; }
+            .sticker { page-break-inside: avoid; border: none; margin: 0; }
           }
         </style>
       </head>
