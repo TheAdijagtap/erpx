@@ -943,13 +943,11 @@ function TCodeDialog({ id }: { id: string }) {
 
     const stickerHtml = stickers.map((s, idx) => `
       <div class="sticker" style="page-break-inside: avoid; ${idx > 0 ? 'page-break-before: auto;' : ''}">
-        <div class="header">
-          <div class="qr-code"><img src="${s.qrCode}" alt="QR Code" /></div>
-          <div class="header-text">
-            <div class="tcode">${escapeHtml(s.tCode)}</div>
-            <div class="company">${escapeHtml(s.itemDescription)}</div>
-          </div>
+        <div class="qr-section">
+          <img src="${s.qrCode}" alt="QR Code" />
         </div>
+        <div class="tcode">${escapeHtml(s.tCode)}</div>
+        <div class="company">${escapeHtml(s.itemDescription)}</div>
         <table>
           <tr><td class="label">Item:</td><td class="value">${escapeHtml(s.itemName)}</td></tr>
           <tr><td class="label">GR No:</td><td class="value">${escapeHtml(s.grNumber)}</td></tr>
@@ -969,65 +967,63 @@ function TCodeDialog({ id }: { id: string }) {
       <head>
         <title>T-Code Stickers - ${receipt.grNumber}</title>
         <style>
-          @page { size: 75mm 50mm; margin: 2mm; }
+          @page { size: 50mm 75mm; margin: 2mm; }
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body { font-family: 'Arial', sans-serif; }
           .sticker {
-            width: 71mm;
-            height: 46mm;
+            width: 46mm;
+            height: 71mm;
             border: 1px solid #000;
             padding: 2mm;
             margin-bottom: 2mm;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-          }
-          .header {
-            display: flex;
             align-items: center;
-            gap: 2mm;
           }
-          .qr-code {
-            flex-shrink: 0;
+          .qr-section {
+            text-align: center;
+            margin-bottom: 1mm;
           }
-          .qr-code img {
-            width: 18mm;
-            height: 18mm;
-          }
-          .header-text {
-            flex: 1;
+          .qr-section img {
+            width: 20mm;
+            height: 20mm;
           }
           .tcode {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
             padding: 1mm;
             background: #f0f0f0;
             border: 1px solid #ccc;
             letter-spacing: 0.5px;
             text-align: center;
+            width: 100%;
           }
           .company {
-            font-size: 9px;
+            font-size: 8px;
             text-align: center;
             font-weight: bold;
             margin-top: 1mm;
             color: #333;
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
           }
           table {
             width: 100%;
-            font-size: 9px;
+            font-size: 8px;
             border-collapse: collapse;
             margin-top: 1mm;
           }
-          td { padding: 0.5mm 0; }
-          td.label { font-weight: bold; width: 25%; color: #555; }
+          td { padding: 0.3mm 0; }
+          td.label { font-weight: bold; width: 30%; color: #555; }
           td.value { color: #000; }
           .footer {
             display: flex;
-            justify-content: space-between;
-            font-size: 8px;
+            justify-content: center;
+            font-size: 7px;
             color: #666;
-            margin-top: 1mm;
+            margin-top: auto;
           }
           @media print {
             .sticker { page-break-inside: avoid; }
