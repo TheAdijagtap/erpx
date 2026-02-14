@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Package, Eye, Edit, Printer, CheckCircle, XCircle, Trash2, Tag } from "lucide-react";
+import { Plus, Search, Package, Eye, Edit, Printer, CheckCircle, XCircle, Trash2, Tag, Usb, Unplug, Zap } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
@@ -857,8 +857,41 @@ function TCodeDialog({ id }: { id: string }) {
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [stickerQty, setStickerQty] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [printerConnected, setPrinterConnected] = useState(false);
+  const [printerName, setPrinterName] = useState<string | null>(null);
+  const [printerStatus, setPrinterStatus] = useState<string>('');
 
   const selectedItemData = receipt.items.find(it => it.id === selectedItem);
+
+  // Check printer connection status on dialog open
+  const checkPrinterStatus = async () => {
+    const { isPrinterConnected, getConnectedPrinterName } = await import('@/lib/labelPrinter');
+    setPrinterConnected(isPrinterConnected());
+    setPrinterName(getConnectedPrinterName());
+  };
+
+  const handleConnectPrinter = async () => {
+    setPrinterStatus('Connecting...');
+    const { connectPrinter } = await import('@/lib/labelPrinter');
+    const result = await connectPrinter();
+    if (result.success) {
+      setPrinterConnected(true);
+      setPrinterName(result.name || 'Printer');
+      setPrinterStatus(`Connected: ${result.name}`);
+    } else {
+      setPrinterStatus(result.error || 'Failed');
+      setTimeout(() => setPrinterStatus(''), 3000);
+    }
+  };
+
+  const handleDisconnectPrinter = async () => {
+    const { disconnectPrinter } = await import('@/lib/labelPrinter');
+    await disconnectPrinter();
+    setPrinterConnected(false);
+    setPrinterName(null);
+    setPrinterStatus('Disconnected');
+    setTimeout(() => setPrinterStatus(''), 2000);
+  };
 
   const generateTCode = (itemCode?: string) => {
     // Use item's Item Code directly if available
@@ -938,6 +971,29 @@ function TCodeDialog({ id }: { id: string }) {
     
     setIsGenerating(false);
 
+    // Direct print via USB if connected
+    if (printerConnected) {
+      const { printStickers: directPrint } = await import('@/lib/labelPrinter');
+      const stickerData = stickers.map(s => ({
+        tCode: s.tCode,
+        itemName: s.itemName,
+        grNumber: s.grNumber,
+        grDate: s.grDate,
+        batchNumber: s.batchNumber,
+        stickerNo: s.stickerNo,
+        totalStickers: s.totalStickers,
+      }));
+      const result = await directPrint(stickerData);
+      if (result.success) {
+        setPrinterStatus(`✓ Printed ${stickers.length} sticker(s)`);
+      } else {
+        setPrinterStatus(`✗ ${result.error}`);
+      }
+      setTimeout(() => setPrinterStatus(''), 3000);
+      return;
+    }
+
+    // Fallback: browser print dialog
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
@@ -1038,7 +1094,7 @@ function TCodeDialog({ id }: { id: string }) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) checkPrinterStatus(); }}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-1">
           <Tag className="w-4 h-4" /> T-Code
@@ -1100,14 +1156,51 @@ function TCodeDialog({ id }: { id: string }) {
               Generate multiple stickers for the same item (e.g., for different packages)
             </p>
           </div>
+
+          {/* Printer Connection */}
+          <div className="p-3 border border-border rounded-md space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="font-medium flex items-center gap-1.5">
+                <Usb className="w-4 h-4" /> Label Printer
+              </div>
+              {printerConnected ? (
+                <Button variant="outline" size="sm" onClick={handleDisconnectPrinter} className="gap-1 h-7 text-xs">
+                  <Unplug className="w-3 h-3" /> Disconnect
+                </Button>
+              ) : (
+                <Button variant="outline" size="sm" onClick={handleConnectPrinter} className="gap-1 h-7 text-xs">
+                  <Usb className="w-3 h-3" /> Connect
+                </Button>
+              )}
+            </div>
+            {printerConnected && (
+              <div className="flex items-center gap-1.5 text-xs text-green-600">
+                <div className="w-2 h-2 rounded-full bg-green-500" />
+                {printerName || 'Connected'}
+              </div>
+            )}
+            {!printerConnected && (
+              <p className="text-xs text-muted-foreground">
+                Connect your 50×25mm label printer via USB for direct printing without dialog.
+              </p>
+            )}
+            {printerStatus && (
+              <p className="text-xs text-muted-foreground">{printerStatus}</p>
+            )}
+          </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="flex-row gap-2 sm:justify-end">
           <Button
             onClick={printStickers}
             disabled={!selectedItem || isGenerating}
             className="gap-1"
+            variant={printerConnected ? "default" : "outline"}
           >
-            <Printer className="w-4 h-4" /> {isGenerating ? 'Generating...' : 'Print Stickers'}
+            {printerConnected ? (
+              <><Zap className="w-4 h-4" /> {isGenerating ? 'Printing...' : 'Direct Print'}</>
+            ) : (
+              <><Printer className="w-4 h-4" /> {isGenerating ? 'Generating...' : 'Print (Browser)'}</>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
