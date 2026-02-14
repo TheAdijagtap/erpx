@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Package, Eye, Edit, Printer, CheckCircle, XCircle, Trash2, Tag, Usb, Unplug, Zap } from "lucide-react";
+import { Plus, Search, Package, Eye, Edit, Printer, CheckCircle, XCircle, Trash2, Tag } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
@@ -857,41 +857,8 @@ function TCodeDialog({ id }: { id: string }) {
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [stickerQty, setStickerQty] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [printerConnected, setPrinterConnected] = useState(false);
-  const [printerName, setPrinterName] = useState<string | null>(null);
-  const [printerStatus, setPrinterStatus] = useState<string>('');
 
   const selectedItemData = receipt.items.find(it => it.id === selectedItem);
-
-  // Check printer connection status on dialog open
-  const checkPrinterStatus = async () => {
-    const { isPrinterConnected, getConnectedPrinterName } = await import('@/lib/labelPrinter');
-    setPrinterConnected(isPrinterConnected());
-    setPrinterName(getConnectedPrinterName());
-  };
-
-  const handleConnectPrinter = async () => {
-    setPrinterStatus('Connecting...');
-    const { connectPrinter } = await import('@/lib/labelPrinter');
-    const result = await connectPrinter();
-    if (result.success) {
-      setPrinterConnected(true);
-      setPrinterName(result.name || 'Printer');
-      setPrinterStatus(`Connected: ${result.name}`);
-    } else {
-      setPrinterStatus(result.error || 'Failed');
-      setTimeout(() => setPrinterStatus(''), 3000);
-    }
-  };
-
-  const handleDisconnectPrinter = async () => {
-    const { disconnectPrinter } = await import('@/lib/labelPrinter');
-    await disconnectPrinter();
-    setPrinterConnected(false);
-    setPrinterName(null);
-    setPrinterStatus('Disconnected');
-    setTimeout(() => setPrinterStatus(''), 2000);
-  };
 
   const generateTCode = (itemCode?: string) => {
     // Use item's Item Code directly if available
@@ -971,46 +938,27 @@ function TCodeDialog({ id }: { id: string }) {
     
     setIsGenerating(false);
 
-    // Direct print via USB if connected
-    if (printerConnected) {
-      const { printStickers: directPrint } = await import('@/lib/labelPrinter');
-      const stickerData = stickers.map(s => ({
-        tCode: s.tCode,
-        itemName: s.itemName,
-        grNumber: s.grNumber,
-        grDate: s.grDate,
-        batchNumber: s.batchNumber,
-        stickerNo: s.stickerNo,
-        totalStickers: s.totalStickers,
-      }));
-      const result = await directPrint(stickerData);
-      if (result.success) {
-        setPrinterStatus(`✓ Printed ${stickers.length} sticker(s)`);
-      } else {
-        setPrinterStatus(`✗ ${result.error}`);
-      }
-      setTimeout(() => setPrinterStatus(''), 3000);
-      return;
-    }
-
-    // Fallback: browser print dialog
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
     const stickerHtml = stickers.map((s, idx) => `
       <div class="sticker" style="page-break-inside: avoid; ${idx > 0 ? 'page-break-before: auto;' : ''}">
-        <div class="row">
-          <div class="qr-code"><img src="${s.qrCode}" alt="QR" /></div>
-          <div class="info">
+        <div class="header">
+          <div class="qr-code"><img src="${s.qrCode}" alt="QR Code" /></div>
+          <div class="header-text">
             <div class="tcode">${escapeHtml(s.tCode)}</div>
-            <div class="item-name">${escapeHtml(s.itemName)}</div>
-            <div class="details">
-              <span>${escapeHtml(s.grNumber)}</span>
-              <span>${escapeHtml(s.grDate)}</span>
-              <span>${escapeHtml(s.batchNumber)}</span>
-              <span>${s.stickerNo}/${s.totalStickers}</span>
-            </div>
+            <div class="company">${escapeHtml(s.itemDescription)}</div>
           </div>
+        </div>
+        <table>
+          <tr><td class="label">Item:</td><td class="value">${escapeHtml(s.itemName)}</td></tr>
+          <tr><td class="label">GR No:</td><td class="value">${escapeHtml(s.grNumber)}</td></tr>
+          <tr><td class="label">GR Date:</td><td class="value">${escapeHtml(s.grDate)}</td></tr>
+          <tr><td class="label">QC Date:</td><td class="value">${escapeHtml(s.qcDate)}</td></tr>
+          <tr><td class="label">Batch/Lot:</td><td class="value">${escapeHtml(s.batchNumber)}</td></tr>
+        </table>
+        <div class="footer">
+          <span class="sticker-num">${s.stickerNo} of ${s.totalStickers}</span>
         </div>
       </div>
     `).join('');
@@ -1021,68 +969,68 @@ function TCodeDialog({ id }: { id: string }) {
       <head>
         <title>T-Code Stickers - ${receipt.grNumber}</title>
         <style>
-          @page { size: 50mm 25mm; margin: 0; }
+          @page { size: 75mm 50mm; margin: 2mm; }
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body { font-family: 'Arial', sans-serif; }
           .sticker {
-            width: 50mm;
-            height: 25mm;
-            padding: 1mm;
-            display: flex;
-            align-items: center;
-          }
-          .row {
-            display: flex;
-            align-items: center;
-            gap: 1.5mm;
-            width: 100%;
-            height: 100%;
-          }
-          .qr-code { flex-shrink: 0; }
-          .qr-code img {
-            width: 12mm;
-            height: 12mm;
-          }
-          .info {
-            flex: 1;
-            overflow: hidden;
+            width: 71mm;
+            height: 46mm;
+            border: 1px solid #000;
+            padding: 2mm;
+            margin-bottom: 2mm;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            gap: 0.3mm;
+            justify-content: space-between;
+          }
+          .header {
+            display: flex;
+            align-items: center;
+            gap: 2mm;
+          }
+          .qr-code {
+            flex-shrink: 0;
+          }
+          .qr-code img {
+            width: 18mm;
+            height: 18mm;
+          }
+          .header-text {
+            flex: 1;
           }
           .tcode {
-            font-size: 8px;
+            font-size: 12px;
             font-weight: bold;
+            padding: 1mm;
             background: #f0f0f0;
-            border: 0.5px solid #ccc;
-            padding: 0.3mm 0.5mm;
+            border: 1px solid #ccc;
+            letter-spacing: 0.5px;
             text-align: center;
-            letter-spacing: 0.3px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
           }
-          .item-name {
-            font-size: 7px;
+          .company {
+            font-size: 9px;
+            text-align: center;
             font-weight: bold;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            color: #222;
+            margin-top: 1mm;
+            color: #333;
           }
-          .details {
+          table {
+            width: 100%;
+            font-size: 9px;
+            border-collapse: collapse;
+            margin-top: 1mm;
+          }
+          td { padding: 0.5mm 0; }
+          td.label { font-weight: bold; width: 25%; color: #555; }
+          td.value { color: #000; }
+          .footer {
             display: flex;
-            flex-wrap: wrap;
-            gap: 1mm;
-            font-size: 6px;
-            color: #555;
-          }
-          .details span {
-            white-space: nowrap;
+            justify-content: space-between;
+            font-size: 8px;
+            color: #666;
+            margin-top: 1mm;
           }
           @media print {
-            .sticker { page-break-inside: avoid; border: none; }
+            .sticker { page-break-inside: avoid; }
           }
         </style>
       </head>
@@ -1094,7 +1042,7 @@ function TCodeDialog({ id }: { id: string }) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (v) checkPrinterStatus(); }}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-1">
           <Tag className="w-4 h-4" /> T-Code
@@ -1156,51 +1104,14 @@ function TCodeDialog({ id }: { id: string }) {
               Generate multiple stickers for the same item (e.g., for different packages)
             </p>
           </div>
-
-          {/* Printer Connection */}
-          <div className="p-3 border border-border rounded-md space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="font-medium flex items-center gap-1.5">
-                <Usb className="w-4 h-4" /> Label Printer
-              </div>
-              {printerConnected ? (
-                <Button variant="outline" size="sm" onClick={handleDisconnectPrinter} className="gap-1 h-7 text-xs">
-                  <Unplug className="w-3 h-3" /> Disconnect
-                </Button>
-              ) : (
-                <Button variant="outline" size="sm" onClick={handleConnectPrinter} className="gap-1 h-7 text-xs">
-                  <Usb className="w-3 h-3" /> Connect
-                </Button>
-              )}
-            </div>
-            {printerConnected && (
-              <div className="flex items-center gap-1.5 text-xs text-green-600">
-                <div className="w-2 h-2 rounded-full bg-green-500" />
-                {printerName || 'Connected'}
-              </div>
-            )}
-            {!printerConnected && (
-              <p className="text-xs text-muted-foreground">
-                Connect your 50×25mm label printer via USB for direct printing without dialog.
-              </p>
-            )}
-            {printerStatus && (
-              <p className="text-xs text-muted-foreground">{printerStatus}</p>
-            )}
-          </div>
         </div>
-        <DialogFooter className="flex-row gap-2 sm:justify-end">
+        <DialogFooter>
           <Button
             onClick={printStickers}
             disabled={!selectedItem || isGenerating}
             className="gap-1"
-            variant={printerConnected ? "default" : "outline"}
           >
-            {printerConnected ? (
-              <><Zap className="w-4 h-4" /> {isGenerating ? 'Printing...' : 'Direct Print'}</>
-            ) : (
-              <><Printer className="w-4 h-4" /> {isGenerating ? 'Generating...' : 'Print (Browser)'}</>
-            )}
+            <Printer className="w-4 h-4" /> {isGenerating ? 'Generating...' : 'Print Stickers'}
           </Button>
         </DialogFooter>
       </DialogContent>
