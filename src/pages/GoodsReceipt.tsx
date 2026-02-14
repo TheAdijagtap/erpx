@@ -969,18 +969,17 @@ function TCodeDialog({ id }: { id: string }) {
       <head>
         <title>T-Code Stickers - ${receipt.grNumber}</title>
         <style>
-          @page { size: 75mm 50mm landscape; margin: 2mm; }
+          @page { size: 75mm 50mm landscape; margin: 0; }
           * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: 'Arial', sans-serif; }
+          body { font-family: 'Arial', sans-serif; margin: 0; padding: 0; }
           .sticker {
-            width: 71mm;
-            height: 46mm;
-            border: 1px solid #000;
-            padding: 2mm;
-            margin-bottom: 2mm;
+            width: 75mm;
+            height: 50mm;
+            padding: 2mm 3mm;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            overflow: hidden;
           }
           .header {
             display: flex;
@@ -991,46 +990,54 @@ function TCodeDialog({ id }: { id: string }) {
             flex-shrink: 0;
           }
           .qr-code img {
-            width: 18mm;
-            height: 18mm;
+            width: 16mm;
+            height: 16mm;
           }
           .header-text {
             flex: 1;
+            min-width: 0;
           }
           .tcode {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
-            padding: 1mm;
+            padding: 0.5mm 1mm;
             background: #f0f0f0;
             border: 1px solid #ccc;
             letter-spacing: 0.5px;
             text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
           }
           .company {
-            font-size: 9px;
+            font-size: 8px;
             text-align: center;
             font-weight: bold;
-            margin-top: 1mm;
+            margin-top: 0.5mm;
             color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
           }
           table {
             width: 100%;
-            font-size: 9px;
+            font-size: 8px;
             border-collapse: collapse;
-            margin-top: 1mm;
+            margin-top: 0.5mm;
           }
-          td { padding: 0.5mm 0; }
-          td.label { font-weight: bold; width: 25%; color: #555; }
-          td.value { color: #000; }
+          td { padding: 0.3mm 0; line-height: 1.2; }
+          td.label { font-weight: bold; width: 22%; color: #555; white-space: nowrap; }
+          td.value { color: #000; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 0; }
           .footer {
             display: flex;
             justify-content: space-between;
-            font-size: 8px;
+            font-size: 7px;
             color: #666;
-            margin-top: 1mm;
+            margin-top: 0.5mm;
           }
           @media print {
-            .sticker { page-break-inside: avoid; }
+            body { margin: 0; padding: 0; }
+            .sticker { page-break-inside: avoid; border: none; }
           }
         </style>
       </head>
