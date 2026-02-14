@@ -971,11 +971,12 @@ function TCodeDialog({ id }: { id: string }) {
         <style>
           @page { size: 75mm 50mm landscape; margin: 0; }
           * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: 'Arial', sans-serif; margin: 0; padding: 0; }
+          html, body { width: 75mm; height: 50mm; font-family: 'Arial', sans-serif; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; }
           .sticker {
-            width: 75mm;
-            height: 50mm;
-            padding: 2mm 3mm;
+            width: 71mm;
+            height: 46mm;
+            padding: 1mm 2mm;
+            margin: auto;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
