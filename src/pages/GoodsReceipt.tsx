@@ -943,22 +943,18 @@ function TCodeDialog({ id }: { id: string }) {
 
     const stickerHtml = stickers.map((s, idx) => `
       <div class="sticker" style="page-break-inside: avoid; ${idx > 0 ? 'page-break-before: auto;' : ''}">
-        <div class="header">
-          <div class="qr-code"><img src="${s.qrCode}" alt="QR Code" /></div>
-          <div class="header-text">
+        <div class="row">
+          <div class="qr-code"><img src="${s.qrCode}" alt="QR" /></div>
+          <div class="info">
             <div class="tcode">${escapeHtml(s.tCode)}</div>
-            <div class="company">${escapeHtml(s.itemDescription)}</div>
+            <div class="item-name">${escapeHtml(s.itemName)}</div>
+            <div class="details">
+              <span>${escapeHtml(s.grNumber)}</span>
+              <span>${escapeHtml(s.grDate)}</span>
+              <span>${escapeHtml(s.batchNumber)}</span>
+              <span>${s.stickerNo}/${s.totalStickers}</span>
+            </div>
           </div>
-        </div>
-        <table>
-          <tr><td class="label">Item:</td><td class="value">${escapeHtml(s.itemName)}</td></tr>
-          <tr><td class="label">GR No:</td><td class="value">${escapeHtml(s.grNumber)}</td></tr>
-          <tr><td class="label">GR Date:</td><td class="value">${escapeHtml(s.grDate)}</td></tr>
-          <tr><td class="label">QC Date:</td><td class="value">${escapeHtml(s.qcDate)}</td></tr>
-          <tr><td class="label">Batch/Lot:</td><td class="value">${escapeHtml(s.batchNumber)}</td></tr>
-        </table>
-        <div class="footer">
-          <span class="sticker-num">${s.stickerNo} of ${s.totalStickers}</span>
         </div>
       </div>
     `).join('');
@@ -969,68 +965,70 @@ function TCodeDialog({ id }: { id: string }) {
       <head>
         <title>T-Code Stickers - ${receipt.grNumber}</title>
         <style>
-          @page { size: 75mm 50mm; margin: 2mm; }
+          @page { size: 50mm 25mm; margin: 1mm; }
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body { font-family: 'Arial', sans-serif; }
           .sticker {
-            width: 71mm;
-            height: 46mm;
-            border: 1px solid #000;
-            padding: 2mm;
-            margin-bottom: 2mm;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-          }
-          .header {
+            width: 48mm;
+            height: 23mm;
+            border: 0.5px solid #999;
+            padding: 1mm;
+            margin-bottom: 1mm;
             display: flex;
             align-items: center;
-            gap: 2mm;
           }
-          .qr-code {
-            flex-shrink: 0;
+          .row {
+            display: flex;
+            align-items: center;
+            gap: 1.5mm;
+            width: 100%;
+            height: 100%;
           }
+          .qr-code { flex-shrink: 0; }
           .qr-code img {
-            width: 18mm;
-            height: 18mm;
+            width: 12mm;
+            height: 12mm;
           }
-          .header-text {
+          .info {
             flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.3mm;
           }
           .tcode {
-            font-size: 12px;
-            font-weight: bold;
-            padding: 1mm;
-            background: #f0f0f0;
-            border: 1px solid #ccc;
-            letter-spacing: 0.5px;
-            text-align: center;
-          }
-          .company {
-            font-size: 9px;
-            text-align: center;
-            font-weight: bold;
-            margin-top: 1mm;
-            color: #333;
-          }
-          table {
-            width: 100%;
-            font-size: 9px;
-            border-collapse: collapse;
-            margin-top: 1mm;
-          }
-          td { padding: 0.5mm 0; }
-          td.label { font-weight: bold; width: 25%; color: #555; }
-          td.value { color: #000; }
-          .footer {
-            display: flex;
-            justify-content: space-between;
             font-size: 8px;
-            color: #666;
-            margin-top: 1mm;
+            font-weight: bold;
+            background: #f0f0f0;
+            border: 0.5px solid #ccc;
+            padding: 0.3mm 0.5mm;
+            text-align: center;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          .item-name {
+            font-size: 7px;
+            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #222;
+          }
+          .details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1mm;
+            font-size: 6px;
+            color: #555;
+          }
+          .details span {
+            white-space: nowrap;
           }
           @media print {
-            .sticker { page-break-inside: avoid; }
+            .sticker { page-break-inside: avoid; border: none; }
           }
         </style>
       </head>
