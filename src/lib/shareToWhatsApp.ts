@@ -1,5 +1,6 @@
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface ShareOptions {
   phoneNumber?: string;
@@ -8,7 +9,7 @@ export interface ShareOptions {
 }
 
 /**
- * Generate a PDF from an HTML element and share via WhatsApp
+ * Generate a PDF from an HTML element, upload to storage, and share via WhatsApp Web
  */
 export async function shareToWhatsApp(
   elementId: string,
@@ -23,20 +24,31 @@ export async function shareToWhatsApp(
   const pdf = await generatePdfFromElement(element, options.fileName);
   const pdfBlob = pdf.output("blob");
 
-  // Download the PDF
-  const downloadUrl = URL.createObjectURL(pdfBlob);
-  const downloadLink = document.createElement("a");
-  downloadLink.href = downloadUrl;
-  downloadLink.download = `${options.fileName}.pdf`;
-  document.body.appendChild(downloadLink);
-  downloadLink.click();
-  document.body.removeChild(downloadLink);
-  URL.revokeObjectURL(downloadUrl);
+  // Upload PDF to storage and get public URL
+  const timestamp = Date.now();
+  const filePath = `${timestamp}-${options.fileName}.pdf`;
 
-  // Open WhatsApp Web with the message
+  const { data, error } = await supabase.storage
+    .from("shared-documents")
+    .upload(filePath, pdfBlob, {
+      contentType: "application/pdf",
+      upsert: true,
+    });
+
+  if (error) {
+    throw new Error(`Failed to upload PDF: ${error.message}`);
+  }
+
+  const { data: urlData } = supabase.storage
+    .from("shared-documents")
+    .getPublicUrl(data.path);
+
+  const pdfUrl = urlData.publicUrl;
+
+  // Open WhatsApp Web with the message including PDF link
   const message = encodeURIComponent(
-    options.message ||
-      `Please find the ${options.fileName} document. I have downloaded and will share it with you shortly.`
+    (options.message || `Please find the ${options.fileName} document.`) +
+      `\n\n📄 Download PDF: ${pdfUrl}`
   );
   const whatsappUrl = options.phoneNumber
     ? `https://web.whatsapp.com/send?phone=${options.phoneNumber.replace(/[^0-9]/g, "")}&text=${message}`
@@ -103,7 +115,6 @@ export function canShareFiles(): boolean {
   if (!navigator.share || !navigator.canShare) {
     return false;
   }
-  // Create a dummy file to test
   const testFile = new File(["test"], "test.pdf", { type: "application/pdf" });
   return navigator.canShare({ files: [testFile] });
 }
