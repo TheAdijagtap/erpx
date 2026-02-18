@@ -9,13 +9,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Receipt, Eye, Edit, Printer, Trash2, Calendar, CheckCircle, Send, TrendingUp, Download, Users, Phone, Building2, Share2, Loader2 } from "lucide-react";
+import { Plus, Search, Receipt, Eye, Edit, Printer, Trash2, Calendar, CheckCircle, Send, TrendingUp, Download, Users, Phone, Building2 } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
 import { numberToWords } from "@/lib/numberToWords";
 import { escapeHtml } from "@/lib/htmlEscape";
-import { shareToWhatsApp } from "@/lib/shareToWhatsApp";
+
 import { toast } from "sonner";
 import { ProformaInvoice as ProformaInvoiceType, ProformaInvoiceItem, BuyerInfo, ProformaProduct } from "@/types/inventory";
 import React from "react";
@@ -688,7 +688,7 @@ const ProformaInvoicesTab = ({ proformaProducts }: { proformaProducts: ProformaP
                 <ViewProformaDialog invoice={invoice} />
                 <EditProformaDialog invoice={invoice} proformaProducts={proformaProducts} />
                 <PrintProformaButton id={invoice.id} />
-                <ShareButton id={invoice.id} />
+                
                 <DeleteProformaDialog id={invoice.id} />
               </div>
             </div>
@@ -2389,228 +2389,6 @@ const PrintProformaButton = ({ id }: { id: string }) => {
   );
 };
 
-const ShareButton = ({ id }: { id: string }) => {
-  const { proformaInvoices, businessInfo } = useData();
-  const invoice = proformaInvoices.find(p => p.id === id)!;
-  const [isSharing, setIsSharing] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [customMessage, setCustomMessage] = useState("");
-
-  const defaultMessage = `Dear ${invoice.buyerInfo.contactPerson || invoice.buyerInfo.name},\n\nPlease find attached Quotation Cum Proforma Invoice ${invoice.proformaNumber} for ₹${invoice.total.toLocaleString('en-IN')}.\n\nThank you for your business!\n\nRegards,\n${businessInfo.name}`;
-
-  const handleOpen = () => {
-    const phone = invoice.buyerInfo.phone?.replace(/[^0-9]/g, "") || "";
-    setPhoneNumber(phone);
-    setCustomMessage(defaultMessage);
-    setOpen(true);
-  };
-
-  const handleShare = async () => {
-    setIsSharing(true);
-    const elId = `proforma-share-${id}`;
-    
-    const tempDiv = document.createElement('div');
-    tempDiv.id = elId;
-    tempDiv.style.position = 'absolute';
-    tempDiv.style.left = '-9999px';
-    tempDiv.style.width = '800px';
-    tempDiv.style.background = 'white';
-    tempDiv.style.padding = '20px';
-    tempDiv.style.fontFamily = 'ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial';
-    tempDiv.style.fontSize = '14px';
-    tempDiv.style.lineHeight = '1.4';
-    tempDiv.style.color = '#0f172a';
-    document.body.appendChild(tempDiv);
-    
-    tempDiv.innerHTML = `
-      <div style="max-width: 100%; margin: 0 auto; border: 2px solid #0f172a; padding: 16px; border-radius: 8px;">
-        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-          ${businessInfo.logo ? `<img src="${escapeHtml(businessInfo.logo)}" alt="Logo" style="max-height: 36px;" />` : ''}
-          <div>
-            <div style="font-size: 20px; font-weight: 700;">${escapeHtml(businessInfo.name)}</div>
-            <div style="color: #64748b; font-size: 13px;">${escapeHtml(businessInfo.address)}</div>
-            <div style="color: #64748b; font-size: 13px;">${escapeHtml(businessInfo.email)} · ${escapeHtml(businessInfo.phone)}</div>
-            ${businessInfo.gstNumber ? `<div style="color: #64748b; font-size: 13px;">GST: ${escapeHtml(businessInfo.gstNumber)}</div>` : ''}
-          </div>
-        </div>
-        
-        <div style="border: 1px solid #e2e8f0; margin: 6px 0; padding: 12px; border-radius: 4px; text-align: center;">
-          <h2 style="font-size: 18px; font-weight: 700; margin: 0;">Quotation Cum Proforma ${escapeHtml(invoice.proformaNumber)}</h2>
-        </div>
-        
-        <div style="border: 1px solid #e2e8f0; margin: 6px 0; padding: 12px; border-radius: 4px;">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-            <div>
-              <strong style="font-weight: 600;">Buyer Details</strong>
-              <div>${escapeHtml(invoice.buyerInfo.name)}</div>
-              ${invoice.buyerInfo.contactPerson ? `<div>${escapeHtml(invoice.buyerInfo.contactPerson)}</div>` : ''}
-              <div style="color: #64748b; font-size: 13px;">${escapeHtml(invoice.buyerInfo.address)}</div>
-              <div style="color: #64748b; font-size: 13px;">${escapeHtml(invoice.buyerInfo.email)} · ${escapeHtml(invoice.buyerInfo.phone)}</div>
-              ${invoice.buyerInfo.gstNumber ? `<div style="color: #64748b; font-size: 13px;">GST: ${escapeHtml(invoice.buyerInfo.gstNumber)}</div>` : ''}
-            </div>
-            <div>
-              <strong style="font-weight: 600;">Invoice Details</strong>
-              <div>Date: ${formatDateIN(invoice.date)}</div>
-              ${invoice.validUntil ? `<div>Valid Until: ${formatDateIN(invoice.validUntil)}</div>` : ''}
-              <div>Status: ${escapeHtml(invoice.status)}</div>
-              ${invoice.paymentTerms ? `<div>Payment Terms: ${escapeHtml(invoice.paymentTerms)}</div>` : ''}
-            </div>
-          </div>
-        </div>
-        
-        <div style="border: 1px solid #e2e8f0; margin: 6px 0; padding: 12px; border-radius: 4px;">
-          <p style="margin-bottom: 8px; font-style: italic;">We are pleased to submit our quotation for the following items:</p>
-          <table style="width: 100%; border-collapse: collapse; margin-top: 8px;">
-            <thead>
-              <tr>
-                <th style="border: 1px solid #e2e8f0; padding: 6px 8px; text-align: left; font-size: 13px; background: #f8fafc; font-weight: 600;">#</th>
-                <th style="border: 1px solid #e2e8f0; padding: 6px 8px; text-align: left; font-size: 13px; background: #f8fafc; font-weight: 600;">Description</th>
-                ${invoice.items.some(it => isValidHsn(it.hsnCode)) ? '<th style="border: 1px solid #e2e8f0; padding: 6px 8px; text-align: left; font-size: 13px; background: #f8fafc; font-weight: 600;">HSN</th>' : ''}
-                <th style="border: 1px solid #e2e8f0; padding: 6px 8px; text-align: left; font-size: 13px; background: #f8fafc; font-weight: 600;">Qty</th>
-                <th style="border: 1px solid #e2e8f0; padding: 6px 8px; text-align: left; font-size: 13px; background: #f8fafc; font-weight: 600;">Unit</th>
-                <th style="border: 1px solid #e2e8f0; padding: 6px 8px; text-align: left; font-size: 13px; background: #f8fafc; font-weight: 600;">Rate</th>
-                <th style="border: 1px solid #e2e8f0; padding: 6px 8px; text-align: left; font-size: 13px; background: #f8fafc; font-weight: 600;">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${invoice.items.map((it, idx) => `
-                <tr>
-                  <td style="border: 1px solid #e2e8f0; padding: 6px 8px; font-size: 13px;">${idx + 1}</td>
-                  <td style="border: 1px solid #e2e8f0; padding: 6px 8px; font-size: 13px;">
-                    <div style="font-weight: 600;">${escapeHtml(it.item.name)}</div>
-                    ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px;">${escapeHtml(it.item.description)}</div>` : ''}
-                  </td>
-                  ${invoice.items.some(i => isValidHsn(i.hsnCode)) ? `<td style="border: 1px solid #e2e8f0; padding: 6px 8px; font-size: 13px;">${isValidHsn(it.hsnCode) ? escapeHtml(it.hsnCode) : '-'}</td>` : ''}
-                  <td style="border: 1px solid #e2e8f0; padding: 6px 8px; font-size: 13px;">${it.quantity}</td>
-                  <td style="border: 1px solid #e2e8f0; padding: 6px 8px; font-size: 13px;">${escapeHtml(it.item.unit)}</td>
-                  <td style="border: 1px solid #e2e8f0; padding: 6px 8px; font-size: 13px;">${formatINR(it.unitPrice)}</td>
-                  <td style="border: 1px solid #e2e8f0; padding: 6px 8px; font-size: 13px;">${formatINR(it.total)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
-        
-        <div style="border: 1px solid #e2e8f0; margin: 6px 0; padding: 12px; border-radius: 4px;">
-          <table style="width: 100%;">
-            <tbody>
-              <tr><td style="padding: 4px 8px; color: #64748b;">Subtotal</td><td style="text-align: right; font-weight: 600; padding: 4px 8px;">${formatINR(invoice.subtotal)}</td></tr>
-              ${(invoice.additionalCharges ?? []).map(charge => `<tr><td style="padding: 4px 8px; color: #64748b;">${escapeHtml(charge.name)}</td><td style="text-align: right; font-weight: 600; padding: 4px 8px;">${formatINR(charge.amount)}</td></tr>`).join('')}
-              ${invoice.sgst > 0 || invoice.cgst > 0 ? `
-                <tr><td style="padding: 4px 8px; color: #64748b;">SGST (${((invoice.sgst / (invoice.subtotal + (invoice.additionalCharges?.reduce((sum, c) => sum + c.amount, 0) ?? 0))) * 100).toFixed(2)}%)</td><td style="text-align: right; font-weight: 600; padding: 4px 8px;">${formatINR(invoice.sgst)}</td></tr>
-                <tr><td style="padding: 4px 8px; color: #64748b;">CGST (${((invoice.cgst / (invoice.subtotal + (invoice.additionalCharges?.reduce((sum, c) => sum + c.amount, 0) ?? 0))) * 100).toFixed(2)}%)</td><td style="text-align: right; font-weight: 600; padding: 4px 8px;">${formatINR(invoice.cgst)}</td></tr>
-              ` : `<tr><td style="padding: 4px 8px; color: #64748b;">GST</td><td style="text-align: right; font-weight: 600; padding: 4px 8px;">Not Applied</td></tr>`}
-              <tr><td style="padding: 4px 8px;"><strong>Total Amount</strong></td><td style="text-align: right; padding: 4px 8px;"><strong>${formatINR(invoice.total)}</strong></td></tr>
-            </tbody>
-          </table>
-          <div style="font-style: italic; color: #64748b; margin-top: 4px; font-size: 12px;">Amount in Words: ${numberToWords(invoice.total)}</div>
-        </div>
-        
-        <div style="border: 1px solid #e2e8f0; margin: 6px 0; padding: 12px; border-radius: 4px;">
-          <strong style="font-weight: 600;">Terms & Conditions:</strong>
-          <div style="color: #64748b; margin-top: 8px; line-height: 1.4; font-size: 13px;">
-            1. Payment terms: ${escapeHtml(invoice.paymentTerms || "As agreed")}<br />
-            2. Prices are valid until: ${invoice.validUntil ? formatDateIN(invoice.validUntil) : "Further notice"}<br />
-            3. All prices are subject to change without prior notice<br />
-            4. This is a proforma invoice and not a tax invoice<br />
-            5. All rates are inclusive of applicable taxes
-          </div>
-        </div>
-        
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 24px;">
-          ${businessInfo.bankDetails ? `
-            <div style="border: 1px solid #e2e8f0; padding: 12px; border-radius: 4px;">
-              <strong style="font-weight: 600;">Bank Details:</strong>
-              <div style="color: #64748b; margin-top: 8px; line-height: 1.6; font-size: 13px;">
-                Bank Name: ${escapeHtml(businessInfo.bankDetails.bankName)}<br />
-                Account No: ${escapeHtml(businessInfo.bankDetails.accountNumber)}<br />
-                IFSC Code: ${escapeHtml(businessInfo.bankDetails.ifscCode)}
-              </div>
-            </div>
-          ` : ''}
-          ${businessInfo.signature ? `
-            <div style="text-align: right;">
-              <div>Authorized Signatory</div>
-              <img src="${escapeHtml(businessInfo.signature)}" alt="Authorized Signature" style="max-width: 100px; max-height: 50px; margin-top: 8px;" />
-              <div style="color: #64748b; font-size: 13px;">${escapeHtml(businessInfo.name)}</div>
-            </div>
-          ` : ''}
-        </div>
-        
-        ${invoice.notes ? `<div style="margin-top: 16px; font-size: 12px; color: #64748b;">Notes: ${escapeHtml(invoice.notes)}</div>` : ''}
-      </div>
-    `;
-    
-    try {
-      await shareToWhatsApp(elId, {
-        phoneNumber: phoneNumber.length >= 10 ? phoneNumber : undefined,
-        message: customMessage,
-        fileName: `Proforma-${invoice.proformaNumber}`,
-      });
-      
-      toast.success("PDF downloaded & WhatsApp opened!");
-      setOpen(false);
-    } catch (error) {
-      console.error("Failed to share:", error);
-      toast.error("Failed to generate document. Please try again.");
-    } finally {
-      document.body.removeChild(tempDiv);
-      setIsSharing(false);
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" onClick={handleOpen}>
-          <Share2 className="w-4 h-4 mr-2" />
-          Share
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Share via WhatsApp</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="share-phone">Customer Phone Number</Label>
-            <div className="flex items-center gap-2 mt-1">
-              <Phone className="w-4 h-4 text-muted-foreground" />
-              <Input
-                id="share-phone"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value.replace(/[^0-9+]/g, ""))}
-                placeholder="e.g. 919876543210"
-              />
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Include country code (e.g. 91 for India)</p>
-          </div>
-          <div>
-            <Label htmlFor="share-message">Message</Label>
-            <Textarea
-              id="share-message"
-              value={customMessage}
-              onChange={(e) => setCustomMessage(e.target.value)}
-              rows={6}
-              className="mt-1"
-            />
-          </div>
-          <p className="text-xs text-muted-foreground">
-            The PDF will be downloaded and WhatsApp Web will open with your message. Attach the PDF manually in WhatsApp.
-          </p>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={handleShare} disabled={isSharing} className="gap-2">
-            {isSharing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Share2 className="w-4 h-4" />}
-            {isSharing ? "Preparing..." : "Send via WhatsApp"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-};
 
 const DeleteProformaDialog = ({ id }: { id: string }) => {
   const { removeProformaInvoice } = useData();
