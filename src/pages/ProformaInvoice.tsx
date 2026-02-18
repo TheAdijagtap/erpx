@@ -2393,12 +2393,23 @@ const ShareButton = ({ id }: { id: string }) => {
   const { proformaInvoices, businessInfo } = useData();
   const invoice = proformaInvoices.find(p => p.id === id)!;
   const [isSharing, setIsSharing] = useState(false);
-  const elId = `proforma-share-${id}`;
-  
+  const [open, setOpen] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [customMessage, setCustomMessage] = useState("");
+
+  const defaultMessage = `Dear ${invoice.buyerInfo.contactPerson || invoice.buyerInfo.name},\n\nPlease find attached Quotation Cum Proforma Invoice ${invoice.proformaNumber} for ₹${invoice.total.toLocaleString('en-IN')}.\n\nThank you for your business!\n\nRegards,\n${businessInfo.name}`;
+
+  const handleOpen = () => {
+    const phone = invoice.buyerInfo.phone?.replace(/[^0-9]/g, "") || "";
+    setPhoneNumber(phone);
+    setCustomMessage(defaultMessage);
+    setOpen(true);
+  };
+
   const handleShare = async () => {
     setIsSharing(true);
+    const elId = `proforma-share-${id}`;
     
-    // Create temporary element with the invoice HTML
     const tempDiv = document.createElement('div');
     tempDiv.id = elId;
     tempDiv.style.position = 'absolute';
@@ -2532,16 +2543,14 @@ const ShareButton = ({ id }: { id: string }) => {
     `;
     
     try {
-      const phoneNumber = invoice.buyerInfo.phone?.replace(/[^0-9]/g, "") || "";
-      const message = `Dear ${invoice.buyerInfo.contactPerson || invoice.buyerInfo.name},\n\nPlease find attached Quotation Cum Proforma Invoice ${invoice.proformaNumber} for ₹${invoice.total.toLocaleString('en-IN')}.\n\nThank you for your business!\n\nRegards,\n${businessInfo.name}`;
-      
       await shareToWhatsApp(elId, {
         phoneNumber: phoneNumber.length >= 10 ? phoneNumber : undefined,
-        message,
+        message: customMessage,
         fileName: `Proforma-${invoice.proformaNumber}`,
       });
       
-      toast.success("Document ready to share!");
+      toast.success("PDF downloaded & WhatsApp opened!");
+      setOpen(false);
     } catch (error) {
       console.error("Failed to share:", error);
       toast.error("Failed to generate document. Please try again.");
@@ -2552,19 +2561,54 @@ const ShareButton = ({ id }: { id: string }) => {
   };
 
   return (
-    <Button 
-      variant="outline" 
-      size="sm" 
-      onClick={handleShare}
-      disabled={isSharing}
-    >
-      {isSharing ? (
-        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-      ) : (
-        <Share2 className="w-4 h-4 mr-2" />
-      )}
-      {isSharing ? "Preparing..." : "Share"}
-    </Button>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" onClick={handleOpen}>
+          <Share2 className="w-4 h-4 mr-2" />
+          Share
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Share via WhatsApp</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="share-phone">Customer Phone Number</Label>
+            <div className="flex items-center gap-2 mt-1">
+              <Phone className="w-4 h-4 text-muted-foreground" />
+              <Input
+                id="share-phone"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value.replace(/[^0-9+]/g, ""))}
+                placeholder="e.g. 919876543210"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">Include country code (e.g. 91 for India)</p>
+          </div>
+          <div>
+            <Label htmlFor="share-message">Message</Label>
+            <Textarea
+              id="share-message"
+              value={customMessage}
+              onChange={(e) => setCustomMessage(e.target.value)}
+              rows={6}
+              className="mt-1"
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            The PDF will be downloaded and WhatsApp Web will open with your message. Attach the PDF manually in WhatsApp.
+          </p>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={handleShare} disabled={isSharing} className="gap-2">
+            {isSharing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Share2 className="w-4 h-4" />}
+            {isSharing ? "Preparing..." : "Send via WhatsApp"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 
