@@ -474,6 +474,40 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
   }, [user, refreshData]);
 
+  // Real-time subscriptions for cross-device sync
+  useEffect(() => {
+    if (!user) return;
+
+    // Debounce refresh to avoid multiple rapid refreshes from related table changes
+    let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+    const debouncedRefresh = () => {
+      if (refreshTimer) clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(() => {
+        console.log('Realtime: refreshing data from remote change');
+        refreshData();
+      }, 500);
+    };
+
+    const channel = supabase
+      .channel('realtime-sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'inventory_items', filter: `user_id=eq.${user.id}` }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'suppliers', filter: `user_id=eq.${user.id}` }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'purchase_orders', filter: `user_id=eq.${user.id}` }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'goods_receipts', filter: `user_id=eq.${user.id}` }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'proforma_invoices', filter: `user_id=eq.${user.id}` }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'proforma_products', filter: `user_id=eq.${user.id}` }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'customers', filter: `user_id=eq.${user.id}` }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'inventory_transactions', filter: `user_id=eq.${user.id}` }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'scrap_notes', filter: `user_id=eq.${user.id}` }, debouncedRefresh)
+      .subscribe();
+
+    return () => {
+      if (refreshTimer) clearTimeout(refreshTimer);
+      supabase.removeChannel(channel);
+    };
+  }, [user, refreshData]);
+
   // Inventory operations
   const addItem = async (item: Omit<InventoryItem, "id" | "createdAt" | "updatedAt">) => {
     if (!user) throw new Error("Not authenticated");
