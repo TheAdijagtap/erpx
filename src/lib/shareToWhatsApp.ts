@@ -22,33 +22,8 @@ export async function shareToWhatsApp(
   // Generate PDF from the element
   const pdf = await generatePdfFromElement(element, options.fileName);
   const pdfBlob = pdf.output("blob");
-  const pdfFile = new File([pdfBlob], `${options.fileName}.pdf`, {
-    type: "application/pdf",
-  });
 
-  // Check if Web Share API with file sharing is supported
-  const canShareFiles = navigator.canShare?.({ files: [pdfFile] });
-
-  if (canShareFiles) {
-    // Mobile: Use native share with PDF file
-    try {
-      await navigator.share({
-        files: [pdfFile],
-        title: options.fileName,
-        text: options.message || `Please find attached: ${options.fileName}`,
-      });
-      return;
-    } catch (error) {
-      // User cancelled or share failed, fall through to WhatsApp web
-      if ((error as Error).name === "AbortError") {
-        return; // User cancelled, don't fall through
-      }
-      console.log("Native share failed, falling back to WhatsApp Web");
-    }
-  }
-
-  // Desktop/Fallback: Download PDF and open WhatsApp with message
-  // First download the PDF
+  // Download the PDF
   const downloadUrl = URL.createObjectURL(pdfBlob);
   const downloadLink = document.createElement("a");
   downloadLink.href = downloadUrl;
@@ -58,14 +33,14 @@ export async function shareToWhatsApp(
   document.body.removeChild(downloadLink);
   URL.revokeObjectURL(downloadUrl);
 
-  // Then open WhatsApp with a message
+  // Open WhatsApp Web with the message
   const message = encodeURIComponent(
     options.message ||
       `Please find the ${options.fileName} document. I have downloaded and will share it with you shortly.`
   );
   const whatsappUrl = options.phoneNumber
-    ? `https://wa.me/${options.phoneNumber.replace(/[^0-9]/g, "")}?text=${message}`
-    : `https://wa.me/?text=${message}`;
+    ? `https://web.whatsapp.com/send?phone=${options.phoneNumber.replace(/[^0-9]/g, "")}&text=${message}`
+    : `https://web.whatsapp.com/send?text=${message}`;
 
   window.open(whatsappUrl, "_blank");
 }
