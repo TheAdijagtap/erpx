@@ -502,7 +502,7 @@ function getStatusBadge(status: string) {
 }
 
 function CreatePODialog() {
-  const { suppliers, inventoryItems: items, addPurchaseOrder, addItem } = useData();
+  const { suppliers, inventoryItems: items, addPurchaseOrder, addItem, purchaseOrders } = useData();
   const [open, setOpen] = useState(false);
   const [supplierId, setSupplierId] = useState<string | null>(suppliers[0]?.id || null);
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
@@ -565,7 +565,12 @@ function CreatePODialog() {
   const onAddRow = () => setRows([...rows, { itemId: items[0]?.id || "", quantity: 1, unitPrice: items[0]?.unitPrice || 0, unit: items[0]?.unit || "PCS", hsnCode: isValidHsn(items[0]?.sku) ? (items[0]?.sku || "") : "" }]);
   const onSubmit = () => {
     if (!supplierId || rows.some(r => !r.itemId || r.quantity <= 0)) return;
-    const poNumber = `PO-${new Date().getFullYear()}-${String(Math.floor(Math.random()*999)+1).padStart(3, '0')}`;
+    const now = new Date();
+    const yearStr = now.getFullYear().toString();
+    const monthStr = String(now.getMonth() + 1).padStart(2, '0');
+    const prefix = `PO-${yearStr}-${monthStr}-`;
+    const existingThisMonth = purchaseOrders.filter(o => o.poNumber.startsWith(prefix)).length;
+    const poNumber = `${prefix}${String(existingThisMonth + 1).padStart(3, '0')}`;
     const supplier = suppliers.find(s => s.id === supplierId)!;
     const poItems = rows.map((r) => {
       const qty = Number(r.quantity) || 0;

@@ -1072,7 +1072,7 @@ const QuickStatusChangeButton = ({ invoice }: { invoice: ProformaInvoiceType }) 
 };
 
 const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: ProformaProduct[] }) => {
-  const { addProformaInvoice, businessInfo } = useData();
+  const { addProformaInvoice, businessInfo, proformaInvoices } = useData();
   const [open, setOpen] = useState(false);
   const [buyerInfo, setBuyerInfo] = useState<BuyerInfo>({
     name: "",
@@ -1177,7 +1177,12 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
   const handleSubmit = () => {
     if (!buyerInfo.name || items.length === 0) return;
 
-    const proformaNumber = `PI-${Date.now()}`;
+    const now = new Date();
+    const yearStr = now.getFullYear().toString();
+    const monthStr = String(now.getMonth() + 1).padStart(2, '0');
+    const piPrefix = `PI-${yearStr}-${monthStr}-`;
+    const existingThisMonth = proformaInvoices.filter(pi => pi.proformaNumber.startsWith(piPrefix)).length;
+    const proformaNumber = `${piPrefix}${String(existingThisMonth + 1).padStart(3, '0')}`;
 
     addProformaInvoice({
       proformaNumber,
