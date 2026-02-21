@@ -21,6 +21,10 @@ const suppliersImport = () => import("./pages/Suppliers");
 const businessSetupImport = () => import("./pages/BusinessSetup");
 const proformaInvoiceImport = () => import("./pages/ProformaInvoice");
 const adminPanelImport = () => import("./pages/AdminPanel");
+const employeesImport = () => import("./pages/Employees");
+const attendanceImport = () => import("./pages/Attendance");
+const leaveManagementImport = () => import("./pages/LeaveManagement");
+const payrollImport = () => import("./pages/Payroll");
 
 const AppDashboard = lazy(appDashboardImport);
 const Inventory = lazy(inventoryImport);
@@ -30,6 +34,10 @@ const Suppliers = lazy(suppliersImport);
 const BusinessSetup = lazy(businessSetupImport);
 const ProformaInvoice = lazy(proformaInvoiceImport);
 const AdminPanel = lazy(adminPanelImport);
+const EmployeesPage = lazy(employeesImport);
+const AttendancePage = lazy(attendanceImport);
+const LeaveManagementPage = lazy(leaveManagementImport);
+const PayrollPage = lazy(payrollImport);
 
 // Preload all pages immediately for instant navigation
 export const preloadAllPages = () => {
@@ -41,6 +49,10 @@ export const preloadAllPages = () => {
   businessSetupImport();
   proformaInvoiceImport();
   adminPanelImport();
+  employeesImport();
+  attendanceImport();
+  leaveManagementImport();
+  payrollImport();
 };
 
 // Optimized QueryClient with caching
@@ -118,6 +130,26 @@ const App = () => (
               <Route path="admin" element={
                 <Suspense fallback={<PageLoader />}>
                   <AdminPanel />
+                </Suspense>
+              } />
+              <Route path="employees" element={
+                <Suspense fallback={<PageLoader />}>
+                  <EmployeesPage />
+                </Suspense>
+              } />
+              <Route path="attendance" element={
+                <Suspense fallback={<PageLoader />}>
+                  <AttendancePage />
+                </Suspense>
+              } />
+              <Route path="leaves" element={
+                <Suspense fallback={<PageLoader />}>
+                  <LeaveManagementPage />
+                </Suspense>
+              } />
+              <Route path="payroll" element={
+                <Suspense fallback={<PageLoader />}>
+                  <PayrollPage />
                 </Suspense>
               } />
             </Route>
