@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from "react-router-dom";
-import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt, LogOut, Shield, HelpCircle } from "lucide-react";
+import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt, LogOut, Shield, HelpCircle, UserCheck, CalendarDays, IndianRupee } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useData } from "@/store/SupabaseDataContext";
@@ -23,6 +23,10 @@ const Layout = () => {
     { name: "Goods Receipt", href: "/goods-receipt", icon: FileText },
     { name: "Proforma Invoice", href: "/proforma", icon: Receipt },
     { name: "Suppliers", href: "/suppliers", icon: Users },
+    { name: "Employees", href: "/employees", icon: UserCheck },
+    { name: "Attendance", href: "/attendance", icon: CalendarDays },
+    { name: "Leave Mgmt", href: "/leaves", icon: CalendarDays },
+    { name: "Payroll", href: "/payroll", icon: IndianRupee },
     { name: "Business Setup", href: "/business", icon: Building },
     ...(isAdmin ? [{ name: "Admin Panel", href: "/admin", icon: Shield }] : []),
   ];
