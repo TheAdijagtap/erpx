@@ -39,7 +39,7 @@ const AttendancePage = lazy(attendanceImport);
 const LeaveManagementPage = lazy(leaveManagementImport);
 const PayrollPage = lazy(payrollImport);
 
-// Preload all pages immediately for instant navigation
+// Preload all pages for instant navigation
 export const preloadAllPages = () => {
   appDashboardImport();
   inventoryImport();
