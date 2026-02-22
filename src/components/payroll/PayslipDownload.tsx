@@ -172,18 +172,26 @@ export async function downloadPayslip(payslip: PayslipData, business: { name: st
   const monthName = MONTHS[payslip.month - 1];
   const fileName = `Payslip_${payslip.employee_name.replace(/\s+/g, '_')}_${monthName}_${payslip.year}.pdf`;
 
-  // Create a hidden container to render the HTML
-  const container = document.createElement('div');
-  container.style.cssText = 'position:fixed;left:-9999px;top:0;width:800px;background:#fff;z-index:-1;';
-  container.innerHTML = html.replace(/.*<body[^>]*>/s, '').replace(/<\/body>.*/s, '');
-  document.body.appendChild(container);
+  // Use iframe to render full HTML with styles
+  const iframe = document.createElement('iframe');
+  iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:800px;height:1200px;border:none;z-index:-1;';
+  document.body.appendChild(iframe);
 
-  // Wait for images to load
-  const imgs = container.getElementsByTagName('img');
+  const iframeDoc = iframe.contentWindow?.document;
+  if (!iframeDoc) { iframe.remove(); return; }
+  iframeDoc.open();
+  iframeDoc.write(html);
+  iframeDoc.close();
+
+  // Wait for iframe to render and images to load
+  await new Promise(r => setTimeout(r, 300));
+  const imgs = iframeDoc.getElementsByTagName('img');
   await Promise.all(Array.from(imgs).map(img => new Promise(r => {
     if (img.complete) r(true);
     else { img.onload = () => r(true); img.onerror = () => r(true); setTimeout(() => r(true), 2000); }
   })));
+
+  const container = iframeDoc.body;
 
   try {
     const { default: html2canvas } = await import('html2canvas');
@@ -234,6 +242,6 @@ export async function downloadPayslip(payslip: PayslipData, business: { name: st
     a.href = url; a.download = fileName.replace('.pdf', '.html'); a.click();
     URL.revokeObjectURL(url);
   } finally {
-    container.remove();
+    iframe.remove();
   }
 }
