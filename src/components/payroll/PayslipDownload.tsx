@@ -167,34 +167,73 @@ export function generatePayslipHTML(payslip: PayslipData, business: { name: stri
 </body></html>`;
 }
 
-export function downloadPayslip(payslip: PayslipData, business: { name: string; address: string; logo?: string; phone: string; email: string }) {
+export async function downloadPayslip(payslip: PayslipData, business: { name: string; address: string; logo?: string; phone: string; email: string }) {
   const html = generatePayslipHTML(payslip, business);
   const monthName = MONTHS[payslip.month - 1];
+  const fileName = `Payslip_${payslip.employee_name.replace(/\s+/g, '_')}_${monthName}_${payslip.year}.pdf`;
 
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  // Create a hidden container to render the HTML
+  const container = document.createElement('div');
+  container.style.cssText = 'position:fixed;left:-9999px;top:0;width:800px;background:#fff;z-index:-1;';
+  container.innerHTML = html.replace(/.*<body[^>]*>/s, '').replace(/<\/body>.*/s, '');
+  document.body.appendChild(container);
 
-  if (isMobile) {
-    const iframe = document.createElement('iframe');
-    iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:none;';
-    document.body.appendChild(iframe);
-    const doc = iframe.contentWindow?.document;
-    if (!doc) {
-      const blob = new Blob([html], { type: 'text/html' });
-      window.open(URL.createObjectURL(blob), '_blank');
-      return;
+  // Wait for images to load
+  const imgs = container.getElementsByTagName('img');
+  await Promise.all(Array.from(imgs).map(img => new Promise(r => {
+    if (img.complete) r(true);
+    else { img.onload = () => r(true); img.onerror = () => r(true); setTimeout(() => r(true), 2000); }
+  })));
+
+  try {
+    const { default: html2canvas } = await import('html2canvas');
+    const { default: jsPDF } = await import('jspdf');
+
+    const canvas = await html2canvas(container, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+    const imgData = canvas.toDataURL('image/png');
+
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = pageWidth - 20;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let yOffset = 10;
+    if (imgHeight <= pageHeight - 20) {
+      pdf.addImage(imgData, 'PNG', 10, yOffset, imgWidth, imgHeight);
+    } else {
+      // Multi-page support
+      let remainingHeight = canvas.height;
+      let sourceY = 0;
+      const sliceHeight = Math.floor((canvas.width * (pageHeight - 20)) / imgWidth);
+
+      while (remainingHeight > 0) {
+        const sliceCanvas = document.createElement('canvas');
+        sliceCanvas.width = canvas.width;
+        sliceCanvas.height = Math.min(sliceHeight, remainingHeight);
+        const ctx = sliceCanvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(canvas, 0, sourceY, canvas.width, sliceCanvas.height, 0, 0, canvas.width, sliceCanvas.height);
+          const sliceData = sliceCanvas.toDataURL('image/png');
+          const sliceImgHeight = (sliceCanvas.height * imgWidth) / canvas.width;
+          if (sourceY > 0) pdf.addPage();
+          pdf.addImage(sliceData, 'PNG', 10, 10, imgWidth, sliceImgHeight);
+        }
+        sourceY += sliceHeight;
+        remainingHeight -= sliceHeight;
+      }
     }
-    doc.open(); doc.write(html); doc.close();
-    const imgs = doc.getElementsByTagName('img');
-    Promise.all(Array.from(imgs).map(img => new Promise(r => { if (img.complete) r(true); else { img.onload = () => r(true); img.onerror = () => r(true); setTimeout(() => r(true), 1000); } }))).then(() => {
-      setTimeout(() => { iframe.contentWindow?.focus(); iframe.contentWindow?.print(); setTimeout(() => iframe.remove(), 1000); }, 300);
-    });
-  } else {
-    const win = window.open("", "_blank", "width=900,height=700");
-    if (!win) return;
-    win.document.open(); win.document.write(html); win.document.close();
-    const imgs = win.document.getElementsByTagName('img');
-    Promise.all(Array.from(imgs).map(img => new Promise(r => { if (img.complete) r(true); else { img.onload = () => r(true); img.onerror = () => r(true); setTimeout(() => r(true), 1000); } }))).then(() => {
-      setTimeout(() => { win.focus(); win.print(); setTimeout(() => win.close(), 250); }, 100);
-    });
+
+    pdf.save(fileName);
+  } catch (err) {
+    console.error('PDF generation failed:', err);
+    // Fallback: download as HTML
+    const blob = new Blob([html], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fileName.replace('.pdf', '.html'); a.click();
+    URL.revokeObjectURL(url);
+  } finally {
+    container.remove();
   }
 }
