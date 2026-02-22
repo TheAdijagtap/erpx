@@ -25,6 +25,7 @@ const employeesImport = () => import("./pages/Employees");
 const attendanceImport = () => import("./pages/Attendance");
 const leaveManagementImport = () => import("./pages/LeaveManagement");
 const payrollImport = () => import("./pages/Payroll");
+const payrollSettingsImport = () => import("./pages/PayrollSettings");
 
 const AppDashboard = lazy(appDashboardImport);
 const Inventory = lazy(inventoryImport);
@@ -38,6 +39,7 @@ const EmployeesPage = lazy(employeesImport);
 const AttendancePage = lazy(attendanceImport);
 const LeaveManagementPage = lazy(leaveManagementImport);
 const PayrollPage = lazy(payrollImport);
+const PayrollSettingsPage = lazy(payrollSettingsImport);
 
 // Preload all pages for instant navigation
 export const preloadAllPages = () => {
@@ -53,6 +55,7 @@ export const preloadAllPages = () => {
   attendanceImport();
   leaveManagementImport();
   payrollImport();
+  payrollSettingsImport();
 };
 
 // Optimized QueryClient with caching
@@ -150,6 +153,11 @@ const App = () => (
               <Route path="payroll" element={
                 <Suspense fallback={<PageLoader />}>
                   <PayrollPage />
+                </Suspense>
+              } />
+              <Route path="payroll/settings" element={
+                <Suspense fallback={<PageLoader />}>
+                  <PayrollSettingsPage />
                 </Suspense>
               } />
             </Route>
