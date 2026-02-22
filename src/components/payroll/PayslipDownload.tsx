@@ -111,9 +111,7 @@ export function generatePayslipHTML(payslip: PayslipData, business: BusinessData
         <div class="company-detail">${bPhone} · ${bEmail}</div>
       </div>
     </div>
-    <div>
-      <span class="status-badge status-${payslip.status}">${payslip.status}</span>
-    </div>
+    <div></div>
   </div>
 
   <div class="payslip-title">PAYSLIP FOR ${monthName.toUpperCase()} ${payslip.year}</div>
