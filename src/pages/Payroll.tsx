@@ -69,16 +69,18 @@ interface PayrollRule {
 const calcRulesForEmployee = (rules: PayrollRule[], gender: string | null, basicSalary: number) => {
   let totalAllowances = 0;
   let totalDeductions = 0;
+  const allowanceItems: { name: string; amount: number }[] = [];
+  const deductionItems: { name: string; amount: number }[] = [];
   rules.filter(r => r.is_active).forEach(r => {
-    // Check gender condition
     if (r.gender_condition && r.gender_condition !== gender) return;
     const amount = r.calculation_type === "percentage"
       ? (Number(basicSalary) || 0) * (Number(r.value) || 0) / 100
       : Number(r.value) || 0;
-    if (r.type === "allowance") totalAllowances += amount;
-    else totalDeductions += amount;
+    const rounded = Math.round(amount * 100) / 100;
+    if (r.type === "allowance") { totalAllowances += amount; allowanceItems.push({ name: r.name, amount: rounded }); }
+    else { totalDeductions += amount; deductionItems.push({ name: r.name, amount: rounded }); }
   });
-  return { totalAllowances: Math.round(totalAllowances * 100) / 100, totalDeductions: Math.round(totalDeductions * 100) / 100 };
+  return { totalAllowances: Math.round(totalAllowances * 100) / 100, totalDeductions: Math.round(totalDeductions * 100) / 100, allowanceItems, deductionItems };
 };
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -242,6 +244,10 @@ const Payroll = () => {
   };
 
   const handleDownloadPayslip = (p: Payslip) => {
+    const emp = employees.find(e => e.id === p.employee_id);
+    const { allowanceItems, deductionItems } = emp
+      ? calcRulesForEmployee(payrollRules, emp.gender, p.basic_salary)
+      : { allowanceItems: [], deductionItems: [] };
     downloadPayslip(
       {
         employee_name: p.employee_name || "Unknown",
@@ -253,6 +259,8 @@ const Payroll = () => {
         employee_uan: p.employee_uan,
         month: p.month, year: p.year,
         basic_salary: p.basic_salary, allowances: p.allowances, deductions: p.deductions,
+        allowance_items: allowanceItems.length > 0 ? allowanceItems : undefined,
+        deduction_items: deductionItems.length > 0 ? deductionItems : undefined,
         days_worked: p.days_worked, total_days: p.total_days, leaves_taken: p.leaves_taken,
         gross_salary: p.gross_salary, net_salary: p.net_salary, status: p.status, paid_date: p.paid_date,
       },
@@ -263,19 +271,27 @@ const Payroll = () => {
   const handleDownloadAll = async () => {
     if (filteredSlips.length === 0) { toast.info("No payslips to download"); return; }
     toast.info("Generating ZIP file...");
-    const payslipData = filteredSlips.map(p => ({
-      employee_name: p.employee_name || "Unknown",
-      employee_designation: p.employee_designation,
-      employee_department: p.employee_department,
-      employee_bank_name: p.employee_bank_name,
-      employee_bank_account: p.employee_bank_account,
-      employee_bank_ifsc: p.employee_bank_ifsc,
-      employee_uan: p.employee_uan,
-      month: p.month, year: p.year,
-      basic_salary: p.basic_salary, allowances: p.allowances, deductions: p.deductions,
-      days_worked: p.days_worked, total_days: p.total_days, leaves_taken: p.leaves_taken,
-      gross_salary: p.gross_salary, net_salary: p.net_salary, status: p.status, paid_date: p.paid_date,
-    }));
+    const payslipData = filteredSlips.map(p => {
+      const emp = employees.find(e => e.id === p.employee_id);
+      const { allowanceItems, deductionItems } = emp
+        ? calcRulesForEmployee(payrollRules, emp.gender, p.basic_salary)
+        : { allowanceItems: [], deductionItems: [] };
+      return {
+        employee_name: p.employee_name || "Unknown",
+        employee_designation: p.employee_designation,
+        employee_department: p.employee_department,
+        employee_bank_name: p.employee_bank_name,
+        employee_bank_account: p.employee_bank_account,
+        employee_bank_ifsc: p.employee_bank_ifsc,
+        employee_uan: p.employee_uan,
+        month: p.month, year: p.year,
+        basic_salary: p.basic_salary, allowances: p.allowances, deductions: p.deductions,
+        allowance_items: allowanceItems.length > 0 ? allowanceItems : undefined,
+        deduction_items: deductionItems.length > 0 ? deductionItems : undefined,
+        days_worked: p.days_worked, total_days: p.total_days, leaves_taken: p.leaves_taken,
+        gross_salary: p.gross_salary, net_salary: p.net_salary, status: p.status, paid_date: p.paid_date,
+      };
+    });
     await downloadAllPayslipsAsZip(
       payslipData,
       { name: businessInfo.name, address: businessInfo.address, logo: businessInfo.logo, signature: businessInfo.signature, phone: businessInfo.phone, email: businessInfo.email },

@@ -3,6 +3,11 @@ import { formatINR } from "@/lib/format";
 import { numberToWords } from "@/lib/numberToWords";
 import { escapeHtml } from "@/lib/htmlEscape";
 
+interface PayslipRuleItem {
+  name: string;
+  amount: number;
+}
+
 interface PayslipData {
   employee_name: string;
   employee_designation?: string;
@@ -16,6 +21,8 @@ interface PayslipData {
   basic_salary: number;
   allowances: number;
   deductions: number;
+  allowance_items?: PayslipRuleItem[];
+  deduction_items?: PayslipRuleItem[];
   days_worked: number;
   total_days: number;
   leaves_taken: number;
@@ -148,7 +155,9 @@ export function generatePayslipHTML(payslip: PayslipData, business: BusinessData
     </thead>
     <tbody>
       <tr><td>Basic Salary</td><td class="amount">${formatINR(payslip.basic_salary)}</td></tr>
-      <tr><td>Allowances</td><td class="amount">${formatINR(payslip.allowances)}</td></tr>
+      ${(payslip.allowance_items && payslip.allowance_items.length > 0)
+        ? payslip.allowance_items.map(item => `<tr><td>${escapeHtml(item.name)}</td><td class="amount">${formatINR(item.amount)}</td></tr>`).join('')
+        : `<tr><td>Allowances</td><td class="amount">${formatINR(payslip.allowances)}</td></tr>`}
       <tr class="summary-row"><td>Gross Salary</td><td class="amount">${formatINR(payslip.gross_salary)}</td></tr>
     </tbody>
   </table>
@@ -158,7 +167,9 @@ export function generatePayslipHTML(payslip: PayslipData, business: BusinessData
       <tr><th>Deductions</th><th class="amount">Amount (₹)</th></tr>
     </thead>
     <tbody>
-      <tr><td>Deductions</td><td class="amount">${formatINR(payslip.deductions)}</td></tr>
+      ${(payslip.deduction_items && payslip.deduction_items.length > 0)
+        ? payslip.deduction_items.map(item => `<tr><td>${escapeHtml(item.name)}</td><td class="amount">${formatINR(item.amount)}</td></tr>`).join('')
+        : `<tr><td>Deductions</td><td class="amount">${formatINR(payslip.deductions)}</td></tr>`}
     </tbody>
   </table>
 
