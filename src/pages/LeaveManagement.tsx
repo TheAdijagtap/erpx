@@ -77,8 +77,29 @@ const LeaveManagement = () => {
   };
 
   const updateStatus = async (id: string, status: string) => {
+    const leave = leaves.find(l => l.id === id);
     const { error } = await supabase.from("leaves").update({ status, approved_by: user?.email }).eq("id", id);
     if (error) { toast.error("Failed to update"); return; }
+
+    // Auto-mark attendance as on_leave for approved leaves
+    if (status === "approved" && leave && user) {
+      const start = new Date(leave.start_date);
+      const end = new Date(leave.end_date);
+      const attendanceRecords = [];
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        attendanceRecords.push({
+          user_id: user.id,
+          employee_id: leave.employee_id,
+          date: format(new Date(d), "yyyy-MM-dd"),
+          status: "on_leave",
+          check_in: null,
+        });
+      }
+      if (attendanceRecords.length > 0) {
+        await supabase.from("attendance").upsert(attendanceRecords, { onConflict: "employee_id,date" });
+      }
+    }
+
     toast.success(`Leave ${status}`);
     fetchData();
   };
