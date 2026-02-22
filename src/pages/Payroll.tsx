@@ -53,7 +53,33 @@ interface Employee {
   bank_account_number: string | null;
   bank_ifsc_code: string | null;
   uan: string | null;
+  gender: string | null;
 }
+
+interface PayrollRule {
+  id: string;
+  name: string;
+  type: string;
+  calculation_type: string;
+  value: number;
+  gender_condition: string | null;
+  is_active: boolean;
+}
+
+const calcRulesForEmployee = (rules: PayrollRule[], gender: string | null, basicSalary: number) => {
+  let totalAllowances = 0;
+  let totalDeductions = 0;
+  rules.filter(r => r.is_active).forEach(r => {
+    // Check gender condition
+    if (r.gender_condition && r.gender_condition !== gender) return;
+    const amount = r.calculation_type === "percentage"
+      ? (Number(basicSalary) || 0) * (Number(r.value) || 0) / 100
+      : Number(r.value) || 0;
+    if (r.type === "allowance") totalAllowances += amount;
+    else totalDeductions += amount;
+  });
+  return { totalAllowances: Math.round(totalAllowances * 100) / 100, totalDeductions: Math.round(totalDeductions * 100) / 100 };
+};
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
@@ -63,6 +89,7 @@ const Payroll = () => {
   const navigate = useNavigate();
   const [payslips, setPayslips] = useState<Payslip[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [payrollRules, setPayrollRules] = useState<PayrollRule[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
@@ -74,11 +101,13 @@ const Payroll = () => {
 
   const fetchData = useCallback(async () => {
     if (!user) return;
-    const [{ data: emps }, { data: slips }] = await Promise.all([
-      supabase.from("employees").select("id, name, basic_salary, allowances, deductions, designation, department, bank_name, bank_account_number, bank_ifsc_code, uan").eq("status", "active").order("name"),
+    const [{ data: emps }, { data: slips }, { data: rules }] = await Promise.all([
+      supabase.from("employees").select("id, name, basic_salary, allowances, deductions, designation, department, bank_name, bank_account_number, bank_ifsc_code, uan, gender").eq("status", "active").order("name"),
       supabase.from("payslips").select("*").order("year", { ascending: false }).order("month", { ascending: false }),
+      supabase.from("payroll_rules").select("*"),
     ]);
     setEmployees(emps || []);
+    setPayrollRules(rules || []);
     const empMap = new Map((emps || []).map(e => [e.id, e]));
     setPayslips((slips || []).map(s => {
       const emp = empMap.get(s.employee_id);
@@ -127,9 +156,12 @@ const Payroll = () => {
     const emp = employees.find(e => e.id === empId);
     if (emp) {
       const { daysWorked, leavesTaken, totalDays } = await fetchAttendance(empId, selectedMonth, selectedYear);
+      const { totalAllowances, totalDeductions } = calcRulesForEmployee(payrollRules, emp.gender, emp.basic_salary);
+      const allowances = totalAllowances > 0 ? totalAllowances : Number(emp.allowances) || 0;
+      const deductions = totalDeductions > 0 ? totalDeductions : Number(emp.deductions) || 0;
       setForm(f => ({
         ...f, employee_id: empId,
-        basic_salary: emp.basic_salary, allowances: emp.allowances, deductions: emp.deductions,
+        basic_salary: Number(emp.basic_salary) || 0, allowances, deductions,
         days_worked: daysWorked, total_days: totalDays, leaves_taken: leavesTaken,
       }));
     }
@@ -171,13 +203,18 @@ const Payroll = () => {
     const toGenerate = employees.filter(e => !existing.includes(e.id));
     if (toGenerate.length === 0) { toast.info("All payslips already generated for this month"); return; }
 
+    const activeRules = payrollRules.filter(r => r.is_active);
     const inserts = await Promise.all(toGenerate.map(async (emp) => {
       const { daysWorked, leavesTaken, totalDays } = await fetchAttendance(emp.id, selectedMonth, selectedYear);
-      const gross = (emp.basic_salary + emp.allowances) * (daysWorked / totalDays);
-      const net = gross - emp.deductions;
+      const { totalAllowances, totalDeductions } = calcRulesForEmployee(activeRules, emp.gender, emp.basic_salary);
+      const allowances = totalAllowances > 0 ? totalAllowances : Number(emp.allowances) || 0;
+      const deductions = totalDeductions > 0 ? totalDeductions : Number(emp.deductions) || 0;
+      const basicSalary = Number(emp.basic_salary) || 0;
+      const gross = (basicSalary + allowances) * (daysWorked / totalDays);
+      const net = gross - deductions;
       return {
         user_id: user.id, employee_id: emp.id, month: selectedMonth, year: selectedYear,
-        basic_salary: emp.basic_salary, allowances: emp.allowances, deductions: emp.deductions,
+        basic_salary: basicSalary, allowances, deductions,
         days_worked: daysWorked, total_days: totalDays, leaves_taken: leavesTaken,
         gross_salary: Math.round(gross * 100) / 100, net_salary: Math.round(net * 100) / 100, status: "draft",
       };
