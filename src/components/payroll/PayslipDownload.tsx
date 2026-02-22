@@ -24,9 +24,18 @@ interface PayslipData {
   paid_date: string | null;
 }
 
+interface BusinessData {
+  name: string;
+  address: string;
+  logo?: string;
+  signature?: string;
+  phone: string;
+  email: string;
+}
+
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-export function generatePayslipHTML(payslip: PayslipData, business: { name: string; address: string; logo?: string; phone: string; email: string }) {
+export function generatePayslipHTML(payslip: PayslipData, business: BusinessData) {
   const monthName = MONTHS[payslip.month - 1];
   const amountWords = numberToWords(payslip.net_salary);
   const bName = escapeHtml(business.name);
@@ -40,6 +49,7 @@ export function generatePayslipHTML(payslip: PayslipData, business: { name: stri
   const eBankAcc = escapeHtml(payslip.employee_bank_account || "—");
   const eBankIfsc = escapeHtml(payslip.employee_bank_ifsc || "—");
   const logoImg = business.logo ? `<img src="${escapeHtml(business.logo)}" alt="Logo" style="max-height:48px;max-width:120px;object-fit:contain;" />` : "";
+  const signatureImg = business.signature ? `<img src="${escapeHtml(business.signature)}" alt="Signature" style="max-height:60px;max-width:150px;object-fit:contain;" />` : "";
 
   return `<!doctype html><html><head><title>Payslip - ${eName} - ${monthName} ${payslip.year}</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -158,8 +168,9 @@ export function generatePayslipHTML(payslip: PayslipData, business: { name: stri
   <div class="amount-words"><strong>Amount in words:</strong> ${escapeHtml(amountWords)}</div>
 
   <div class="footer">
-    <div class="footer-note">This is a computer-generated payslip and does not require a signature.</div>
+    <div class="footer-note">This is a computer-generated payslip.</div>
     <div class="stamp">
+      ${signatureImg}
       <div class="stamp-line">Authorized Signatory</div>
     </div>
   </div>
@@ -167,7 +178,7 @@ export function generatePayslipHTML(payslip: PayslipData, business: { name: stri
 </body></html>`;
 }
 
-export async function downloadPayslip(payslip: PayslipData, business: { name: string; address: string; logo?: string; phone: string; email: string }) {
+export async function downloadPayslip(payslip: PayslipData, business: BusinessData) {
   const html = generatePayslipHTML(payslip, business);
   const monthName = MONTHS[payslip.month - 1];
   const fileName = `Payslip_${payslip.employee_name.replace(/\s+/g, '_')}_${monthName}_${payslip.year}.pdf`;
@@ -244,4 +255,74 @@ export async function downloadPayslip(payslip: PayslipData, business: { name: st
   } finally {
     iframe.remove();
   }
+}
+
+export async function generatePayslipPDFBlob(payslip: PayslipData, business: BusinessData): Promise<Blob> {
+  const html = generatePayslipHTML(payslip, business);
+
+  const iframe = document.createElement('iframe');
+  iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:800px;height:1200px;border:none;z-index:-1;';
+  document.body.appendChild(iframe);
+
+  const iframeDoc = iframe.contentWindow?.document;
+  if (!iframeDoc) { iframe.remove(); throw new Error('Failed to create iframe'); }
+  iframeDoc.open();
+  iframeDoc.write(html);
+  iframeDoc.close();
+
+  await new Promise(r => setTimeout(r, 300));
+  const imgs = iframeDoc.getElementsByTagName('img');
+  await Promise.all(Array.from(imgs).map(img => new Promise(r => {
+    if (img.complete) r(true);
+    else { img.onload = () => r(true); img.onerror = () => r(true); setTimeout(() => r(true), 2000); }
+  })));
+
+  const container = iframeDoc.body;
+  try {
+    const { default: html2canvas } = await import('html2canvas');
+    const { default: jsPDF } = await import('jspdf');
+
+    const canvas = await html2canvas(container, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const imgWidth = pageWidth - 20;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+    return pdf.output('blob');
+  } finally {
+    iframe.remove();
+  }
+}
+
+const MONTHS_ZIP = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+export async function downloadAllPayslipsAsZip(
+  payslips: PayslipData[],
+  business: BusinessData,
+  month: number,
+  year: number
+) {
+  const { default: JSZip } = await import('jszip');
+  const zip = new JSZip();
+  const monthName = MONTHS_ZIP[month - 1];
+
+  for (let i = 0; i < payslips.length; i++) {
+    const p = payslips[i];
+    try {
+      const blob = await generatePayslipPDFBlob(p, business);
+      const fileName = `Payslip_${p.employee_name.replace(/\s+/g, '_')}_${monthName}_${year}.pdf`;
+      zip.file(fileName, blob);
+    } catch (err) {
+      console.error(`Failed to generate PDF for ${p.employee_name}:`, err);
+    }
+  }
+
+  const zipBlob = await zip.generateAsync({ type: 'blob' });
+  const url = URL.createObjectURL(zipBlob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Payslips_${monthName}_${year}.zip`;
+  a.click();
+  URL.revokeObjectURL(url);
 }

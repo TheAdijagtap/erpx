@@ -11,9 +11,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, FileText, IndianRupee, Download, Trash2 } from "lucide-react";
+import { Plus, FileText, IndianRupee, Download, Trash2, Archive } from "lucide-react";
 import { formatINR } from "@/lib/format";
-import { downloadPayslip } from "@/components/payroll/PayslipDownload";
+import { downloadPayslip, downloadAllPayslipsAsZip } from "@/components/payroll/PayslipDownload";
 
 interface Payslip {
   id: string;
@@ -208,27 +208,36 @@ const Payroll = () => {
         employee_bank_name: p.employee_bank_name,
         employee_bank_account: p.employee_bank_account,
         employee_bank_ifsc: p.employee_bank_ifsc,
-        month: p.month,
-        year: p.year,
-        basic_salary: p.basic_salary,
-        allowances: p.allowances,
-        deductions: p.deductions,
-        days_worked: p.days_worked,
-        total_days: p.total_days,
-        leaves_taken: p.leaves_taken,
-        gross_salary: p.gross_salary,
-        net_salary: p.net_salary,
-        status: p.status,
-        paid_date: p.paid_date,
+        month: p.month, year: p.year,
+        basic_salary: p.basic_salary, allowances: p.allowances, deductions: p.deductions,
+        days_worked: p.days_worked, total_days: p.total_days, leaves_taken: p.leaves_taken,
+        gross_salary: p.gross_salary, net_salary: p.net_salary, status: p.status, paid_date: p.paid_date,
       },
-      {
-        name: businessInfo.name,
-        address: businessInfo.address,
-        logo: businessInfo.logo,
-        phone: businessInfo.phone,
-        email: businessInfo.email,
-      }
+      { name: businessInfo.name, address: businessInfo.address, logo: businessInfo.logo, signature: businessInfo.signature, phone: businessInfo.phone, email: businessInfo.email }
     );
+  };
+
+  const handleDownloadAll = async () => {
+    if (filteredSlips.length === 0) { toast.info("No payslips to download"); return; }
+    toast.info("Generating ZIP file...");
+    const payslipData = filteredSlips.map(p => ({
+      employee_name: p.employee_name || "Unknown",
+      employee_designation: p.employee_designation,
+      employee_department: p.employee_department,
+      employee_bank_name: p.employee_bank_name,
+      employee_bank_account: p.employee_bank_account,
+      employee_bank_ifsc: p.employee_bank_ifsc,
+      month: p.month, year: p.year,
+      basic_salary: p.basic_salary, allowances: p.allowances, deductions: p.deductions,
+      days_worked: p.days_worked, total_days: p.total_days, leaves_taken: p.leaves_taken,
+      gross_salary: p.gross_salary, net_salary: p.net_salary, status: p.status, paid_date: p.paid_date,
+    }));
+    await downloadAllPayslipsAsZip(
+      payslipData,
+      { name: businessInfo.name, address: businessInfo.address, logo: businessInfo.logo, signature: businessInfo.signature, phone: businessInfo.phone, email: businessInfo.email },
+      selectedMonth, selectedYear
+    );
+    toast.success("ZIP downloaded!");
   };
 
   const filteredSlips = payslips.filter(p => p.month === selectedMonth && p.year === selectedYear);
@@ -248,6 +257,7 @@ const Payroll = () => {
           </Select>
           <Input type="number" className="w-[100px]" value={selectedYear} onChange={e => setSelectedYear(Number(e.target.value))} />
           <Button variant="outline" onClick={generateAll}><FileText className="mr-2 h-4 w-4" />Generate All</Button>
+          <Button variant="outline" onClick={handleDownloadAll}><Archive className="mr-2 h-4 w-4" />Download All</Button>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button><Plus className="mr-2 h-4 w-4" />Create Payslip</Button>
