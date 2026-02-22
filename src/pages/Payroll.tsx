@@ -37,6 +37,7 @@ interface Payslip {
   employee_bank_name?: string;
   employee_bank_account?: string;
   employee_bank_ifsc?: string;
+  employee_uan?: string;
 }
 
 interface Employee {
@@ -50,6 +51,7 @@ interface Employee {
   bank_name: string | null;
   bank_account_number: string | null;
   bank_ifsc_code: string | null;
+  uan: string | null;
 }
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -71,7 +73,7 @@ const Payroll = () => {
   const fetchData = useCallback(async () => {
     if (!user) return;
     const [{ data: emps }, { data: slips }] = await Promise.all([
-      supabase.from("employees").select("id, name, basic_salary, allowances, deductions, designation, department, bank_name, bank_account_number, bank_ifsc_code").eq("status", "active").order("name"),
+      supabase.from("employees").select("id, name, basic_salary, allowances, deductions, designation, department, bank_name, bank_account_number, bank_ifsc_code, uan").eq("status", "active").order("name"),
       supabase.from("payslips").select("*").order("year", { ascending: false }).order("month", { ascending: false }),
     ]);
     setEmployees(emps || []);
@@ -86,6 +88,7 @@ const Payroll = () => {
         employee_bank_name: emp?.bank_name || undefined,
         employee_bank_account: emp?.bank_account_number || undefined,
         employee_bank_ifsc: emp?.bank_ifsc_code || undefined,
+        employee_uan: emp?.uan || undefined,
       };
     }));
     setLoading(false);
@@ -208,6 +211,7 @@ const Payroll = () => {
         employee_bank_name: p.employee_bank_name,
         employee_bank_account: p.employee_bank_account,
         employee_bank_ifsc: p.employee_bank_ifsc,
+        employee_uan: p.employee_uan,
         month: p.month, year: p.year,
         basic_salary: p.basic_salary, allowances: p.allowances, deductions: p.deductions,
         days_worked: p.days_worked, total_days: p.total_days, leaves_taken: p.leaves_taken,
@@ -227,6 +231,7 @@ const Payroll = () => {
       employee_bank_name: p.employee_bank_name,
       employee_bank_account: p.employee_bank_account,
       employee_bank_ifsc: p.employee_bank_ifsc,
+      employee_uan: p.employee_uan,
       month: p.month, year: p.year,
       basic_salary: p.basic_salary, allowances: p.allowances, deductions: p.deductions,
       days_worked: p.days_worked, total_days: p.total_days, leaves_taken: p.leaves_taken,
