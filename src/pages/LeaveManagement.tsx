@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Check, X, CalendarDays } from "lucide-react";
+import { Plus, Check, X, CalendarDays, Trash2 } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 
 interface LeaveRecord {
@@ -101,6 +101,13 @@ const LeaveManagement = () => {
     }
 
     toast.success(`Leave ${status}`);
+    fetchData();
+  };
+
+  const deleteLeave = async (id: string) => {
+    const { error } = await supabase.from("leaves").delete().eq("id", id);
+    if (error) { toast.error("Failed to delete leave"); return; }
+    toast.success("Leave record deleted");
     fetchData();
   };
 
@@ -196,6 +203,7 @@ const LeaveManagement = () => {
                         <Button variant="ghost" size="icon" onClick={() => updateStatus(l.id, "rejected")}><X className="h-4 w-4 text-destructive" /></Button>
                       </div>
                     )}
+                    <Button variant="ghost" size="icon" onClick={() => deleteLeave(l.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                   </TableCell>
                 </TableRow>
               ))}
