@@ -158,6 +158,7 @@ export type Database = {
           designation: string | null
           email: string | null
           emergency_contact: string | null
+          gender: string | null
           id: string
           joining_date: string | null
           name: string
@@ -181,6 +182,7 @@ export type Database = {
           designation?: string | null
           email?: string | null
           emergency_contact?: string | null
+          gender?: string | null
           id?: string
           joining_date?: string | null
           name: string
@@ -204,6 +206,7 @@ export type Database = {
           designation?: string | null
           email?: string | null
           emergency_contact?: string | null
+          gender?: string | null
           id?: string
           joining_date?: string | null
           name?: string
@@ -595,6 +598,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      payroll_rules: {
+        Row: {
+          calculation_type: string
+          created_at: string
+          gender_condition: string | null
+          id: string
+          is_active: boolean
+          name: string
+          type: string
+          updated_at: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          calculation_type?: string
+          created_at?: string
+          gender_condition?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          type?: string
+          updated_at?: string
+          user_id: string
+          value?: number
+        }
+        Update: {
+          calculation_type?: string
+          created_at?: string
+          gender_condition?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+          value?: number
+        }
+        Relationships: []
       }
       payslips: {
         Row: {

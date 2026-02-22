@@ -24,6 +24,7 @@ interface Employee {
   designation: string | null;
   joining_date: string | null;
   status: string;
+  gender: string | null;
   basic_salary: number;
   allowances: number;
   deductions: number;
@@ -39,7 +40,7 @@ interface Employee {
 
 const emptyForm = {
   name: "", email: "", phone: "", department: "", designation: "",
-  joining_date: "", status: "active", basic_salary: 0, allowances: 0,
+  joining_date: "", status: "active", gender: "", basic_salary: 0, allowances: 0,
   deductions: 0, bank_name: "", bank_account_number: "", bank_ifsc_code: "",
   address: "", emergency_contact: "", notes: "", uan: "",
 };
@@ -78,6 +79,7 @@ const Employees = () => {
       designation: form.designation || null,
       joining_date: form.joining_date || null,
       status: form.status,
+      gender: form.gender || null,
       basic_salary: Number(form.basic_salary) || 0,
       allowances: Number(form.allowances) || 0,
       deductions: Number(form.deductions) || 0,
@@ -110,7 +112,7 @@ const Employees = () => {
     setForm({
       name: emp.name, email: emp.email || "", phone: emp.phone || "",
       department: emp.department || "", designation: emp.designation || "",
-      joining_date: emp.joining_date || "", status: emp.status,
+      joining_date: emp.joining_date || "", status: emp.status, gender: emp.gender || "",
       basic_salary: emp.basic_salary, allowances: emp.allowances,
       deductions: emp.deductions, bank_name: emp.bank_name || "",
       bank_account_number: emp.bank_account_number || "",
@@ -176,6 +178,16 @@ const Employees = () => {
               <div><Label>Department</Label><Input value={form.department} onChange={e => setForm(f => ({ ...f, department: e.target.value }))} /></div>
               <div><Label>Designation</Label><Input value={form.designation} onChange={e => setForm(f => ({ ...f, designation: e.target.value }))} /></div>
               <div><Label>Joining Date</Label><Input type="date" value={form.joining_date} onChange={e => setForm(f => ({ ...f, joining_date: e.target.value }))} /></div>
+              <div>
+                <Label>Gender</Label>
+                <Select value={form.gender} onValueChange={v => setForm(f => ({ ...f, gender: v }))}>
+                  <SelectTrigger><SelectValue placeholder="Select gender" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="M">Male</SelectItem>
+                    <SelectItem value="F">Female</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div>
                 <Label>Status</Label>
                 <Select value={form.status} onValueChange={v => setForm(f => ({ ...f, status: v }))}>
@@ -276,6 +288,7 @@ const Employees = () => {
             <CardContent className="space-y-1 pt-0">
               <InfoRow icon={Mail} label="Email" value={selectedEmployee.email} />
               <InfoRow icon={Phone} label="Phone" value={selectedEmployee.phone} />
+              <InfoRow icon={Users} label="Gender" value={selectedEmployee.gender === "M" ? "Male" : selectedEmployee.gender === "F" ? "Female" : null} />
               <InfoRow icon={Building} label="Department" value={selectedEmployee.department} />
               <InfoRow icon={Briefcase} label="Designation" value={selectedEmployee.designation} />
               <InfoRow icon={Calendar} label="Joining Date" value={selectedEmployee.joining_date} />

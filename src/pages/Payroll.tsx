@@ -11,9 +11,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, FileText, IndianRupee, Download, Trash2, Archive } from "lucide-react";
+import { Plus, FileText, IndianRupee, Download, Trash2, Archive, Settings } from "lucide-react";
 import { formatINR } from "@/lib/format";
 import { downloadPayslip, downloadAllPayslipsAsZip } from "@/components/payroll/PayslipDownload";
+import { useNavigate } from "react-router-dom";
 
 interface Payslip {
   id: string;
@@ -59,6 +60,7 @@ const MONTHS = ["January","February","March","April","May","June","July","August
 const Payroll = () => {
   const { user } = useAuth();
   const { businessInfo } = useData();
+  const navigate = useNavigate();
   const [payslips, setPayslips] = useState<Payslip[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
@@ -263,6 +265,7 @@ const Payroll = () => {
           <Input type="number" className="w-[100px]" value={selectedYear} onChange={e => setSelectedYear(Number(e.target.value))} />
           <Button variant="outline" onClick={generateAll}><FileText className="mr-2 h-4 w-4" />Generate All</Button>
           <Button variant="outline" onClick={handleDownloadAll}><Archive className="mr-2 h-4 w-4" />Download All</Button>
+          <Button variant="outline" onClick={() => navigate("/payroll/settings")}><Settings className="mr-2 h-4 w-4" />Settings</Button>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button><Plus className="mr-2 h-4 w-4" />Create Payslip</Button>
