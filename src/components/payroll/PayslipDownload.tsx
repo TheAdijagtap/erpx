@@ -10,6 +10,7 @@ interface PayslipData {
   employee_bank_name?: string;
   employee_bank_account?: string;
   employee_bank_ifsc?: string;
+  employee_uan?: string;
   month: number;
   year: number;
   basic_salary: number;
@@ -48,6 +49,7 @@ export function generatePayslipHTML(payslip: PayslipData, business: BusinessData
   const eBankName = escapeHtml(payslip.employee_bank_name || "—");
   const eBankAcc = escapeHtml(payslip.employee_bank_account || "—");
   const eBankIfsc = escapeHtml(payslip.employee_bank_ifsc || "—");
+  const eUan = escapeHtml(payslip.employee_uan || "—");
   const logoImg = business.logo ? `<img src="${escapeHtml(business.logo)}" alt="Logo" style="max-height:48px;max-width:120px;object-fit:contain;" />` : "";
   const signatureImg = business.signature ? `<img src="${escapeHtml(business.signature)}" alt="Signature" style="max-height:60px;max-width:150px;object-fit:contain;" />` : "";
 
@@ -136,6 +138,7 @@ export function generatePayslipHTML(payslip: PayslipData, business: BusinessData
     <div class="info-section" style="display:flex;gap:24px;">
       <div><div class="info-label">Account No.</div><div class="info-value">${eBankAcc}</div></div>
       <div><div class="info-label">IFSC</div><div class="info-value">${eBankIfsc}</div></div>
+      <div><div class="info-label">UAN</div><div class="info-value">${eUan}</div></div>
     </div>
   </div>
 
