@@ -93,12 +93,39 @@ const Payroll = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const onEmployeeSelect = (empId: string) => {
+  const fetchAttendance = useCallback(async (empId: string, month: number, year: number) => {
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
+    const endDate = `${year}-${String(month).padStart(2, '0')}-${String(daysInMonth).padStart(2, '0')}`;
+
+    const { data: att } = await supabase
+      .from("attendance")
+      .select("status")
+      .eq("employee_id", empId)
+      .gte("date", startDate)
+      .lte("date", endDate);
+
+    let present = 0, absent = 0, halfDay = 0, onLeave = 0;
+    (att || []).forEach(r => {
+      if (r.status === "present") present++;
+      else if (r.status === "absent") absent++;
+      else if (r.status === "half_day") halfDay++;
+      else if (r.status === "on_leave") onLeave++;
+    });
+
+    const daysWorked = present + halfDay * 0.5;
+    const leavesTaken = onLeave + absent;
+    return { daysWorked, leavesTaken, totalDays: daysInMonth };
+  }, []);
+
+  const onEmployeeSelect = async (empId: string) => {
     const emp = employees.find(e => e.id === empId);
     if (emp) {
+      const { daysWorked, leavesTaken, totalDays } = await fetchAttendance(empId, selectedMonth, selectedYear);
       setForm(f => ({
         ...f, employee_id: empId,
         basic_salary: emp.basic_salary, allowances: emp.allowances, deductions: emp.deductions,
+        days_worked: daysWorked, total_days: totalDays, leaves_taken: leavesTaken,
       }));
     }
   };
@@ -139,15 +166,17 @@ const Payroll = () => {
     const toGenerate = employees.filter(e => !existing.includes(e.id));
     if (toGenerate.length === 0) { toast.info("All payslips already generated for this month"); return; }
 
-    const inserts = toGenerate.map(emp => {
-      const gross = emp.basic_salary + emp.allowances;
+    const inserts = await Promise.all(toGenerate.map(async (emp) => {
+      const { daysWorked, leavesTaken, totalDays } = await fetchAttendance(emp.id, selectedMonth, selectedYear);
+      const gross = (emp.basic_salary + emp.allowances) * (daysWorked / totalDays);
+      const net = gross - emp.deductions;
       return {
         user_id: user.id, employee_id: emp.id, month: selectedMonth, year: selectedYear,
         basic_salary: emp.basic_salary, allowances: emp.allowances, deductions: emp.deductions,
-        days_worked: 30, total_days: 30, leaves_taken: 0,
-        gross_salary: gross, net_salary: gross - emp.deductions, status: "draft",
+        days_worked: daysWorked, total_days: totalDays, leaves_taken: leavesTaken,
+        gross_salary: Math.round(gross * 100) / 100, net_salary: Math.round(net * 100) / 100, status: "draft",
       };
-    });
+    }));
     const { error } = await supabase.from("payslips").insert(inserts);
     if (error) { toast.error("Failed to generate payslips"); return; }
     toast.success(`Generated ${toGenerate.length} payslips`);
