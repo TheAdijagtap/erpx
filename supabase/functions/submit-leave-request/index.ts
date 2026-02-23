@@ -10,51 +10,77 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+  );
+
   try {
-    const { user_id, employee_name, leave_type, start_date, end_date, reason } = await req.json();
+    // GET: fetch employee names for a user
+    if (req.method === "GET") {
+      const url = new URL(req.url);
+      const userId = url.searchParams.get("user_id");
+      if (!userId) {
+        return new Response(JSON.stringify({ error: "Missing user_id" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const { data, error } = await supabase
+        .from("employees")
+        .select("id, name")
+        .eq("user_id", userId)
+        .eq("status", "active")
+        .order("name");
+      if (error) {
+        return new Response(JSON.stringify({ error: "Failed to fetch employees" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify({ employees: data || [] }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    if (!user_id || !employee_name || !start_date || !end_date) {
+    // POST: submit leave request
+    const { user_id, employee_id, employee_name, leave_type, start_date, end_date, reason } = await req.json();
+
+    if (!user_id || (!employee_id && !employee_name) || !start_date || !end_date) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
+    let empId = employee_id;
 
-    // Find employee by name under this user
-    const { data: employees, error: empError } = await supabase
-      .from("employees")
-      .select("id, name")
-      .eq("user_id", user_id)
-      .ilike("name", employee_name.trim())
-      .limit(1);
-
-    if (empError || !employees || employees.length === 0) {
-      return new Response(JSON.stringify({ error: "Employee not found. Please enter your name exactly as registered." }), {
-        status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // If no employee_id provided, look up by name
+    if (!empId && employee_name) {
+      const { data: employees } = await supabase
+        .from("employees")
+        .select("id")
+        .eq("user_id", user_id)
+        .ilike("name", employee_name.trim())
+        .limit(1);
+      if (!employees || employees.length === 0) {
+        return new Response(JSON.stringify({ error: "Employee not found." }), {
+          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      empId = employees[0].id;
     }
 
-    const employee = employees[0];
     const start = new Date(start_date);
     const end = new Date(end_date);
     const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
     if (days < 1) {
       return new Response(JSON.stringify({ error: "End date must be after start date" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const { error: insertError } = await supabase.from("leaves").insert({
       user_id,
-      employee_id: employee.id,
+      employee_id: empId,
       leave_type: leave_type || "casual",
       start_date,
       end_date,
@@ -66,8 +92,7 @@ Deno.serve(async (req) => {
     if (insertError) {
       console.error("Insert error:", insertError);
       return new Response(JSON.stringify({ error: "Failed to submit leave request" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -77,8 +102,7 @@ Deno.serve(async (req) => {
   } catch (err) {
     console.error("Error:", err);
     return new Response(JSON.stringify({ error: "Internal server error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
