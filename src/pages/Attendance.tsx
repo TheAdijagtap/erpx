@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronLeft, ChevronRight, Check, X, Minus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, X, Minus, Download } from "lucide-react";
 import { format, getDaysInMonth, startOfMonth, isWeekend, isFuture, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -135,6 +135,35 @@ const Attendance = () => {
   const prevMonth = () => setCurrentMonth(new Date(year, month - 1, 1));
   const nextMonth = () => setCurrentMonth(new Date(year, month + 1, 1));
 
+  const exportAttendance = () => {
+    if (employees.length === 0) return;
+    const monthLabel = format(currentMonth, "MMMM yyyy");
+    const headers = ["Employee", ...dates.map((d) => String(d)), "Present", "Absent", "Late Mark", "OT Hours"];
+    const rows = employees.map((emp) => {
+      const summary = getSummary(emp.id);
+      const dayCols = dates.map((day) => {
+        const key = `${emp.id}_${format(new Date(year, month, day), "yyyy-MM-dd")}`;
+        const s = attendance[key];
+        if (s === "present") return "P";
+        if (s === "absent") return "A";
+        if (s === "half_day") return "H";
+        if (s === "on_leave") return "L";
+        if (s === "late_mark") return "LM";
+        return "";
+      });
+      return [emp.name, ...dayCols, summary.p, summary.a, summary.lm, summary.ot];
+    });
+    const csv = [headers, ...rows].map((r) => r.map((c) => `"${c}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Attendance_${monthLabel.replace(" ", "_")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`Exported attendance for ${monthLabel}`);
+  };
+
   const saveOT = async (employeeId: string, dateStr: string) => {
     if (!user) return;
     const key = `${employeeId}_${dateStr}`;
@@ -178,7 +207,7 @@ const Attendance = () => {
       if (s === "present") p++;
       else if (s === "absent") a++;
       else if (s === "half_day") h++;
-      else if (s === "on_leave") l++;
+      else if (s === "on_leave") { l++; a++; }
       else if (s === "late_mark") lm++;
       ot += overtime[key] || 0;
     });
@@ -199,6 +228,9 @@ const Attendance = () => {
           </span>
           <Button variant="outline" size="icon" onClick={nextMonth}>
             <ChevronRight className="h-4 w-4" />
+          </Button>
+          <Button variant="outline" size="sm" onClick={exportAttendance} disabled={employees.length === 0}>
+            <Download className="h-4 w-4 mr-1" /> Export
           </Button>
         </div>
       </div>
