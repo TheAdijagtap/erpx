@@ -66,16 +66,24 @@ interface PayrollRule {
   is_active: boolean;
 }
 
-const calcRulesForEmployee = (rules: PayrollRule[], gender: string | null, basicSalary: number) => {
+const calcRulesForEmployee = (rules: PayrollRule[], gender: string | null, basicSalary: number, lateMarks = 0, halfDays = 0) => {
   let totalAllowances = 0;
   let totalDeductions = 0;
   const allowanceItems: { name: string; amount: number }[] = [];
   const deductionItems: { name: string; amount: number }[] = [];
   rules.filter(r => r.is_active).forEach(r => {
     if (r.gender_condition && r.gender_condition !== gender) return;
-    const amount = r.calculation_type === "percentage"
-      ? (Number(basicSalary) || 0) * (Number(r.value) || 0) / 100
-      : Number(r.value) || 0;
+    let amount: number;
+    if (r.calculation_type === "percentage") {
+      amount = (Number(basicSalary) || 0) * (Number(r.value) || 0) / 100;
+    } else if (r.calculation_type === "per_late_mark") {
+      amount = (Number(r.value) || 0) * lateMarks;
+    } else if (r.calculation_type === "per_half_day") {
+      amount = (Number(r.value) || 0) * halfDays;
+    } else {
+      amount = Number(r.value) || 0;
+    }
+    if (amount === 0) return;
     const rounded = Math.round(amount * 100) / 100;
     if (r.type === "allowance") { totalAllowances += amount; allowanceItems.push({ name: r.name, amount: rounded }); }
     else { totalDeductions += amount; deductionItems.push({ name: r.name, amount: rounded }); }
@@ -141,9 +149,10 @@ const Payroll = () => {
       .gte("date", startDate)
       .lte("date", endDate);
 
-    let present = 0, absent = 0, halfDay = 0, onLeave = 0;
+    let present = 0, absent = 0, halfDay = 0, onLeave = 0, lateMark = 0;
     (att || []).forEach(r => {
-      if (r.status === "present" || r.status === "late_mark") present++;
+      if (r.status === "present") present++;
+      else if (r.status === "late_mark") { present++; lateMark++; }
       else if (r.status === "absent") absent++;
       else if (r.status === "half_day") halfDay++;
       else if (r.status === "on_leave") onLeave++;
@@ -151,14 +160,14 @@ const Payroll = () => {
 
     const daysWorked = present + halfDay * 0.5;
     const leavesTaken = onLeave + absent;
-    return { daysWorked, leavesTaken, totalDays: daysInMonth };
+    return { daysWorked, leavesTaken, totalDays: daysInMonth, lateMark, halfDay };
   }, []);
 
   const onEmployeeSelect = async (empId: string) => {
     const emp = employees.find(e => e.id === empId);
     if (emp) {
-      const { daysWorked, leavesTaken, totalDays } = await fetchAttendance(empId, selectedMonth, selectedYear);
-      const { totalAllowances, totalDeductions } = calcRulesForEmployee(payrollRules, emp.gender, emp.basic_salary);
+      const { daysWorked, leavesTaken, totalDays, lateMark, halfDay } = await fetchAttendance(empId, selectedMonth, selectedYear);
+      const { totalAllowances, totalDeductions } = calcRulesForEmployee(payrollRules, emp.gender, emp.basic_salary, lateMark, halfDay);
       const allowances = totalAllowances > 0 ? totalAllowances : Number(emp.allowances) || 0;
       const deductions = totalDeductions > 0 ? totalDeductions : Number(emp.deductions) || 0;
       setForm(f => ({
@@ -207,8 +216,8 @@ const Payroll = () => {
 
     const activeRules = payrollRules.filter(r => r.is_active);
     const inserts = await Promise.all(toGenerate.map(async (emp) => {
-      const { daysWorked, leavesTaken, totalDays } = await fetchAttendance(emp.id, selectedMonth, selectedYear);
-      const { totalAllowances, totalDeductions } = calcRulesForEmployee(activeRules, emp.gender, emp.basic_salary);
+      const { daysWorked, leavesTaken, totalDays, lateMark, halfDay } = await fetchAttendance(emp.id, selectedMonth, selectedYear);
+      const { totalAllowances, totalDeductions } = calcRulesForEmployee(activeRules, emp.gender, emp.basic_salary, lateMark, halfDay);
       const allowances = totalAllowances > 0 ? totalAllowances : Number(emp.allowances) || 0;
       const deductions = totalDeductions > 0 ? totalDeductions : Number(emp.deductions) || 0;
       const basicSalary = Number(emp.basic_salary) || 0;
