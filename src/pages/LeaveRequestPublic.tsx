@@ -1,18 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarDays, CheckCircle2, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
+interface Employee { id: string; name: string; }
+
 const LeaveRequestPublic = () => {
   const { userId } = useParams<{ userId: string }>();
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [loadingEmps, setLoadingEmps] = useState(true);
   const [form, setForm] = useState({
-    employee_name: "",
+    employee_id: "",
     leave_type: "casual",
     start_date: "",
     end_date: "",
@@ -22,11 +26,30 @@ const LeaveRequestPublic = () => {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    if (!userId) return;
+    const fetchEmployees = async () => {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/submit-leave-request?user_id=${userId}`,
+          { headers: { apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY } }
+        );
+        const data = await res.json();
+        setEmployees(data.employees || []);
+      } catch {
+        console.error("Failed to load employees");
+      } finally {
+        setLoadingEmps(false);
+      }
+    };
+    fetchEmployees();
+  }, [userId]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (!form.employee_name.trim() || !form.start_date || !form.end_date) {
+    if (!form.employee_id || !form.start_date || !form.end_date) {
       setError("Please fill all required fields");
       return;
     }
@@ -41,7 +64,7 @@ const LeaveRequestPublic = () => {
       const { data, error: fnError } = await supabase.functions.invoke("submit-leave-request", {
         body: {
           user_id: userId,
-          employee_name: form.employee_name.trim(),
+          employee_id: form.employee_id,
           leave_type: form.leave_type,
           start_date: form.start_date,
           end_date: form.end_date,
@@ -84,7 +107,7 @@ const LeaveRequestPublic = () => {
             <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto mb-4" />
             <h2 className="text-xl font-bold mb-2">Leave Request Submitted!</h2>
             <p className="text-muted-foreground">Your leave request has been sent for approval.</p>
-            <Button className="mt-6" onClick={() => { setSubmitted(false); setForm({ employee_name: "", leave_type: "casual", start_date: "", end_date: "", reason: "" }); }}>
+            <Button className="mt-6" onClick={() => { setSubmitted(false); setForm({ employee_id: "", leave_type: "casual", start_date: "", end_date: "", reason: "" }); }}>
               Submit Another
             </Button>
           </CardContent>
@@ -101,7 +124,7 @@ const LeaveRequestPublic = () => {
             <CalendarDays className="h-8 w-8 text-primary" />
           </div>
           <CardTitle className="text-xl">Leave Request</CardTitle>
-          <p className="text-muted-foreground text-sm">Fill in the details to apply for leave</p>
+          <p className="text-muted-foreground text-sm">Select your name and fill in the details</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -112,19 +135,25 @@ const LeaveRequestPublic = () => {
               </div>
             )}
             <div>
-              <Label>Your Name (as registered) *</Label>
-              <Input
-                value={form.employee_name}
-                onChange={e => setForm(f => ({ ...f, employee_name: e.target.value }))}
-                placeholder="Enter your full name"
-                maxLength={100}
-              />
+              <Label>Select Your Name *</Label>
+              {loadingEmps ? (
+                <p className="text-sm text-muted-foreground py-2">Loading employees...</p>
+              ) : employees.length === 0 ? (
+                <p className="text-sm text-destructive py-2">No employees found</p>
+              ) : (
+                <Select value={form.employee_id} onValueChange={v => setForm(f => ({ ...f, employee_id: v }))}>
+                  <SelectTrigger><SelectValue placeholder="Select your name" /></SelectTrigger>
+                  <SelectContent className="bg-background z-50">
+                    {employees.map(e => <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             <div>
               <Label>Leave Type</Label>
               <Select value={form.leave_type} onValueChange={v => setForm(f => ({ ...f, leave_type: v }))}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-background z-50">
                   <SelectItem value="casual">Casual Leave</SelectItem>
                   <SelectItem value="sick">Sick Leave</SelectItem>
                   <SelectItem value="earned">Earned Leave</SelectItem>
@@ -151,7 +180,7 @@ const LeaveRequestPublic = () => {
                 maxLength={500}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={submitting}>
+            <Button type="submit" className="w-full" disabled={submitting || loadingEmps}>
               {submitting ? "Submitting..." : "Submit Leave Request"}
             </Button>
           </form>
