@@ -12,7 +12,6 @@ export interface SubUserInfo {
 }
 
 export const ALL_FEATURES = [
-  { key: "dashboard", label: "Dashboard" },
   { key: "inventory", label: "Inventory" },
   { key: "purchase-orders", label: "Purchase Orders" },
   { key: "goods-receipt", label: "Goods Receipt" },

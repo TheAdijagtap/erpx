@@ -12,7 +12,7 @@ const WHATSAPP_NUMBER = "919373751128";
 
 // Map route paths to feature keys for permission checking
 const ROUTE_TO_FEATURE: Record<string, string> = {
-  "/dashboard": "dashboard",
+  
   "/inventory": "inventory",
   "/purchase-orders": "purchase-orders",
   "/goods-receipt": "goods-receipt",
