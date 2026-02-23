@@ -146,14 +146,9 @@ const PayrollSettings = () => {
               <TableRow key={rule.id}>
                 <TableCell className="font-medium">{rule.name}</TableCell>
                 <TableCell>
-                  <Badge variant="outline">
-                    {rule.calculation_type === "fixed" ? "Fixed" : rule.calculation_type === "percentage" ? "% of Basic" : rule.calculation_type === "per_late_mark" ? "Per Late Mark" : "Per Half Day"}
-                  </Badge>
+                  <Badge variant="outline">{rule.calculation_type === "fixed" ? "Fixed" : "% of Basic"}</Badge>
                 </TableCell>
-                <TableCell>
-                  {rule.calculation_type === "percentage" ? `${rule.value}%` : formatINR(rule.value)}
-                  {(rule.calculation_type === "per_late_mark" || rule.calculation_type === "per_half_day") && " /occurrence"}
-                </TableCell>
+                <TableCell>{rule.calculation_type === "fixed" ? formatINR(rule.value) : `${rule.value}%`}</TableCell>
                 <TableCell>
                   <Badge variant={rule.gender_condition ? "secondary" : "outline"}>{genderLabel(rule.gender_condition)}</Badge>
                 </TableCell>
@@ -217,15 +212,13 @@ const PayrollSettings = () => {
                     <SelectContent>
                       <SelectItem value="fixed">Fixed Amount</SelectItem>
                       <SelectItem value="percentage">% of Basic Salary</SelectItem>
-                      <SelectItem value="per_late_mark">Per Late Mark</SelectItem>
-                      <SelectItem value="per_half_day">Per Half Day</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>{form.calculation_type === "percentage" ? "Percentage (%)" : "Amount (₹)"}</Label>
+                  <Label>{form.calculation_type === "fixed" ? "Amount (₹)" : "Percentage (%)"}</Label>
                   <Input type="number" value={form.value} onChange={e => setForm(f => ({ ...f, value: Number(e.target.value) }))} />
                 </div>
                 <div>
