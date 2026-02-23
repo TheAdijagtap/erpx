@@ -619,7 +619,7 @@ function CreateItemDialog({ children }: { children: React.ReactNode }) {
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.description || !formData.category) {
+    if (!formData.name) {
       toast({ title: "Error", description: "Please fill in all required fields.", variant: "destructive" as any });
       return;
     }
@@ -660,24 +660,22 @@ function CreateItemDialog({ children }: { children: React.ReactNode }) {
             />
           </div>
           <div>
-            <Label htmlFor="description">Description *</Label>
+            <Label htmlFor="description">Description</Label>
             <Input 
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Enter item description"
-              required
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="category">Category *</Label>
+              <Label htmlFor="category">Category</Label>
               <Input 
                 id="category"
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 placeholder="Enter category"
-                required
               />
             </div>
             <div>
