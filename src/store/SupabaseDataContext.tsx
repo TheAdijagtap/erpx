@@ -530,6 +530,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'inventory_transactions', filter: `user_id=eq.${eid}` }, debouncedRefresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${eid}` }, debouncedRefresh)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'scrap_notes', filter: `user_id=eq.${eid}` }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'employees', filter: `user_id=eq.${eid}` }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'leaves', filter: `user_id=eq.${eid}` }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance', filter: `user_id=eq.${eid}` }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'payslips', filter: `user_id=eq.${eid}` }, debouncedRefresh)
       .subscribe();
 
     return () => {
