@@ -23,6 +23,7 @@ export type Database = {
           employee_id: string
           id: string
           notes: string | null
+          overtime_hours: number | null
           status: string
           user_id: string
         }
@@ -34,6 +35,7 @@ export type Database = {
           employee_id: string
           id?: string
           notes?: string | null
+          overtime_hours?: number | null
           status?: string
           user_id: string
         }
@@ -45,6 +47,7 @@ export type Database = {
           employee_id?: string
           id?: string
           notes?: string | null
+          overtime_hours?: number | null
           status?: string
           user_id?: string
         }
