@@ -47,8 +47,10 @@ const Layout = () => {
   ];
 
   // Filter navigation based on sub-user permissions
+  // Dashboard is always accessible for sub-users
   const navigation = isSubUser
     ? allNavigation.filter(item => {
+        if (item.href === "/dashboard") return true; // Always show dashboard
         const featureKey = ROUTE_TO_FEATURE[item.href];
         return featureKey ? subUserPermissions.includes(featureKey) : false;
       })
