@@ -8,6 +8,7 @@ import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import LeaveRequestPublic from "./pages/LeaveRequestPublic";
 import { AuthProvider } from "./contexts/AuthContext";
 import { DataProvider } from "./store/SupabaseDataContext";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -87,6 +88,7 @@ const App = () => (
           <Routes>
             <Route index element={<Dashboard />} />
             <Route path="auth" element={<Auth />} />
+            <Route path="leave-request/:userId" element={<LeaveRequestPublic />} />
             
             <Route path="/" element={
               <ProtectedRoute>
