@@ -39,6 +39,8 @@ interface Payslip {
   employee_bank_account?: string;
   employee_bank_ifsc?: string;
   employee_uan?: string;
+  ot_hours?: number;
+  ot_amount?: number;
 }
 
 interface Employee {
@@ -54,6 +56,7 @@ interface Employee {
   bank_ifsc_code: string | null;
   uan: string | null;
   gender: string | null;
+  ot_pay: number;
 }
 
 interface PayrollRule {
@@ -98,13 +101,13 @@ const Payroll = () => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [form, setForm] = useState({
     employee_id: "", days_worked: 30, total_days: 30, leaves_taken: 0,
-    basic_salary: 0, allowances: 0, deductions: 0, notes: "",
+    basic_salary: 0, allowances: 0, deductions: 0, notes: "", ot_hours: 0, ot_pay: 0,
   });
 
   const fetchData = useCallback(async () => {
     if (!user) return;
     const [{ data: emps }, { data: slips }, { data: rules }] = await Promise.all([
-      supabase.from("employees").select("id, name, basic_salary, allowances, deductions, designation, department, bank_name, bank_account_number, bank_ifsc_code, uan, gender").eq("status", "active").order("name"),
+      supabase.from("employees").select("id, name, basic_salary, allowances, deductions, designation, department, bank_name, bank_account_number, bank_ifsc_code, uan, gender, ot_pay").eq("status", "active").order("name"),
       supabase.from("payslips").select("*").order("year", { ascending: false }).order("month", { ascending: false }),
       supabase.from("payroll_rules").select("*"),
     ]);
@@ -136,28 +139,29 @@ const Payroll = () => {
 
     const { data: att } = await supabase
       .from("attendance")
-      .select("status")
+      .select("status, overtime_hours")
       .eq("employee_id", empId)
       .gte("date", startDate)
       .lte("date", endDate);
 
-    let present = 0, absent = 0, halfDay = 0, onLeave = 0;
+    let present = 0, absent = 0, halfDay = 0, onLeave = 0, totalOT = 0;
     (att || []).forEach(r => {
       if (r.status === "present" || r.status === "late_mark") present++;
       else if (r.status === "absent") absent++;
       else if (r.status === "half_day") halfDay++;
       else if (r.status === "on_leave") onLeave++;
+      totalOT += Number(r.overtime_hours) || 0;
     });
 
     const daysWorked = present + halfDay * 0.5;
     const leavesTaken = onLeave + absent;
-    return { daysWorked, leavesTaken, totalDays: daysInMonth };
+    return { daysWorked, leavesTaken, totalDays: daysInMonth, totalOT };
   }, []);
 
   const onEmployeeSelect = async (empId: string) => {
     const emp = employees.find(e => e.id === empId);
     if (emp) {
-      const { daysWorked, leavesTaken, totalDays } = await fetchAttendance(empId, selectedMonth, selectedYear);
+      const { daysWorked, leavesTaken, totalDays, totalOT } = await fetchAttendance(empId, selectedMonth, selectedYear);
       const { totalAllowances, totalDeductions } = calcRulesForEmployee(payrollRules, emp.gender, emp.basic_salary);
       const allowances = totalAllowances > 0 ? totalAllowances : Number(emp.allowances) || 0;
       const deductions = totalDeductions > 0 ? totalDeductions : Number(emp.deductions) || 0;
@@ -165,11 +169,13 @@ const Payroll = () => {
         ...f, employee_id: empId,
         basic_salary: Number(emp.basic_salary) || 0, allowances, deductions,
         days_worked: daysWorked, total_days: totalDays, leaves_taken: leavesTaken,
+        ot_hours: totalOT, ot_pay: Number(emp.ot_pay) || 0,
       }));
     }
   };
 
-  const grossSalary = (form.basic_salary + form.allowances) * (form.days_worked / form.total_days);
+  const otAmount = form.ot_hours * form.ot_pay;
+  const grossSalary = (form.basic_salary + form.allowances) * (form.days_worked / form.total_days) + otAmount;
   const netSalary = grossSalary - form.deductions;
 
   const handleSubmit = async () => {
@@ -195,7 +201,7 @@ const Payroll = () => {
     }
     toast.success("Payslip generated");
     setDialogOpen(false);
-    setForm({ employee_id: "", days_worked: 30, total_days: 30, leaves_taken: 0, basic_salary: 0, allowances: 0, deductions: 0, notes: "" });
+    setForm({ employee_id: "", days_worked: 30, total_days: 30, leaves_taken: 0, basic_salary: 0, allowances: 0, deductions: 0, notes: "", ot_hours: 0, ot_pay: 0 });
     fetchData();
   };
 
@@ -207,12 +213,13 @@ const Payroll = () => {
 
     const activeRules = payrollRules.filter(r => r.is_active);
     const inserts = await Promise.all(toGenerate.map(async (emp) => {
-      const { daysWorked, leavesTaken, totalDays } = await fetchAttendance(emp.id, selectedMonth, selectedYear);
+      const { daysWorked, leavesTaken, totalDays, totalOT } = await fetchAttendance(emp.id, selectedMonth, selectedYear);
       const { totalAllowances, totalDeductions } = calcRulesForEmployee(activeRules, emp.gender, emp.basic_salary);
       const allowances = totalAllowances > 0 ? totalAllowances : Number(emp.allowances) || 0;
       const deductions = totalDeductions > 0 ? totalDeductions : Number(emp.deductions) || 0;
       const basicSalary = Number(emp.basic_salary) || 0;
-      const gross = (basicSalary + allowances) * (daysWorked / totalDays);
+      const otAmount = totalOT * (Number(emp.ot_pay) || 0);
+      const gross = (basicSalary + allowances) * (daysWorked / totalDays) + otAmount;
       const net = gross - deductions;
       return {
         user_id: user.id, employee_id: emp.id, month: selectedMonth, year: selectedYear,
@@ -243,11 +250,14 @@ const Payroll = () => {
     fetchData();
   };
 
-  const handleDownloadPayslip = (p: Payslip) => {
+  const handleDownloadPayslip = async (p: Payslip) => {
     const emp = employees.find(e => e.id === p.employee_id);
     const { allowanceItems, deductionItems } = emp
       ? calcRulesForEmployee(payrollRules, emp.gender, p.basic_salary)
       : { allowanceItems: [], deductionItems: [] };
+    const { totalOT } = await fetchAttendance(p.employee_id, p.month, p.year);
+    const otPay = Number(emp?.ot_pay) || 0;
+    const computedOtAmount = totalOT * otPay;
     downloadPayslip(
       {
         employee_name: p.employee_name || "Unknown",
@@ -263,6 +273,7 @@ const Payroll = () => {
         deduction_items: deductionItems.length > 0 ? deductionItems : undefined,
         days_worked: p.days_worked, total_days: p.total_days, leaves_taken: p.leaves_taken,
         gross_salary: p.gross_salary, net_salary: p.net_salary, status: p.status, paid_date: p.paid_date,
+        ot_hours: totalOT > 0 ? totalOT : undefined, ot_amount: computedOtAmount > 0 ? computedOtAmount : undefined,
       },
       { name: businessInfo.name, address: businessInfo.address, logo: businessInfo.logo, signature: businessInfo.signature, phone: businessInfo.phone, email: businessInfo.email }
     );
@@ -271,11 +282,14 @@ const Payroll = () => {
   const handleDownloadAll = async () => {
     if (filteredSlips.length === 0) { toast.info("No payslips to download"); return; }
     toast.info("Generating ZIP file...");
-    const payslipData = filteredSlips.map(p => {
+    const payslipData = await Promise.all(filteredSlips.map(async (p) => {
       const emp = employees.find(e => e.id === p.employee_id);
       const { allowanceItems, deductionItems } = emp
         ? calcRulesForEmployee(payrollRules, emp.gender, p.basic_salary)
         : { allowanceItems: [], deductionItems: [] };
+      const { totalOT } = await fetchAttendance(p.employee_id, p.month, p.year);
+      const otPay = Number(emp?.ot_pay) || 0;
+      const computedOtAmount = totalOT * otPay;
       return {
         employee_name: p.employee_name || "Unknown",
         employee_designation: p.employee_designation,
@@ -290,8 +304,9 @@ const Payroll = () => {
         deduction_items: deductionItems.length > 0 ? deductionItems : undefined,
         days_worked: p.days_worked, total_days: p.total_days, leaves_taken: p.leaves_taken,
         gross_salary: p.gross_salary, net_salary: p.net_salary, status: p.status, paid_date: p.paid_date,
+        ot_hours: totalOT > 0 ? totalOT : undefined, ot_amount: computedOtAmount > 0 ? computedOtAmount : undefined,
       };
-    });
+    }));
     await downloadAllPayslipsAsZip(
       payslipData,
       { name: businessInfo.name, address: businessInfo.address, logo: businessInfo.logo, signature: businessInfo.signature, phone: businessInfo.phone, email: businessInfo.email },
@@ -343,7 +358,12 @@ const Payroll = () => {
                   <div><Label>Allowances</Label><Input type="number" value={form.allowances} onChange={e => setForm(f => ({ ...f, allowances: Number(e.target.value) }))} /></div>
                   <div><Label>Deductions</Label><Input type="number" value={form.deductions} onChange={e => setForm(f => ({ ...f, deductions: Number(e.target.value) }))} /></div>
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div><Label>OT Hours</Label><Input type="number" value={form.ot_hours} onChange={e => setForm(f => ({ ...f, ot_hours: Number(e.target.value) }))} /></div>
+                  <div><Label>OT Pay/hr</Label><Input type="number" value={form.ot_pay} onChange={e => setForm(f => ({ ...f, ot_pay: Number(e.target.value) }))} /></div>
+                </div>
                 <div className="bg-muted p-3 rounded-md space-y-1">
+                  {otAmount > 0 && <div className="flex justify-between text-sm"><span>OT Amount ({form.ot_hours}h × {formatINR(form.ot_pay)}):</span><span className="font-medium">{formatINR(otAmount)}</span></div>}
                   <div className="flex justify-between text-sm"><span>Gross Salary:</span><span className="font-medium">{formatINR(grossSalary)}</span></div>
                   <div className="flex justify-between text-sm font-bold"><span>Net Salary:</span><span>{formatINR(netSalary)}</span></div>
                 </div>

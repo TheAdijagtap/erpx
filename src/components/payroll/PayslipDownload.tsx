@@ -30,6 +30,8 @@ interface PayslipData {
   net_salary: number;
   status: string;
   paid_date: string | null;
+  ot_hours?: number;
+  ot_amount?: number;
 }
 
 interface BusinessData {
@@ -156,6 +158,7 @@ export function generatePayslipHTML(payslip: PayslipData, business: BusinessData
       ${(payslip.allowance_items && payslip.allowance_items.length > 0)
         ? payslip.allowance_items.map(item => `<tr><td>${escapeHtml(item.name)}</td><td class="amount">${formatINR(item.amount)}</td></tr>`).join('')
         : `<tr><td>Allowances</td><td class="amount">${formatINR(payslip.allowances)}</td></tr>`}
+      ${(payslip.ot_hours && payslip.ot_hours > 0) ? `<tr><td>Overtime (${payslip.ot_hours} hrs)</td><td class="amount">${formatINR(payslip.ot_amount || 0)}</td></tr>` : ''}
       <tr class="summary-row"><td>Gross Salary</td><td class="amount">${formatINR(payslip.gross_salary)}</td></tr>
     </tbody>
   </table>

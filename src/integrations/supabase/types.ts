@@ -166,6 +166,7 @@ export type Database = {
           joining_date: string | null
           name: string
           notes: string | null
+          ot_pay: number | null
           phone: string | null
           status: string
           uan: string | null
@@ -190,6 +191,7 @@ export type Database = {
           joining_date?: string | null
           name: string
           notes?: string | null
+          ot_pay?: number | null
           phone?: string | null
           status?: string
           uan?: string | null
@@ -214,6 +216,7 @@ export type Database = {
           joining_date?: string | null
           name?: string
           notes?: string | null
+          ot_pay?: number | null
           phone?: string | null
           status?: string
           uan?: string | null
