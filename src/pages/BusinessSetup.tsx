@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Building, Upload, Save, Settings, X } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
 import { toast } from "@/hooks/use-toast";
+import SubUserManagement from "@/components/SubUserManagement";
 
 interface LocalBusinessInfo {
   name: string;
@@ -22,7 +23,7 @@ interface LocalBusinessInfo {
 }
 
 const BusinessSetup = () => {
-  const { businessInfo, setBusinessInfo } = useData();
+  const { businessInfo, setBusinessInfo, isSubUser } = useData();
   
   // Local state for form inputs to prevent lag
   const [localInfo, setLocalInfo] = useState<LocalBusinessInfo>({
@@ -280,6 +281,9 @@ const BusinessSetup = () => {
           </Card>
         </div>
       </div>
+
+      {/* Sub-User Management - only for main users */}
+      {!isSubUser && <SubUserManagement />}
     </div>
   );
 };

@@ -1162,6 +1162,48 @@ export type Database = {
         }
         Relationships: []
       }
+      sub_user_links: {
+        Row: {
+          created_at: string
+          id: string
+          parent_user_id: string
+          sub_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          parent_user_id: string
+          sub_user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          parent_user_id?: string
+          sub_user_id?: string
+        }
+        Relationships: []
+      }
+      sub_user_permissions: {
+        Row: {
+          created_at: string
+          feature: string
+          id: string
+          sub_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          feature: string
+          id?: string
+          sub_user_id: string
+        }
+        Update: {
+          created_at?: string
+          feature?: string
+          id?: string
+          sub_user_id?: string
+        }
+        Relationships: []
+      }
       suppliers: {
         Row: {
           address: string | null
@@ -1276,7 +1318,12 @@ export type Database = {
     }
     Functions: {
       add_admin_by_email: { Args: { admin_email: string }; Returns: undefined }
+      get_data_owner_id: { Args: { _user_id: string }; Returns: string }
       get_database_size: { Args: never; Returns: Json }
+      has_feature_access: {
+        Args: { _feature: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1284,6 +1331,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_sub_user: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "user"

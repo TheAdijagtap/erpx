@@ -33,6 +33,9 @@ interface DataContextValue {
   trialStartDate: Date | null;
   subscriptionEndDate: Date | null;
   loading: boolean;
+  isSubUser: boolean;
+  effectiveUserId: string;
+  subUserPermissions: string[];
 
   // Inventory
   addItem: (item: Omit<InventoryItem, "id" | "createdAt" | "updatedAt">) => Promise<string>;
@@ -114,6 +117,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [gstSettings, setGstSettingsState] = useState<GSTSettings>(defaultGstSettings);
   const [trialStartDate, setTrialStartDate] = useState<Date | null>(null);
   const [subscriptionEndDate, setSubscriptionEndDate] = useState<Date | null>(null);
+  const [isSubUser, setIsSubUser] = useState(false);
+  const [effectiveUserId, setEffectiveUserId] = useState("");
+  const [subUserPermissions, setSubUserPermissions] = useState<string[]>([]);
 
   // Helper to calculate totals
   const calcTotals = (items: Array<{ quantity: number; unitPrice: number }>, applyGST: boolean, additionalCharges: Array<{ amount: number }> = [], customGstRate?: number) => {
@@ -146,6 +152,29 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     setLoading(true);
     try {
+      // First, determine if user is a sub-user
+      const { data: subLink } = await supabase
+        .from("sub_user_links")
+        .select("parent_user_id")
+        .eq("sub_user_id", user.id)
+        .maybeSingle();
+
+      const isSub = !!subLink;
+      const ownerId = subLink ? subLink.parent_user_id : user.id;
+      setIsSubUser(isSub);
+      setEffectiveUserId(ownerId);
+
+      // Fetch sub-user permissions if applicable
+      if (isSub) {
+        const { data: perms } = await supabase
+          .from("sub_user_permissions")
+          .select("feature")
+          .eq("sub_user_id", user.id);
+        setSubUserPermissions((perms || []).map((p: any) => p.feature));
+      } else {
+        setSubUserPermissions([]);
+      }
+
       // Execute ALL queries in parallel simultaneously - no phases, maximum speed
       const [
         { data: profile },
@@ -158,7 +187,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         { data: custs },
         { data: trans }
       ] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
+        supabase.from("profiles").select("*").eq("id", ownerId).maybeSingle(),
         supabase.from("inventory_items").select("id,name,hsn_code,description,category,current_stock,reorder_level,unit_price,unit,supplier_id,item_code,make,mpn,created_at,updated_at").order("created_at", { ascending: false }).limit(500),
         supabase.from("suppliers").select("id,name,contact_person,email,phone,address,gst_number,created_at,payment_terms,notes").order("created_at", { ascending: false }).limit(200),
         supabase.from("purchase_orders").select("id,po_number,supplier_id,supplier_name,date,expected_delivery,status,subtotal,tax_amount,total,notes,payment_terms,created_at,purchase_order_items(id,item_id,item_name,description,hsn_code,quantity,rate,amount,unit),purchase_order_additional_charges(id,name,amount)").order("created_at", { ascending: false }).limit(200),
@@ -476,7 +505,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   // Real-time subscriptions for cross-device sync
   useEffect(() => {
-    if (!user) return;
+    if (!user || !effectiveUserId) return;
 
     // Debounce refresh to avoid multiple rapid refreshes from related table changes
     let refreshTimer: ReturnType<typeof setTimeout> | null = null;
@@ -488,32 +517,33 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       }, 500);
     };
 
+    const eid = effectiveUserId;
     const channel = supabase
       .channel('realtime-sync')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'inventory_items', filter: `user_id=eq.${user.id}` }, debouncedRefresh)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'suppliers', filter: `user_id=eq.${user.id}` }, debouncedRefresh)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'purchase_orders', filter: `user_id=eq.${user.id}` }, debouncedRefresh)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'goods_receipts', filter: `user_id=eq.${user.id}` }, debouncedRefresh)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'proforma_invoices', filter: `user_id=eq.${user.id}` }, debouncedRefresh)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'proforma_products', filter: `user_id=eq.${user.id}` }, debouncedRefresh)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'customers', filter: `user_id=eq.${user.id}` }, debouncedRefresh)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'inventory_transactions', filter: `user_id=eq.${user.id}` }, debouncedRefresh)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` }, debouncedRefresh)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'scrap_notes', filter: `user_id=eq.${user.id}` }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'inventory_items', filter: `user_id=eq.${eid}` }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'suppliers', filter: `user_id=eq.${eid}` }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'purchase_orders', filter: `user_id=eq.${eid}` }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'goods_receipts', filter: `user_id=eq.${eid}` }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'proforma_invoices', filter: `user_id=eq.${eid}` }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'proforma_products', filter: `user_id=eq.${eid}` }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'customers', filter: `user_id=eq.${eid}` }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'inventory_transactions', filter: `user_id=eq.${eid}` }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${eid}` }, debouncedRefresh)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'scrap_notes', filter: `user_id=eq.${eid}` }, debouncedRefresh)
       .subscribe();
 
     return () => {
       if (refreshTimer) clearTimeout(refreshTimer);
       supabase.removeChannel(channel);
     };
-  }, [user, refreshData]);
+  }, [user, effectiveUserId, refreshData]);
 
   // Inventory operations
   const addItem = async (item: Omit<InventoryItem, "id" | "createdAt" | "updatedAt">) => {
     if (!user) throw new Error("Not authenticated");
     
     const { data, error } = await supabase.from("inventory_items").insert({
-      user_id: user.id,
+      user_id: effectiveUserId || user.id,
       name: item.name,
       description: item.description,
       category: item.category,
@@ -584,7 +614,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     
     // Record the transaction in database
     const { data: transData, error: transError } = await supabase.from("inventory_transactions").insert({
-      user_id: user.id,
+      user_id: effectiveUserId || user.id,
       item_id: itemId,
       item_name: item.name,
       type,
@@ -634,7 +664,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (!user) throw new Error("Not authenticated");
 
     const { data, error } = await supabase.from("suppliers").insert({
-      user_id: user.id,
+      user_id: effectiveUserId || user.id,
       name: supplier.name,
       contact_person: supplier.contactPerson,
       email: supplier.email,
@@ -685,7 +715,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     const totals = calcTotals(po.items.map(i => ({ quantity: i.quantity, unitPrice: i.unitPrice })), po.applyGST ?? true, po.additionalCharges, po.gstRate);
 
     const { data, error } = await supabase.from("purchase_orders").insert({
-      user_id: user.id,
+      user_id: effectiveUserId || user.id,
       po_number: po.poNumber,
       supplier_id: po.supplierId,
       supplier_name: po.supplier.name,
@@ -772,7 +802,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     const totals = calcTotals(gr.items.map(i => ({ quantity: i.receivedQuantity, unitPrice: i.unitPrice })), gr.applyGST ?? true, gr.additionalCharges, gr.gstRate);
 
     const { data, error } = await supabase.from("goods_receipts").insert({
-      user_id: user.id,
+      user_id: effectiveUserId || user.id,
       gr_number: gr.grNumber,
       purchase_order_id: gr.poId || null,
       supplier_id: gr.supplierId,
@@ -817,7 +847,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           await supabase.from("inventory_items").update({ current_stock: newStock }).eq("id", item.itemId);
           
           transactionInserts.push({
-            user_id: user.id,
+            user_id: effectiveUserId || user.id,
             item_id: item.itemId,
             item_name: currentItem.name,
             type: "IN",
@@ -924,7 +954,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     const totals = calcTotals(pi.items.map(i => ({ quantity: i.quantity, unitPrice: i.unitPrice })), pi.applyGST ?? true, pi.additionalCharges, pi.gstRate);
 
     const { data, error } = await supabase.from("proforma_invoices").insert({
-      user_id: user.id,
+      user_id: effectiveUserId || user.id,
       invoice_number: pi.proformaNumber,
       customer_name: pi.buyerInfo.name,
       customer_address: pi.buyerInfo.address,
@@ -1058,7 +1088,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (!user) throw new Error("Not authenticated");
 
     const { data, error } = await supabase.from("proforma_products").insert({
-      user_id: user.id,
+      user_id: effectiveUserId || user.id,
       name: product.name,
       description: product.description,
       unit: product.unit,
@@ -1105,7 +1135,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (!user) throw new Error("Not authenticated");
 
     const { data, error } = await supabase.from("customers").insert({
-      user_id: user.id,
+      user_id: effectiveUserId || user.id,
       name: customer.name,
       email: customer.email,
       phone: customer.phone,
@@ -1156,7 +1186,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (!user) throw new Error("Not authenticated");
 
     const { data } = await supabase.from("customer_activities").insert({
-      user_id: user.id,
+      user_id: effectiveUserId || user.id,
       customer_id: activity.customerId,
       type: activity.type,
       description: activity.description,
@@ -1190,7 +1220,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       bank_name: info.bankDetails?.bankName || null,
       bank_account_number: info.bankDetails?.accountNumber || null,
       bank_ifsc_code: info.bankDetails?.ifscCode || null,
-    }).eq("id", user.id);
+    }).eq("id", effectiveUserId || user.id);
 
     if (error) throw error;
     setBusinessInfoState(info);
@@ -1216,6 +1246,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     trialStartDate,
     subscriptionEndDate,
     loading,
+    isSubUser,
+    effectiveUserId,
+    subUserPermissions,
     addItem,
     updateItem,
     transactItem,
@@ -1257,6 +1290,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     trialStartDate,
     subscriptionEndDate,
     loading,
+    isSubUser,
+    effectiveUserId,
+    subUserPermissions,
     refreshData,
   ]);
 

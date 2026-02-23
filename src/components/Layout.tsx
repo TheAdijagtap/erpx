@@ -10,13 +10,28 @@ import { TrialBanner, TrialStatusBadge, TrialExpiredOverlay, calculateTrialStatu
 
 const WHATSAPP_NUMBER = "919373751128";
 
+// Map route paths to feature keys for permission checking
+const ROUTE_TO_FEATURE: Record<string, string> = {
+  "/dashboard": "dashboard",
+  "/inventory": "inventory",
+  "/purchase-orders": "purchase-orders",
+  "/goods-receipt": "goods-receipt",
+  "/proforma": "proforma",
+  "/suppliers": "suppliers",
+  "/employees": "employees",
+  "/attendance": "attendance",
+  "/leaves": "leaves",
+  "/payroll": "payroll",
+  "/business": "business",
+};
+
 const Layout = () => {
   const { user, signOut } = useAuth();
-  const { trialStartDate, subscriptionEndDate } = useData();
+  const { trialStartDate, subscriptionEndDate, isSubUser, subUserPermissions } = useData();
   const { isExpired } = calculateTrialStatus(trialStartDate, subscriptionEndDate);
   const { isAdmin } = useAdminCheck();
 
-  const navigation = [
+  const allNavigation = [
     { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
     { name: "Inventory", href: "/inventory", icon: Package },
     { name: "Purchase Orders", href: "/purchase-orders", icon: ShoppingCart },
@@ -30,6 +45,14 @@ const Layout = () => {
     { name: "Business Setup", href: "/business", icon: Building },
     ...(isAdmin ? [{ name: "Admin Panel", href: "/admin", icon: Shield }] : []),
   ];
+
+  // Filter navigation based on sub-user permissions
+  const navigation = isSubUser
+    ? allNavigation.filter(item => {
+        const featureKey = ROUTE_TO_FEATURE[item.href];
+        return featureKey ? subUserPermissions.includes(featureKey) : false;
+      })
+    : allNavigation;
 
   const handleSignOut = async () => {
     await signOut();
