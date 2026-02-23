@@ -143,7 +143,7 @@ const Payroll = () => {
 
     let present = 0, absent = 0, halfDay = 0, onLeave = 0;
     (att || []).forEach(r => {
-      if (r.status === "present") present++;
+      if (r.status === "present" || r.status === "late_mark") present++;
       else if (r.status === "absent") absent++;
       else if (r.status === "half_day") halfDay++;
       else if (r.status === "on_leave") onLeave++;
