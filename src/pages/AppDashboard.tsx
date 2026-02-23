@@ -10,37 +10,53 @@ import { toast } from "@/hooks/use-toast";
 import { formatINR } from "@/lib/format";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
+// Map features to quick action buttons
+const FEATURE_QUICK_ACTIONS: Record<string, { label: string; icon: any; route: string; color: string }> = {
+  inventory: { label: "Add New Inventory Item", icon: Plus, route: "/inventory", color: "text-blue-600" },
+  "purchase-orders": { label: "Create Purchase Order", icon: ShoppingCart, route: "/purchase-orders", color: "text-orange-600" },
+  "goods-receipt": { label: "Record Goods Receipt", icon: FileText, route: "/goods-receipt", color: "text-purple-600" },
+  proforma: { label: "Generate Proforma Invoice", icon: FileText, route: "/proforma", color: "text-green-600" },
+  suppliers: { label: "Manage Suppliers", icon: Users, route: "/suppliers", color: "text-cyan-600" },
+};
+
 const AppDashboard = memo(() => {
   const navigate = useNavigate();
-  const { inventoryItems: items, purchaseOrders, goodsReceipts, proformaInvoices } = useData();
+  const { inventoryItems: items, purchaseOrders, goodsReceipts, proformaInvoices, isSubUser, subUserPermissions } = useData();
+
+  // Helper to check if a feature is accessible
+  const hasAccess = useCallback((feature: string) => {
+    if (!isSubUser) return true;
+    return subUserPermissions.includes(feature);
+  }, [isSubUser, subUserPermissions]);
 
   const stats = useMemo(() => {
-    const totalItems = items.length;
-    const totalInventoryValue = items.reduce(
-      (sum, item) => sum + (item.currentStock * item.unitPrice),
-      0
-    );
-    const activePurchaseOrders = purchaseOrders.filter(
-      po => po.status !== 'CANCELLED' && po.status !== 'RECEIVED'
-    ).length;
-    const lowStockItems = items.filter(
-      item => item.currentStock <= item.minStock
-    );
+    const totalItems = hasAccess("inventory") ? items.length : 0;
+    const totalInventoryValue = hasAccess("inventory")
+      ? items.reduce((sum, item) => sum + (item.currentStock * item.unitPrice), 0)
+      : 0;
+    const activePurchaseOrders = hasAccess("purchase-orders")
+      ? purchaseOrders.filter(po => po.status !== 'CANCELLED' && po.status !== 'RECEIVED').length
+      : 0;
+    const lowStockItems = hasAccess("inventory")
+      ? items.filter(item => item.currentStock <= item.minStock)
+      : [];
 
     return {
       totalItems,
       totalInventoryValue,
       activePurchaseOrders,
       lowStockCount: lowStockItems.length,
-      lowStockItems: lowStockItems.slice(0, 10), // Top 10 low stock items
+      lowStockItems: lowStockItems.slice(0, 10),
     };
-  }, [items, purchaseOrders]);
+  }, [items, purchaseOrders, hasAccess]);
 
   // Generate monthly purchase vs sales data
   const chartData = useMemo(() => {
+    const showPurchases = hasAccess("purchase-orders");
+    const showSales = hasAccess("proforma");
+    if (!showPurchases && !showSales) return [];
+
     const months: { [key: string]: { name: string; purchases: number; sales: number } } = {};
-    
-    // Get last 6 months
     const now = new Date();
     for (let i = 5; i >= 0; i--) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -49,73 +65,51 @@ const AppDashboard = memo(() => {
       months[key] = { name: monthName, purchases: 0, sales: 0 };
     }
 
-    // Sum purchases from purchase orders
-    purchaseOrders.forEach(po => {
-      const date = new Date(po.date);
-      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      if (months[key]) {
-        months[key].purchases += po.total;
-      }
-    });
+    if (showPurchases) {
+      purchaseOrders.forEach(po => {
+        const date = new Date(po.date);
+        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        if (months[key]) months[key].purchases += po.total;
+      });
+    }
 
-    // Sum sales from proforma invoices
-    proformaInvoices.forEach(pi => {
-      const date = new Date(pi.date);
-      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      if (months[key]) {
-        months[key].sales += pi.total;
-      }
-    });
+    if (showSales) {
+      proformaInvoices.forEach(pi => {
+        const date = new Date(pi.date);
+        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        if (months[key]) months[key].sales += pi.total;
+      });
+    }
 
     return Object.values(months);
-  }, [purchaseOrders, proformaInvoices]);
+  }, [purchaseOrders, proformaInvoices, hasAccess]);
 
   const recentActivity = useMemo(() => {
-    const activities = [];
-    
-    // Get recent POs (last 5)
-    const recentPOs = [...purchaseOrders]
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 3);
-    
-    recentPOs.forEach(po => {
-      activities.push({
-        type: 'PO',
-        description: `Purchase Order ${po.poNumber} - ${po.supplier.name}`,
-        date: po.date,
-      });
-    });
+    const activities: Array<{ type: string; description: string; date: Date }> = [];
 
-    // Get recent GRs (last 5)
-    const recentGRs = [...goodsReceipts]
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 3);
-    
-    recentGRs.forEach(gr => {
-      activities.push({
-        type: 'GR',
-        description: `Goods Receipt ${gr.grNumber} - ${gr.supplier.name}`,
-        date: gr.date,
-      });
-    });
+    if (hasAccess("purchase-orders")) {
+      [...purchaseOrders].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 3).forEach(po => {
+          activities.push({ type: 'PO', description: `Purchase Order ${po.poNumber} - ${po.supplier.name}`, date: po.date });
+        });
+    }
 
-    // Get recent Proforma Invoices
-    const recentPIs = [...proformaInvoices]
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 2);
-    
-    recentPIs.forEach(pi => {
-      activities.push({
-        type: 'PI',
-        description: `Proforma Invoice ${pi.proformaNumber} - ${pi.buyerInfo.name}`,
-        date: pi.date,
-      });
-    });
+    if (hasAccess("goods-receipt")) {
+      [...goodsReceipts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 3).forEach(gr => {
+          activities.push({ type: 'GR', description: `Goods Receipt ${gr.grNumber} - ${gr.supplier.name}`, date: gr.date });
+        });
+    }
 
-    return activities
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 5);
-  }, [purchaseOrders, goodsReceipts, proformaInvoices]);
+    if (hasAccess("proforma")) {
+      [...proformaInvoices].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 2).forEach(pi => {
+          activities.push({ type: 'PI', description: `Proforma Invoice ${pi.proformaNumber} - ${pi.buyerInfo.name}`, date: pi.date });
+        });
+    }
+
+    return activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
+  }, [purchaseOrders, goodsReceipts, proformaInvoices, hasAccess]);
 
   const exportLowStockItems = useCallback(() => {
     const csvContent = [
@@ -124,13 +118,9 @@ const AppDashboard = memo(() => {
         const stockPercentage = ((item.currentStock / item.minStock) * 100).toFixed(0);
         const isCritical = item.currentStock < item.minStock * 0.5;
         return [
-          `"${item.name}"`,
-          `"${item.description || ''}"`,
-          `"${item.category}"`,
-          `${item.currentStock} ${item.unit}`,
-          `${item.minStock} ${item.unit}`,
-          `${stockPercentage}%`,
-          isCritical ? 'Critical' : 'Low'
+          `"${item.name}"`, `"${item.description || ''}"`, `"${item.category}"`,
+          `${item.currentStock} ${item.unit}`, `${item.minStock} ${item.unit}`,
+          `${stockPercentage}%`, isCritical ? 'Critical' : 'Low'
         ].join(',');
       })
     ].join('\n');
@@ -143,6 +133,12 @@ const AppDashboard = memo(() => {
     toast({ title: "Success", description: "Low stock items exported successfully!" });
   }, [stats.lowStockItems]);
 
+  // Filter quick actions based on permissions
+  const quickActions = useMemo(() => {
+    const allActions = ["inventory", "purchase-orders", "goods-receipt", "proforma", "suppliers"];
+    return allActions.filter(f => hasAccess(f)).map(f => FEATURE_QUICK_ACTIONS[f]);
+  }, [hasAccess]);
+
   return (
     <div className="space-y-6">
       <div>
@@ -151,109 +147,109 @@ const AppDashboard = memo(() => {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Items</CardTitle>
-            <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-              <Package className="h-4 w-4 text-blue-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalItems}</div>
-            <p className="text-xs text-muted-foreground">Items in inventory</p>
-          </CardContent>
-        </Card>
+        {hasAccess("inventory") && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Items</CardTitle>
+              <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                <Package className="h-4 w-4 text-blue-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalItems}</div>
+              <p className="text-xs text-muted-foreground">Items in inventory</p>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Purchase Orders</CardTitle>
-            <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center">
-              <ShoppingCart className="h-4 w-4 text-orange-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.activePurchaseOrders}</div>
-            <p className="text-xs text-muted-foreground">Active orders</p>
-          </CardContent>
-        </Card>
+        {hasAccess("purchase-orders") && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Purchase Orders</CardTitle>
+              <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center">
+                <ShoppingCart className="h-4 w-4 text-orange-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.activePurchaseOrders}</div>
+              <p className="text-xs text-muted-foreground">Active orders</p>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Inventory Value</CardTitle>
-            <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-              <DollarSign className="h-4 w-4 text-green-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatINR(stats.totalInventoryValue)}</div>
-            <p className="text-xs text-muted-foreground">Overall inventory price</p>
-          </CardContent>
-        </Card>
+        {hasAccess("inventory") && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Inventory Value</CardTitle>
+              <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+                <DollarSign className="h-4 w-4 text-green-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatINR(stats.totalInventoryValue)}</div>
+              <p className="text-xs text-muted-foreground">Overall inventory price</p>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Low Stock Items</CardTitle>
-            <div className="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center">
-              <AlertCircle className="h-4 w-4 text-red-600" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.lowStockCount}</div>
-            <p className="text-xs text-muted-foreground">Items need restock</p>
-          </CardContent>
-        </Card>
+        {hasAccess("inventory") && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Low Stock Items</CardTitle>
+              <div className="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center">
+                <AlertCircle className="h-4 w-4 text-red-600" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.lowStockCount}</div>
+              <p className="text-xs text-muted-foreground">Items need restock</p>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Purchase vs Sales Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
-              <TrendingUp className="h-4 w-4 text-purple-600" />
+      {chartData.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
+                <TrendingUp className="h-4 w-4 text-purple-600" />
+              </div>
+              Purchase vs Sales Trend
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="name" className="text-xs" />
+                  <YAxis className="text-xs" tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`} />
+                  <Tooltip 
+                    formatter={(value: number) => formatINR(value)}
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--background))', 
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }}
+                  />
+                  <Legend />
+                  {hasAccess("purchase-orders") && (
+                    <Line type="monotone" dataKey="purchases" stroke="#f97316" strokeWidth={2} dot={{ fill: '#f97316', strokeWidth: 2 }} name="Purchases" />
+                  )}
+                  {hasAccess("proforma") && (
+                    <Line type="monotone" dataKey="sales" stroke="#22c55e" strokeWidth={2} dot={{ fill: '#22c55e', strokeWidth: 2 }} name="Sales" />
+                  )}
+                </LineChart>
+              </ResponsiveContainer>
             </div>
-            Purchase vs Sales Trend
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis dataKey="name" className="text-xs" />
-                <YAxis className="text-xs" tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`} />
-                <Tooltip 
-                  formatter={(value: number) => formatINR(value)}
-                  contentStyle={{ 
-                    backgroundColor: 'hsl(var(--background))', 
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px'
-                  }}
-                />
-                <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="purchases" 
-                  stroke="#f97316" 
-                  strokeWidth={2}
-                  dot={{ fill: '#f97316', strokeWidth: 2 }}
-                  name="Purchases"
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="sales" 
-                  stroke="#22c55e" 
-                  strokeWidth={2}
-                  dot={{ fill: '#22c55e', strokeWidth: 2 }}
-                  name="Sales"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Low Stock Items Section */}
-      {stats.lowStockItems.length > 0 && (
+      {hasAccess("inventory") && stats.lowStockItems.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
@@ -284,7 +280,6 @@ const AppDashboard = memo(() => {
                 {stats.lowStockItems.map((item) => {
                   const stockPercentage = ((item.currentStock / item.minStock) * 100).toFixed(0);
                   const isCritical = item.currentStock < item.minStock * 0.5;
-                  
                   return (
                     <TableRow key={item.id}>
                       <TableCell className="font-medium">{item.name}</TableCell>
@@ -308,16 +303,12 @@ const AppDashboard = memo(() => {
       )}
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {recentActivity.length === 0 ? (
-              <div className="text-sm text-muted-foreground">
-                No recent activity to display
-              </div>
-            ) : (
+        {recentActivity.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Activity</CardTitle>
+            </CardHeader>
+            <CardContent>
               <div className="space-y-3">
                 {recentActivity.map((activity, index) => (
                   <div key={index} className="flex items-start justify-between border-b pb-2 last:border-0">
@@ -347,66 +338,31 @@ const AppDashboard = memo(() => {
                   </div>
                 ))}
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Button 
-              className="w-full justify-start" 
-              variant="outline"
-              onClick={() => navigate('/inventory')}
-            >
-              <Plus className="mr-2 h-4 w-4 text-blue-600" />
-              Add New Inventory Item
-              <ArrowRight className="ml-auto h-4 w-4" />
-            </Button>
-            
-            <Button 
-              className="w-full justify-start" 
-              variant="outline"
-              onClick={() => navigate('/purchase-orders')}
-            >
-              <ShoppingCart className="mr-2 h-4 w-4 text-orange-600" />
-              Create Purchase Order
-              <ArrowRight className="ml-auto h-4 w-4" />
-            </Button>
-            
-            <Button 
-              className="w-full justify-start" 
-              variant="outline"
-              onClick={() => navigate('/goods-receipt')}
-            >
-              <FileText className="mr-2 h-4 w-4 text-purple-600" />
-              Record Goods Receipt
-              <ArrowRight className="ml-auto h-4 w-4" />
-            </Button>
-            
-            <Button 
-              className="w-full justify-start" 
-              variant="outline"
-              onClick={() => navigate('/proforma')}
-            >
-              <FileText className="mr-2 h-4 w-4 text-green-600" />
-              Generate Proforma Invoice
-              <ArrowRight className="ml-auto h-4 w-4" />
-            </Button>
-            
-            <Button 
-              className="w-full justify-start" 
-              variant="outline"
-              onClick={() => navigate('/suppliers')}
-            >
-              <Users className="mr-2 h-4 w-4 text-cyan-600" />
-              Manage Suppliers
-              <ArrowRight className="ml-auto h-4 w-4" />
-            </Button>
-          </CardContent>
-        </Card>
+        {quickActions.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {quickActions.map((action) => (
+                <Button
+                  key={action.route}
+                  className="w-full justify-start"
+                  variant="outline"
+                  onClick={() => navigate(action.route)}
+                >
+                  <action.icon className={`mr-2 h-4 w-4 ${action.color}`} />
+                  {action.label}
+                  <ArrowRight className="ml-auto h-4 w-4" />
+                </Button>
+              ))}
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
