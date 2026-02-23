@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -11,8 +11,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Check, X, CalendarDays, Trash2 } from "lucide-react";
+import { Plus, Check, X, CalendarDays, Trash2, QrCode } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
+import QRCode from "qrcode";
 
 interface LeaveRecord {
   id: string;
@@ -36,6 +37,8 @@ const LeaveManagement = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [qrDialogOpen, setQrDialogOpen] = useState(false);
+  const qrCanvasRef = useRef<HTMLCanvasElement>(null);
   const [form, setForm] = useState({ employee_id: "", leave_type: "casual", start_date: "", end_date: "", reason: "" });
 
   const fetchData = useCallback(async () => {
@@ -113,6 +116,16 @@ const LeaveManagement = () => {
 
   const pendingCount = leaves.filter(l => l.status === "pending").length;
   const approvedCount = leaves.filter(l => l.status === "approved").length;
+  const leaveRequestUrl = `${window.location.origin}/leave-request/${user?.id}`;
+
+  const generateQR = useCallback(async () => {
+    setQrDialogOpen(true);
+    setTimeout(async () => {
+      if (qrCanvasRef.current) {
+        await QRCode.toCanvas(qrCanvasRef.current, leaveRequestUrl, { width: 250, margin: 2 });
+      }
+    }, 100);
+  }, [leaveRequestUrl]);
 
   return (
     <div className="space-y-6">
@@ -121,10 +134,12 @@ const LeaveManagement = () => {
           <h1 className="text-2xl font-bold text-foreground">Leave Management</h1>
           <p className="text-muted-foreground text-sm">{pendingCount} pending, {approvedCount} approved</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button><Plus className="mr-2 h-4 w-4" />Apply Leave</Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={generateQR}><QrCode className="mr-2 h-4 w-4" />QR Leave Form</Button>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button><Plus className="mr-2 h-4 w-4" />Apply Leave</Button>
+            </DialogTrigger>
           <DialogContent>
             <DialogHeader><DialogTitle>Apply for Leave</DialogTitle></DialogHeader>
             <div className="space-y-4">
@@ -161,7 +176,21 @@ const LeaveManagement = () => {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
+
+      <Dialog open={qrDialogOpen} onOpenChange={setQrDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader><DialogTitle>Share Leave Request Form</DialogTitle></DialogHeader>
+          <div className="flex flex-col items-center gap-4">
+            <canvas ref={qrCanvasRef} />
+            <p className="text-sm text-muted-foreground text-center">Employees can scan this QR code to submit leave requests</p>
+            <Button variant="outline" className="w-full" onClick={() => { navigator.clipboard.writeText(leaveRequestUrl); toast.success("Link copied!"); }}>
+              Copy Link
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Card>
         <CardContent className="p-0">
