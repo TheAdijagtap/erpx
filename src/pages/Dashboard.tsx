@@ -22,7 +22,12 @@ import {
   Truck,
   FileCheck,
   Receipt,
-  AlertTriangle
+  AlertTriangle,
+  UserCheck,
+  CalendarDays,
+  IndianRupee,
+  QrCode,
+  Sparkles
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { formatINR } from "@/lib/format";
@@ -63,6 +68,26 @@ const Dashboard = () => {
       icon: BarChart3,
       title: "Proforma Invoices",
       description: "Generate professional invoices with GST calculations and customizable templates"
+    },
+    {
+      icon: UserCheck,
+      title: "Employee Management",
+      description: "Complete employee directory with profiles, departments, salary details, and bank info"
+    },
+    {
+      icon: CalendarDays,
+      title: "Attendance & Leave Tracking",
+      description: "Daily attendance with check-in/out, leave management, and calendar views"
+    },
+    {
+      icon: QrCode,
+      title: "QR-Based Leave Requests",
+      description: "Employees scan a QR code to submit leave requests — no login needed, instant sync"
+    },
+    {
+      icon: IndianRupee,
+      title: "Payroll & Payslips",
+      description: "Auto-calculate salaries based on attendance, generate and download PDF payslips"
     },
     {
       icon: TrendingUp,
@@ -135,7 +160,7 @@ const Dashboard = () => {
   ];
 
   const keyCapabilities = [
-    { number: "15+", label: "Key Features" },
+    { number: "20+", label: "Key Features" },
     { number: "100%", label: "GST Compliant" },
     { number: "24/7", label: "Support Ready" },
     { number: "∞", label: "Scalability" }
@@ -161,10 +186,10 @@ const Dashboard = () => {
                 Like Never Before
               </span>
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Streamline your inventory operations with powerful tools for purchase orders, 
-              goods receipts, and real-time tracking. Built for Indian businesses.
-            </p>
+             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+               Streamline inventory, HR, payroll & invoicing — all in one place. 
+               With QR-based leave requests, real-time attendance, and automated payslips. Built for Indian businesses.
+             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Button asChild size="lg" className="text-lg px-8 group">
                 <Link to="/auth">
@@ -597,6 +622,94 @@ const Dashboard = () => {
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
                   Business KPI dashboard
+                </li>
+              </ul>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* NEW: HR & Payroll Section */}
+      <section className="py-20 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-primary text-sm font-medium mb-4">
+              <Sparkles className="w-4 h-4" />
+              New Features
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              HR & Payroll — Now Built In
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Manage your workforce alongside your inventory — employees, attendance, leaves, and payroll all in one platform.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)] border-primary/20">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <UserCheck className="w-5 h-5 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground">Employee Directory</h3>
+              </div>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  Complete employee profiles
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  Department & designation tracking
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  Bank & salary details management
+                </li>
+              </ul>
+            </Card>
+
+            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)] border-primary/20">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <CalendarDays className="w-5 h-5 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground">Attendance & Leave</h3>
+              </div>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  Daily check-in / check-out
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  Leave approval workflow
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  QR code leave requests — no login needed
+                </li>
+              </ul>
+            </Card>
+
+            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)] border-primary/20">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <IndianRupee className="w-5 h-5 text-primary" />
+                </div>
+                <h3 className="font-semibold text-foreground">Payroll & Payslips</h3>
+              </div>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  Auto salary calculation from attendance
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  Configurable payroll rules & deductions
+                </li>
+                <li className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
+                  PDF payslip generation & download
                 </li>
               </ul>
             </Card>
