@@ -55,6 +55,18 @@ const LeaveManagement = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  // Realtime subscription for instant leave request updates (e.g. from QR form)
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel('leaves-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'leaves' }, () => {
+        fetchData();
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, fetchData]);
+
   const handleSubmit = async () => {
     if (!user || !form.employee_id || !form.start_date || !form.end_date) {
       toast.error("Fill required fields"); return;
