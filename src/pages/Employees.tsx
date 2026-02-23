@@ -35,6 +35,7 @@ interface Employee {
   emergency_contact: string | null;
   notes: string | null;
   uan: string | null;
+  ot_pay: number;
   created_at: string;
 }
 
@@ -42,7 +43,7 @@ const emptyForm = {
   name: "", email: "", phone: "", department: "", designation: "",
   joining_date: "", status: "active", gender: "", basic_salary: 0, allowances: 0,
   deductions: 0, bank_name: "", bank_account_number: "", bank_ifsc_code: "",
-  address: "", emergency_contact: "", notes: "", uan: "",
+  address: "", emergency_contact: "", notes: "", uan: "", ot_pay: 0,
 };
 
 const Employees = () => {
@@ -90,6 +91,7 @@ const Employees = () => {
       emergency_contact: form.emergency_contact || null,
       notes: form.notes || null,
       uan: form.uan || null,
+      ot_pay: Number(form.ot_pay) || 0,
     };
 
     if (editingId) {
@@ -118,7 +120,7 @@ const Employees = () => {
       bank_account_number: emp.bank_account_number || "",
       bank_ifsc_code: emp.bank_ifsc_code || "", address: emp.address || "",
       emergency_contact: emp.emergency_contact || "", notes: emp.notes || "",
-      uan: emp.uan || "",
+      uan: emp.uan || "", ot_pay: emp.ot_pay,
     });
     setDialogOpen(true);
   };
@@ -202,6 +204,7 @@ const Employees = () => {
               <div><Label>Basic Salary</Label><Input type="number" value={form.basic_salary} onChange={e => setForm(f => ({ ...f, basic_salary: Number(e.target.value) }))} /></div>
               <div><Label>Allowances</Label><Input type="number" value={form.allowances} onChange={e => setForm(f => ({ ...f, allowances: Number(e.target.value) }))} /></div>
               <div><Label>Deductions</Label><Input type="number" value={form.deductions} onChange={e => setForm(f => ({ ...f, deductions: Number(e.target.value) }))} /></div>
+              <div><Label>OT Pay (per hour)</Label><Input type="number" value={form.ot_pay} onChange={e => setForm(f => ({ ...f, ot_pay: Number(e.target.value) }))} placeholder="Overtime rate per hour" /></div>
               <div><Label>UAN</Label><Input value={form.uan} onChange={e => setForm(f => ({ ...f, uan: e.target.value }))} placeholder="Universal Account Number" /></div>
               <div><Label>Bank Name</Label><Input value={form.bank_name} onChange={e => setForm(f => ({ ...f, bank_name: e.target.value }))} /></div>
               <div><Label>Account Number</Label><Input value={form.bank_account_number} onChange={e => setForm(f => ({ ...f, bank_account_number: e.target.value }))} /></div>
@@ -301,6 +304,7 @@ const Employees = () => {
                 <div><span className="text-muted-foreground">Basic:</span> {formatINR(selectedEmployee.basic_salary)}</div>
                 <div><span className="text-muted-foreground">Allowances:</span> {formatINR(selectedEmployee.allowances)}</div>
                 <div><span className="text-muted-foreground">Deductions:</span> {formatINR(selectedEmployee.deductions)}</div>
+                <div><span className="text-muted-foreground">OT Pay/hr:</span> {formatINR(selectedEmployee.ot_pay)}</div>
                 <div className="font-semibold"><span className="text-muted-foreground">Net:</span> {formatINR(selectedEmployee.basic_salary + selectedEmployee.allowances - selectedEmployee.deductions)}</div>
               </div>
 

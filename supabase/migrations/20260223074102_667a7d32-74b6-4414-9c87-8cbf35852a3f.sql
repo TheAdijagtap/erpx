@@ -1,0 +1,1 @@
+ALTER TABLE public.employees ADD COLUMN ot_pay numeric DEFAULT 0;
