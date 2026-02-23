@@ -14,21 +14,28 @@ interface Employee {
   name: string;
 }
 
-type Status = "present" | "absent" | "half_day" | "on_leave" | null;
+type Status = "present" | "absent" | "half_day" | "on_leave" | "late_mark" | null;
 
 interface AttendanceMap {
   [key: string]: Status; // key: `${employee_id}_${date}`
 }
 
-const STATUS_CYCLE: Status[] = [null, "present", "absent", "half_day", "on_leave"];
+interface OvertimeMap {
+  [key: string]: number; // key: `${employee_id}_${date}`
+}
+
+const STATUS_CYCLE: Status[] = [null, "present", "absent", "half_day", "on_leave", "late_mark"];
 
 const Attendance = () => {
   const { user } = useAuth();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [attendance, setAttendance] = useState<AttendanceMap>({});
+  const [overtime, setOvertime] = useState<OvertimeMap>({});
   const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [saving, setSaving] = useState<string | null>(null);
+  const [editingOT, setEditingOT] = useState<string | null>(null);
+  const [otValue, setOtValue] = useState("");
 
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
@@ -44,16 +51,20 @@ const Attendance = () => {
 
     const [{ data: emps }, { data: att }] = await Promise.all([
       supabase.from("employees").select("id, name").eq("status", "active").order("name"),
-      supabase.from("attendance").select("employee_id, date, status").gte("date", startDate).lte("date", endDate),
+      supabase.from("attendance").select("employee_id, date, status, overtime_hours").gte("date", startDate).lte("date", endDate),
     ]);
 
     setEmployees(emps || []);
 
     const map: AttendanceMap = {};
-    (att || []).forEach((r) => {
-      map[`${r.employee_id}_${r.date}`] = r.status as Status;
+    const otMap: OvertimeMap = {};
+    (att || []).forEach((r: any) => {
+      const key = `${r.employee_id}_${r.date}`;
+      map[key] = r.status as Status;
+      otMap[key] = r.overtime_hours || 0;
     });
     setAttendance(map);
+    setOvertime(otMap);
     setLoading(false);
   }, [user, currentMonth, year, month]);
 
@@ -75,7 +86,6 @@ const Attendance = () => {
     setSaving(key);
 
     if (next === null) {
-      // Delete the record
       await supabase.from("attendance").delete().eq("employee_id", employeeId).eq("date", dateStr);
     } else {
       await supabase.from("attendance").upsert(
@@ -84,7 +94,7 @@ const Attendance = () => {
           employee_id: employeeId,
           date: dateStr,
           status: next,
-          check_in: next === "present" || next === "half_day" ? new Date(`${dateStr}T09:00`).toISOString() : null,
+          check_in: next === "present" || next === "half_day" || next === "late_mark" ? new Date(`${dateStr}T09:00`).toISOString() : null,
         },
         { onConflict: "employee_id,date" }
       );
@@ -125,6 +135,24 @@ const Attendance = () => {
   const prevMonth = () => setCurrentMonth(new Date(year, month - 1, 1));
   const nextMonth = () => setCurrentMonth(new Date(year, month + 1, 1));
 
+  const saveOT = async (employeeId: string, dateStr: string) => {
+    if (!user) return;
+    const key = `${employeeId}_${dateStr}`;
+    const hours = parseFloat(otValue) || 0;
+
+    const currentStatus = attendance[key];
+    if (!currentStatus) {
+      toast.error("Mark attendance first before adding OT");
+      setEditingOT(null);
+      return;
+    }
+
+    await supabase.from("attendance").update({ overtime_hours: hours }).eq("employee_id", employeeId).eq("date", dateStr);
+    setOvertime((prev) => ({ ...prev, [key]: hours }));
+    setEditingOT(null);
+    toast.success("OT saved");
+  };
+
   const getStatusCell = (status: Status) => {
     switch (status) {
       case "present":
@@ -135,13 +163,15 @@ const Attendance = () => {
         return <span className="text-[10px] font-bold text-yellow-600">H</span>;
       case "on_leave":
         return <span className="text-[10px] font-bold text-blue-500">L</span>;
+      case "late_mark":
+        return <span className="text-[10px] font-bold text-orange-500">LM</span>;
       default:
         return <Minus className="h-3 w-3 text-muted-foreground/30" />;
     }
   };
 
   const getSummary = (employeeId: string) => {
-    let p = 0, a = 0, h = 0, l = 0;
+    let p = 0, a = 0, h = 0, l = 0, lm = 0, ot = 0;
     dates.forEach((day) => {
       const key = `${employeeId}_${format(new Date(year, month, day), "yyyy-MM-dd")}`;
       const s = attendance[key];
@@ -149,8 +179,10 @@ const Attendance = () => {
       else if (s === "absent") a++;
       else if (s === "half_day") h++;
       else if (s === "on_leave") l++;
+      else if (s === "late_mark") lm++;
+      ot += overtime[key] || 0;
     });
-    return { p, a, h, l };
+    return { p, a, h, l, lm, ot };
   };
 
   return (
@@ -172,12 +204,13 @@ const Attendance = () => {
       </div>
 
       {/* Legend */}
-      <div className="flex gap-4 text-xs text-muted-foreground">
+      <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
         <span className="flex items-center gap-1"><Check className="h-3 w-3 text-green-600" /> Present</span>
         <span className="flex items-center gap-1"><X className="h-3 w-3 text-red-500" /> Absent</span>
         <span className="flex items-center gap-1"><span className="font-bold text-yellow-600">H</span> Half Day</span>
         <span className="flex items-center gap-1"><span className="font-bold text-blue-500">L</span> Leave</span>
-        <span className="text-muted-foreground/60 ml-2">Click cell to cycle status</span>
+        <span className="flex items-center gap-1"><span className="font-bold text-orange-500">LM</span> Late Mark</span>
+        <span className="text-muted-foreground/60 ml-2">Click cell to cycle • Double-click for OT</span>
       </div>
 
       {/* Grid */}
@@ -215,6 +248,8 @@ const Attendance = () => {
                   })}
                   <th className="px-2 py-2 text-center font-semibold bg-muted/30 min-w-[32px]" title="Present">P</th>
                   <th className="px-2 py-2 text-center font-semibold bg-muted/30 min-w-[32px]" title="Absent">A</th>
+                  <th className="px-2 py-2 text-center font-semibold bg-muted/30 min-w-[32px]" title="Late Mark">LM</th>
+                  <th className="px-2 py-2 text-center font-semibold bg-muted/30 min-w-[32px]" title="Overtime Hours">OT</th>
                 </tr>
               </thead>
               <tbody>
@@ -238,22 +273,57 @@ const Attendance = () => {
                           <td
                             key={day}
                             className={cn(
-                              "text-center py-1 cursor-pointer transition-all",
+                              "text-center py-1 cursor-pointer transition-all relative",
                               weekend && "bg-muted/30",
                               future && "opacity-30 cursor-not-allowed",
                               isSaving && "animate-pulse",
                               !future && "hover:bg-accent/40"
                             )}
                             onClick={() => !future && toggleStatus(emp.id, day)}
+                            onDoubleClick={(e) => {
+                              e.stopPropagation();
+                              if (!future) {
+                                setEditingOT(key);
+                                setOtValue(String(overtime[key] || ""));
+                              }
+                            }}
                           >
-                            <div className="flex items-center justify-center h-5 w-full">
+                            <div className="flex flex-col items-center justify-center min-h-[20px] w-full">
                               {getStatusCell(status)}
+                              {(overtime[key] || 0) > 0 && (
+                                <span className="text-[8px] text-purple-500 font-bold leading-none">{overtime[key]}h</span>
+                              )}
                             </div>
+                            {editingOT === key && (
+                              <div className="absolute z-20 top-full left-1/2 -translate-x-1/2 bg-card border rounded shadow-lg p-2 min-w-[80px]" onClick={(e) => e.stopPropagation()}>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="24"
+                                  step="0.5"
+                                  value={otValue}
+                                  onChange={(e) => setOtValue(e.target.value)}
+                                  className="w-full text-xs border rounded px-1 py-0.5 mb-1 bg-background text-foreground"
+                                  placeholder="OT hrs"
+                                  autoFocus
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") saveOT(emp.id, dateStr);
+                                    if (e.key === "Escape") setEditingOT(null);
+                                  }}
+                                />
+                                <div className="flex gap-1">
+                                  <button className="text-[10px] bg-primary text-primary-foreground rounded px-1.5 py-0.5 flex-1" onClick={() => saveOT(emp.id, dateStr)}>Save</button>
+                                  <button className="text-[10px] bg-muted rounded px-1.5 py-0.5" onClick={() => setEditingOT(null)}>✕</button>
+                                </div>
+                              </div>
+                            )}
                           </td>
                         );
                       })}
                       <td className="text-center py-1.5 font-semibold text-green-600 bg-muted/20">{summary.p}</td>
                       <td className="text-center py-1.5 font-semibold text-red-500 bg-muted/20">{summary.a}</td>
+                      <td className="text-center py-1.5 font-semibold text-orange-500 bg-muted/20">{summary.lm}</td>
+                      <td className="text-center py-1.5 font-semibold text-purple-500 bg-muted/20">{summary.ot}</td>
                     </tr>
                   );
                 })}
