@@ -46,19 +46,22 @@ const SubUserManagement = () => {
       return;
     }
 
-    // Fetch permissions for all sub-users
     const subUserIds = links.map((l: any) => l.sub_user_id);
-    const { data: perms } = await supabase
-      .from("sub_user_permissions")
-      .select("sub_user_id, feature")
-      .in("sub_user_id", subUserIds);
 
-    // Build sub-user list with emails from auth (we'll use the link data)
+    // Fetch permissions and profiles in parallel
+    const [permsRes, profilesRes] = await Promise.all([
+      supabase.from("sub_user_permissions").select("sub_user_id, feature").in("sub_user_id", subUserIds),
+      supabase.from("profiles").select("id, email").in("id", subUserIds),
+    ]);
+
+    const perms = permsRes.data || [];
+    const profileMap = new Map((profilesRes.data || []).map((p: any) => [p.id, p.email]));
+
     const mapped: SubUser[] = links.map((link: any) => ({
       id: link.id,
       sub_user_id: link.sub_user_id,
-      email: "", // We'll need to get this from somewhere
-      permissions: (perms || [])
+      email: profileMap.get(link.sub_user_id) || "",
+      permissions: perms
         .filter((p: any) => p.sub_user_id === link.sub_user_id)
         .map((p: any) => p.feature),
       created_at: link.created_at,
