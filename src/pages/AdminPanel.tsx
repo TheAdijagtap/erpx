@@ -38,6 +38,8 @@ interface UserProfile {
   trial_start_date: string | null;
   subscription_end_date: string | null;
   created_at: string;
+  isSubUser?: boolean;
+  parentUserId?: string;
 }
 
 interface DatabaseStats {
@@ -72,13 +74,25 @@ const AdminPanel = () => {
 
   const fetchUsers = async () => {
     try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const [profilesRes, subLinksRes] = await Promise.all([
+        supabase.from("profiles").select("*").order("created_at", { ascending: false }),
+        supabase.from("sub_user_links").select("sub_user_id, parent_user_id"),
+      ]);
 
-      if (error) throw error;
-      setUsers(data || []);
+      if (profilesRes.error) throw profilesRes.error;
+
+      const subUserMap = new Map<string, string>();
+      (subLinksRes.data || []).forEach((link: any) => {
+        subUserMap.set(link.sub_user_id, link.parent_user_id);
+      });
+
+      const enriched = (profilesRes.data || []).map((u: any) => ({
+        ...u,
+        isSubUser: subUserMap.has(u.id),
+        parentUserId: subUserMap.get(u.id) || undefined,
+      }));
+
+      setUsers(enriched);
     } catch (err) {
       console.error("Error fetching users:", err);
       toast.error("Failed to fetch users");
@@ -278,9 +292,16 @@ const AdminPanel = () => {
           <Card className="p-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Users className="h-4 w-4" />
-              Total Users
+              Main Users
             </div>
-            <div className="text-2xl font-bold mt-1">{users.length}</div>
+            <div className="text-2xl font-bold mt-1">{users.filter(u => !u.isSubUser).length}</div>
+          </Card>
+          <Card className="p-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Shield className="h-4 w-4" />
+              Sub-Users
+            </div>
+            <div className="text-2xl font-bold mt-1 text-orange-600">{users.filter(u => u.isSubUser).length}</div>
           </Card>
           <Card className="p-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -288,7 +309,7 @@ const AdminPanel = () => {
               Active Trials
             </div>
             <div className="text-2xl font-bold mt-1 text-blue-600">
-              {users.filter((u) => getStatus(u).type === "trial").length}
+              {users.filter((u) => !u.isSubUser && getStatus(u).type === "trial").length}
             </div>
           </Card>
           <Card className="p-4">
@@ -297,7 +318,7 @@ const AdminPanel = () => {
               Subscribed
             </div>
             <div className="text-2xl font-bold mt-1 text-green-600">
-              {users.filter((u) => getStatus(u).type === "subscribed").length}
+              {users.filter((u) => !u.isSubUser && getStatus(u).type === "subscribed").length}
             </div>
           </Card>
           <Card className="p-4">
@@ -429,6 +450,7 @@ const AdminPanel = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Email</TableHead>
+                <TableHead>Type</TableHead>
                 <TableHead>Business Name</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Joined</TableHead>
@@ -442,6 +464,13 @@ const AdminPanel = () => {
                 return (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.email || "—"}</TableCell>
+                    <TableCell>
+                      {user.isSubUser ? (
+                        <Badge variant="outline" className="text-orange-600 border-orange-300">Sub-User</Badge>
+                      ) : (
+                        <Badge variant="secondary">Main User</Badge>
+                      )}
+                    </TableCell>
                     <TableCell>{user.business_name || "—"}</TableCell>
                     <TableCell>{user.contact_number || "—"}</TableCell>
                     <TableCell>
