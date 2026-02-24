@@ -72,14 +72,23 @@ Deno.serve(async (req) => {
       .delete()
       .eq("sub_user_id", subUserId);
 
-    // Delete the auth user entirely
+    // Delete profile
+    await adminClient
+      .from("profiles")
+      .delete()
+      .eq("id", subUserId);
+
+    // Delete the auth user entirely — this fully revokes login access
     const { error: deleteError } = await adminClient.auth.admin.deleteUser(subUserId);
     if (deleteError) {
+      console.error("Failed to delete auth user:", deleteError.message);
       return new Response(JSON.stringify({ error: "Failed to delete auth user: " + deleteError.message }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    console.log("Successfully deleted sub-user:", subUserId);
 
     return new Response(
       JSON.stringify({ success: true }),
