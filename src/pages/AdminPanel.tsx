@@ -437,6 +437,7 @@ const AdminPanel = () => {
       </Card>
 
       {/* Users Table */}
+      {/* Main Users Table */}
       <Card>
         <div className="p-4 border-b">
           <h2 className="font-semibold">All Users</h2>
@@ -450,7 +451,6 @@ const AdminPanel = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Email</TableHead>
-                <TableHead>Type</TableHead>
                 <TableHead>Business Name</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Joined</TableHead>
@@ -459,18 +459,11 @@ const AdminPanel = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((user) => {
+              {users.filter(u => !u.isSubUser).map((user) => {
                 const status = getStatus(user);
                 return (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.email || "—"}</TableCell>
-                    <TableCell>
-                      {user.isSubUser ? (
-                        <Badge variant="outline" className="text-orange-600 border-orange-300">Sub-User</Badge>
-                      ) : (
-                        <Badge variant="secondary">Main User</Badge>
-                      )}
-                    </TableCell>
                     <TableCell>{user.business_name || "—"}</TableCell>
                     <TableCell>{user.contact_number || "—"}</TableCell>
                     <TableCell>
@@ -490,6 +483,55 @@ const AdminPanel = () => {
                         <Edit2 className="h-4 w-4 mr-1" />
                         Edit
                       </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        )}
+      </Card>
+
+      {/* Sub-Users Table */}
+      <Card>
+        <div className="p-4 border-b">
+          <h2 className="font-semibold flex items-center gap-2">
+            <Shield className="h-4 w-4 text-orange-500" />
+            Sub-Users
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">Users created by main accounts with restricted access</p>
+        </div>
+        {loading ? (
+          <div className="flex items-center justify-center p-8">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : users.filter(u => u.isSubUser).length === 0 ? (
+          <div className="p-6 text-center text-muted-foreground text-sm">No sub-users found</div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Sub-User Email</TableHead>
+                <TableHead>Parent User</TableHead>
+                <TableHead>Joined</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {users.filter(u => u.isSubUser).map((subUser) => {
+                const parent = users.find(u => u.id === subUser.parentUserId);
+                return (
+                  <TableRow key={subUser.id}>
+                    <TableCell className="font-medium">{subUser.email || "—"}</TableCell>
+                    <TableCell>
+                      <span className="text-sm">{parent?.email || subUser.parentUserId?.slice(0, 8) + "..."}</span>
+                      {parent?.business_name && (
+                        <span className="text-xs text-muted-foreground ml-2">({parent.business_name})</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {subUser.created_at
+                        ? format(new Date(subUser.created_at), "MMM d, yyyy")
+                        : "—"}
                     </TableCell>
                   </TableRow>
                 );
