@@ -109,20 +109,20 @@ const SubUserManagement = () => {
   };
 
   const handleDelete = async (subUser: SubUser) => {
-    if (!confirm("Are you sure? This will permanently delete this sub-user.")) return;
+    if (!confirm("Are you sure? This will permanently delete this sub-user and revoke their login access.")) return;
 
-    // Delete permissions, link (cascade will handle), but we need to delete via edge function or admin
-    // For now, delete the link (permissions cascade)
-    const { error } = await supabase
-      .from("sub_user_links")
-      .delete()
-      .eq("id", subUser.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("delete-sub-user", {
+        body: { subUserId: subUser.sub_user_id },
+      });
 
-    if (error) {
-      toast({ title: "Error", description: "Failed to remove sub-user.", variant: "destructive" as any });
-    } else {
-      toast({ title: "Removed", description: "Sub-user has been removed." });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast({ title: "Removed", description: "Sub-user has been permanently deleted." });
       fetchSubUsers();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message || "Failed to delete sub-user.", variant: "destructive" as any });
     }
   };
 
