@@ -27,6 +27,12 @@ const attendanceImport = () => import("./pages/Attendance");
 const leaveManagementImport = () => import("./pages/LeaveManagement");
 const payrollImport = () => import("./pages/Payroll");
 const payrollSettingsImport = () => import("./pages/PayrollSettings");
+const blogImport = () => import("./pages/Blog");
+const blogPostImport = () => import("./pages/BlogPost");
+const aboutImport = () => import("./pages/About");
+const contactImport = () => import("./pages/Contact");
+const privacyImport = () => import("./pages/Privacy");
+const termsImport = () => import("./pages/Terms");
 
 const AppDashboard = lazy(appDashboardImport);
 const Inventory = lazy(inventoryImport);
@@ -41,6 +47,12 @@ const AttendancePage = lazy(attendanceImport);
 const LeaveManagementPage = lazy(leaveManagementImport);
 const PayrollPage = lazy(payrollImport);
 const PayrollSettingsPage = lazy(payrollSettingsImport);
+const BlogPage = lazy(blogImport);
+const BlogPostPage = lazy(blogPostImport);
+const AboutPage = lazy(aboutImport);
+const ContactPage = lazy(contactImport);
+const PrivacyPage = lazy(privacyImport);
+const TermsPage = lazy(termsImport);
 
 // Preload all pages for instant navigation
 export const preloadAllPages = () => {
@@ -89,6 +101,12 @@ const App = () => (
             <Route index element={<Dashboard />} />
             <Route path="auth" element={<Auth />} />
             <Route path="leave-request/:userId" element={<LeaveRequestPublic />} />
+            <Route path="blog" element={<Suspense fallback={<PageLoader />}><BlogPage /></Suspense>} />
+            <Route path="blog/:slug" element={<Suspense fallback={<PageLoader />}><BlogPostPage /></Suspense>} />
+            <Route path="about" element={<Suspense fallback={<PageLoader />}><AboutPage /></Suspense>} />
+            <Route path="contact" element={<Suspense fallback={<PageLoader />}><ContactPage /></Suspense>} />
+            <Route path="privacy" element={<Suspense fallback={<PageLoader />}><PrivacyPage /></Suspense>} />
+            <Route path="terms" element={<Suspense fallback={<PageLoader />}><TermsPage /></Suspense>} />
             
             <Route path="/" element={
               <ProtectedRoute>

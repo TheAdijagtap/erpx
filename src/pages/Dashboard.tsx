@@ -903,23 +903,54 @@ const Dashboard = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 px-6 border-t border-border bg-background">
+      <footer className="py-12 px-6 border-t border-border bg-muted/30">
         <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <img 
-                src="/assets/opis-logo.png" 
-                alt="OPIS Logo" 
-                className="h-8 object-contain" 
-              />
-              <div className="h-6 w-px bg-border" />
-              <span className="text-sm text-muted-foreground">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            {/* Brand */}
+            <div>
+              <img src="/assets/opis-logo.png" alt="OPIS Logo" className="h-8 object-contain mb-3" />
+              <p className="text-sm text-muted-foreground mb-2">
+                Order, Purchase & Inventory System
+              </p>
+              <span className="text-xs text-muted-foreground">
                 A <span className="font-bold text-foreground">Necrus</span> Product
               </span>
             </div>
-            <div className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} OPIS - Order, Purchase & Inventory System. All rights reserved.
+
+            {/* Company */}
+            <div>
+              <h4 className="font-semibold text-foreground mb-3 text-sm">Company</h4>
+              <ul className="space-y-2 text-sm">
+                <li><Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">About Us</Link></li>
+                <li><Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors">Contact</Link></li>
+                <li><Link to="/blog" className="text-muted-foreground hover:text-primary transition-colors">Blog</Link></li>
+              </ul>
             </div>
+
+            {/* Product */}
+            <div>
+              <h4 className="font-semibold text-foreground mb-3 text-sm">Product</h4>
+              <ul className="space-y-2 text-sm">
+                <li><Link to="/auth" className="text-muted-foreground hover:text-primary transition-colors">Sign In / Sign Up</Link></li>
+                <li><a href="#features" className="text-muted-foreground hover:text-primary transition-colors">Features</a></li>
+                <li><a href="#pricing" className="text-muted-foreground hover:text-primary transition-colors">Pricing</a></li>
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <h4 className="font-semibold text-foreground mb-3 text-sm">Legal</h4>
+              <ul className="space-y-2 text-sm">
+                <li><Link to="/privacy" className="text-muted-foreground hover:text-primary transition-colors">Privacy Policy</Link></li>
+                <li><Link to="/terms" className="text-muted-foreground hover:text-primary transition-colors">Terms of Service</Link></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="pt-8 border-t border-border text-center">
+            <p className="text-sm text-muted-foreground">
+              © {new Date().getFullYear()} OPIS - Order, Purchase & Inventory System. All rights reserved.
+            </p>
           </div>
         </div>
       </footer>
