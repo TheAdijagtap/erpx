@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Building, Upload, Save, Settings, X, FileText } from "lucide-react";
+import { Building, Upload, Save, Settings, X, FileText, RotateCcw } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
 import { toast } from "@/hooks/use-toast";
 import SubUserManagement from "@/components/SubUserManagement";
@@ -24,6 +24,24 @@ interface LocalBusinessInfo {
   defaultPiTerms: string;
   defaultGrTerms: string;
 }
+
+const DEFAULT_PO_TERMS = `1. Delivery must be made within the agreed timeline.
+2. Payment will be processed within 30 days of receipt of goods.
+3. All goods must conform to the specifications mentioned in the PO.
+4. Any damaged or defective goods will be returned at the supplier's cost.
+5. Prices are inclusive of all taxes unless stated otherwise.`;
+
+const DEFAULT_PI_TERMS = `1. This is a Quotation Cum Proforma Invoice and not a tax invoice.
+2. Prices are valid for 30 days from the date of issue.
+3. Payment terms: 50% advance, 50% before dispatch.
+4. Delivery timeline will be confirmed upon order confirmation.
+5. GST will be charged as applicable.`;
+
+const DEFAULT_GR_TERMS = `1. Goods received are subject to quality inspection.
+2. Any discrepancy must be reported within 48 hours of receipt.
+3. Damaged goods will be documented and reported to the supplier.
+4. Acceptance of goods is subject to QC approval.
+5. Batch numbers and quantities must match the delivery challan.`;
 
 const BusinessSetup = () => {
   const { businessInfo, setBusinessInfo, isSubUser } = useData();
@@ -299,9 +317,23 @@ const BusinessSetup = () => {
               </div>
               <h2 className="text-xl font-semibold text-foreground">Default Terms & Conditions</h2>
             </div>
-            <p className="text-sm text-muted-foreground mb-4">
-              Set default terms that will be pre-filled when creating new documents.
-            </p>
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm text-muted-foreground">
+                Set default terms that will be pre-filled when creating new documents.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1 shrink-0"
+                onClick={() => {
+                  handleLocalChange('defaultPoTerms', DEFAULT_PO_TERMS);
+                  handleLocalChange('defaultPiTerms', DEFAULT_PI_TERMS);
+                  handleLocalChange('defaultGrTerms', DEFAULT_GR_TERMS);
+                }}
+              >
+                <RotateCcw className="w-3.5 h-3.5" /> Set Default
+              </Button>
+            </div>
 
             <div className="space-y-4">
               <div className="space-y-2">
