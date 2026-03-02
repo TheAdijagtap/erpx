@@ -425,6 +425,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             accountNumber: profileAny.bank_account_number || "",
             ifscCode: profileAny.bank_ifsc_code || "",
           } : undefined,
+          defaultPoTerms: profileAny.default_po_terms || undefined,
+          defaultPiTerms: profileAny.default_pi_terms || undefined,
+          defaultGrTerms: profileAny.default_gr_terms || undefined,
         });
         setTrialStartDate(profileAny.trial_start_date ? new Date(profileAny.trial_start_date) : new Date());
         setSubscriptionEndDate(profileAny.subscription_end_date ? new Date(profileAny.subscription_end_date) : null);
@@ -1224,6 +1227,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       bank_name: info.bankDetails?.bankName || null,
       bank_account_number: info.bankDetails?.accountNumber || null,
       bank_ifsc_code: info.bankDetails?.ifscCode || null,
+      default_po_terms: info.defaultPoTerms || null,
+      default_pi_terms: info.defaultPiTerms || null,
+      default_gr_terms: info.defaultGrTerms || null,
     }).eq("id", effectiveUserId || user.id);
 
     if (error) throw error;

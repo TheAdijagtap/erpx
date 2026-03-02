@@ -724,6 +724,9 @@ export type Database = {
           business_name: string | null
           contact_number: string | null
           created_at: string
+          default_gr_terms: string | null
+          default_pi_terms: string | null
+          default_po_terms: string | null
           email: string | null
           gst_number: string | null
           id: string
@@ -741,6 +744,9 @@ export type Database = {
           business_name?: string | null
           contact_number?: string | null
           created_at?: string
+          default_gr_terms?: string | null
+          default_pi_terms?: string | null
+          default_po_terms?: string | null
           email?: string | null
           gst_number?: string | null
           id: string
@@ -758,6 +764,9 @@ export type Database = {
           business_name?: string | null
           contact_number?: string | null
           created_at?: string
+          default_gr_terms?: string | null
+          default_pi_terms?: string | null
+          default_po_terms?: string | null
           email?: string | null
           gst_number?: string | null
           id?: string

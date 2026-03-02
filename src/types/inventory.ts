@@ -56,6 +56,9 @@ export interface BusinessInfo {
     ifscCode: string;
     bankName: string;
   };
+  defaultPoTerms?: string;
+  defaultPiTerms?: string;
+  defaultGrTerms?: string;
 }
 
 export interface AdditionalCharge {
