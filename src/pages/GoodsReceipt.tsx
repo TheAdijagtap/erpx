@@ -604,12 +604,8 @@ function ViewGRDialog({ id }: { id: string }) {
           
           <div className="section terms">
             <strong>Terms & Conditions:</strong>
-            <div className="muted" style={{ marginTop: '8px', lineHeight: '1.4' }}>
-              1. All goods have been inspected upon receipt<br />
-              2. Quality check completed as per standards<br />
-              3. Quantities verified and confirmed<br />
-              4. Any discrepancies noted in remarks section<br />
-              5. Goods accepted in good condition
+            <div className="muted" style={{ marginTop: '8px', lineHeight: '1.4', whiteSpace: 'pre-line' }}>
+              {businessInfo.defaultGrTerms || `1. All goods have been inspected upon receipt\n2. Quality check completed as per standards\n3. Quantities verified and confirmed\n4. Any discrepancies noted in remarks section\n5. Goods accepted in good condition`}
             </div>
           </div>
           
@@ -803,12 +799,8 @@ function PrintGRButton({ id }: { id: string }) {
       </div>
       <div class="section terms">
         <strong>Terms & Conditions:</strong>
-        <div class="muted" style="margin-top: 8px; line-height: 1.4">
-          1. All goods have been inspected upon receipt<br />
-          2. Quality check completed as per standards<br />
-          3. Quantities verified and confirmed<br />
-          4. Any discrepancies noted in remarks section<br />
-          5. Goods accepted in good condition
+        <div class="muted" style="margin-top: 8px; line-height: 1.4; white-space: pre-line">
+          ${escapeHtml(businessInfo.defaultGrTerms || `1. All goods have been inspected upon receipt\n2. Quality check completed as per standards\n3. Quantities verified and confirmed\n4. Any discrepancies noted in remarks section\n5. Goods accepted in good condition`)}
         </div>
       </div>
       ${businessInfo.signature ? `
