@@ -811,7 +811,7 @@ const Dashboard = () => {
                 <h3 className="text-xl font-semibold text-foreground mb-2">Monthly</h3>
                 <p className="text-sm text-muted-foreground mb-6">Pay as you go</p>
                 <div className="mb-6">
-                  <span className="text-4xl font-bold text-foreground">₹250</span>
+                  <span className="text-4xl font-bold text-foreground">₹499</span>
                   <span className="text-muted-foreground">/month</span>
                 </div>
                 <ul className="space-y-3 text-sm text-muted-foreground mb-8">
@@ -829,7 +829,7 @@ const Dashboard = () => {
                   </li>
                 </ul>
                 <Button asChild className="w-full" size="lg">
-                  <a href="mailto:necrus@yahoo.com?subject=OPIS%20Monthly%20Subscription&body=Hi%2C%20I%20would%20like%20to%20subscribe%20to%20the%20OPIS%20Monthly%20Plan%20(%E2%82%B9250%2Fmonth).%20Please%20share%20the%20payment%20details.">Get Started</a>
+                  <a href="mailto:necrus@yahoo.com?subject=OPIS%20Monthly%20Subscription&body=Hi%2C%20I%20would%20like%20to%20subscribe%20to%20the%20OPIS%20Monthly%20Plan%20(%E2%82%B9499%2Fmonth).%20Please%20share%20the%20payment%20details.">Get Started</a>
                 </Button>
               </div>
             </Card>
@@ -837,17 +837,17 @@ const Dashboard = () => {
             {/* Yearly Plan */}
             <Card className="p-8 hover:shadow-lg transition-shadow border-2 border-primary relative overflow-hidden">
               <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-bl-lg">
-                SAVE ₹500
+                SAVE ₹998
               </div>
               <div className="text-center">
                 <h3 className="text-xl font-semibold text-foreground mb-2">Yearly</h3>
                 <p className="text-sm text-muted-foreground mb-6">Best value</p>
                 <div className="mb-2">
-                  <span className="text-4xl font-bold text-foreground">₹2,500</span>
+                  <span className="text-4xl font-bold text-foreground">₹4,990</span>
                   <span className="text-muted-foreground">/year</span>
                 </div>
                 <p className="text-sm text-primary font-medium mb-6">
-                  ₹208/month • Save ₹500
+                  ₹416/month • Save ₹998
                 </p>
                 <ul className="space-y-3 text-sm text-muted-foreground mb-8">
                   <li className="flex items-center gap-2 justify-center">
@@ -864,7 +864,7 @@ const Dashboard = () => {
                   </li>
                 </ul>
                 <Button asChild className="w-full" size="lg">
-                  <a href="mailto:necrus@yahoo.com?subject=OPIS%20Yearly%20Subscription&body=Hi%2C%20I%20would%20like%20to%20subscribe%20to%20the%20OPIS%20Yearly%20Plan%20(%E2%82%B92%2C500%2Fyear).%20Please%20share%20the%20payment%20details.">Get Started</a>
+                  <a href="mailto:necrus@yahoo.com?subject=OPIS%20Yearly%20Subscription&body=Hi%2C%20I%20would%20like%20to%20subscribe%20to%20the%20OPIS%20Yearly%20Plan%20(%E2%82%B94%2C990%2Fyear).%20Please%20share%20the%20payment%20details.">Get Started</a>
                 </Button>
               </div>
             </Card>

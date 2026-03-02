@@ -38,7 +38,7 @@ const Terms = () => {
 
             <section>
               <h2 className="text-xl font-semibold text-foreground mb-3">4. Subscription & Pricing</h2>
-              <p>OPIS offers a free trial period followed by paid subscriptions. Current pricing is ₹250/month or ₹2,500/year. Prices are subject to change with prior notice. All payments are non-refundable unless otherwise stated.</p>
+              <p>OPIS offers a free trial period followed by paid subscriptions. Current pricing is ₹499/month or ₹4,990/year. Prices are subject to change with prior notice. All payments are non-refundable unless otherwise stated.</p>
             </section>
 
             <section>

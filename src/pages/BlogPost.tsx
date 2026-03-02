@@ -40,7 +40,7 @@ As your business grows from 50 items to 5,000, OPIS scales with you — no migra
 
 ## How OPIS Solves This
 
-OPIS is purpose-built for Indian MSMEs. Unlike enterprise ERPs that cost lakhs and require months of implementation, OPIS gets you started in **under 30 minutes** at just **₹250/month**.
+OPIS is purpose-built for Indian MSMEs. Unlike enterprise ERPs that cost lakhs and require months of implementation, OPIS gets you started in **under 30 minutes** at just **₹499/month**.
 
 Key advantages:
 - **Inventory + HR + Payroll** in one platform
@@ -305,7 +305,7 @@ Enterprise ERPs cost ₹5-50 lakhs for implementation alone. MSMEs need affordab
 - ✅ Simple monthly pricing
 - ✅ No implementation charges
 
-**OPIS: ₹250/month or ₹2,500/year — all features included**
+**OPIS: ₹499/month or ₹4,990/year — all features included**
 
 ### 3. Ease of Use
 Your team shouldn't need weeks of training:
