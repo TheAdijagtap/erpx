@@ -949,7 +949,7 @@ const Dashboard = () => {
 
           <div className="pt-8 border-t border-border text-center">
             <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} OPIS - Order, Purchase & Inventory System. All rights reserved.
+              © {new Date().getFullYear()} OPIS. All rights reserved.
             </p>
           </div>
         </div>
