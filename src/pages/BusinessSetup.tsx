@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Building, Upload, Save, Settings, X } from "lucide-react";
+import { Building, Upload, Save, Settings, X, FileText } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
 import { toast } from "@/hooks/use-toast";
 import SubUserManagement from "@/components/SubUserManagement";
@@ -20,6 +20,9 @@ interface LocalBusinessInfo {
   bankName: string;
   accountNumber: string;
   ifscCode: string;
+  defaultPoTerms: string;
+  defaultPiTerms: string;
+  defaultGrTerms: string;
 }
 
 const BusinessSetup = () => {
@@ -37,6 +40,9 @@ const BusinessSetup = () => {
     bankName: "",
     accountNumber: "",
     ifscCode: "",
+    defaultPoTerms: "",
+    defaultPiTerms: "",
+    defaultGrTerms: "",
   });
 
   // Sync local state with context on mount
@@ -52,6 +58,9 @@ const BusinessSetup = () => {
       bankName: businessInfo.bankDetails?.bankName || "",
       accountNumber: businessInfo.bankDetails?.accountNumber || "",
       ifscCode: businessInfo.bankDetails?.ifscCode || "",
+      defaultPoTerms: businessInfo.defaultPoTerms || "",
+      defaultPiTerms: businessInfo.defaultPiTerms || "",
+      defaultGrTerms: businessInfo.defaultGrTerms || "",
     });
   }, [businessInfo]);
 
@@ -85,7 +94,10 @@ const BusinessSetup = () => {
         bankName: localInfo.bankName,
         accountNumber: localInfo.accountNumber,
         ifscCode: localInfo.ifscCode,
-      }
+      },
+      defaultPoTerms: localInfo.defaultPoTerms,
+      defaultPiTerms: localInfo.defaultPiTerms,
+      defaultGrTerms: localInfo.defaultGrTerms,
     });
     toast({ title: "Saved", description: "Business settings updated." });
   };
@@ -275,6 +287,53 @@ const BusinessSetup = () => {
                   value={localInfo.ifscCode}
                   onChange={(e) => handleLocalChange('ifscCode', e.target.value)}
                   placeholder="Enter IFSC code"
+                />
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-primary-light rounded-lg">
+                <FileText className="w-5 h-5 text-primary" />
+              </div>
+              <h2 className="text-xl font-semibold text-foreground">Default Terms & Conditions</h2>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Set default terms that will be pre-filled when creating new documents.
+            </p>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="defaultPoTerms">Purchase Order (PO) Terms</Label>
+                <Textarea
+                  id="defaultPoTerms"
+                  value={localInfo.defaultPoTerms}
+                  onChange={(e) => handleLocalChange('defaultPoTerms', e.target.value)}
+                  placeholder="Enter default terms & conditions for Purchase Orders..."
+                  rows={4}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="defaultPiTerms">Proforma Invoice (PI) Terms</Label>
+                <Textarea
+                  id="defaultPiTerms"
+                  value={localInfo.defaultPiTerms}
+                  onChange={(e) => handleLocalChange('defaultPiTerms', e.target.value)}
+                  placeholder="Enter default terms & conditions for Proforma Invoices..."
+                  rows={4}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="defaultGrTerms">Goods Receipt (GR) Terms</Label>
+                <Textarea
+                  id="defaultGrTerms"
+                  value={localInfo.defaultGrTerms}
+                  onChange={(e) => handleLocalChange('defaultGrTerms', e.target.value)}
+                  placeholder="Enter default terms & conditions for Goods Receipts..."
+                  rows={4}
                 />
               </div>
             </div>
