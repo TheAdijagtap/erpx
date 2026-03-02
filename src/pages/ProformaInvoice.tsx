@@ -1687,12 +1687,8 @@ const ViewProformaDialog = ({ invoice }: { invoice: ProformaInvoiceType }) => {
           
           <div className="section terms">
             <strong>Terms & Conditions:</strong>
-            <div className="muted" style={{ marginTop: '8px', lineHeight: '1.4' }}>
-              1. Payment terms: {invoice.paymentTerms || "As agreed"}<br />
-              2. Prices are valid until: {invoice.validUntil ? formatDateIN(invoice.validUntil) : "Further notice"}<br />
-              3. All prices are subject to change without prior notice<br />
-              4. This is a proforma invoice and not a tax invoice<br />
-              5. All rates are inclusive of applicable taxes
+            <div className="muted" style={{ marginTop: '8px', lineHeight: '1.4', whiteSpace: 'pre-line' }}>
+              {businessInfo.defaultPiTerms || `1. Payment terms: ${invoice.paymentTerms || "As agreed"}\n2. Prices are valid until: ${invoice.validUntil ? formatDateIN(invoice.validUntil) : "Further notice"}\n3. All prices are subject to change without prior notice\n4. This is a proforma invoice and not a tax invoice\n5. All rates are inclusive of applicable taxes`}
             </div>
           </div>
           
@@ -2347,12 +2343,8 @@ const PrintProformaButton = ({ id }: { id: string }) => {
       </div>
       <div class="section terms">
         <strong>Terms & Conditions:</strong>
-        <div class="muted" style="margin-top: 8px; line-height: 1.4">
-          1. Payment terms: ${escapeHtml(invoice.paymentTerms || "As agreed")}<br />
-          2. Prices are valid until: ${invoice.validUntil ? formatDateIN(invoice.validUntil) : "Further notice"}<br />
-          3. All prices are subject to change without prior notice<br />
-          4. This is a proforma invoice and not a tax invoice<br />
-          5. All rates are inclusive of applicable taxes
+        <div class="muted" style="margin-top: 8px; line-height: 1.4; white-space: pre-line">
+          ${escapeHtml(businessInfo.defaultPiTerms || `1. Payment terms: ${invoice.paymentTerms || "As agreed"}\n2. Prices are valid until: ${invoice.validUntil ? formatDateIN(invoice.validUntil) : "Further notice"}\n3. All prices are subject to change without prior notice\n4. This is a proforma invoice and not a tax invoice\n5. All rates are inclusive of applicable taxes`)}
         </div>
       </div>
       <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 24px">
