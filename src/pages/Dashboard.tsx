@@ -910,7 +910,7 @@ const Dashboard = () => {
             <div>
               <img src="/assets/opis-logo.png" alt="OPIS Logo" className="h-8 object-contain mb-3" />
               <p className="text-sm text-muted-foreground mb-2">
-                Order, Purchase & Inventory System
+                Simplified ERP for Indian MSMEs
               </p>
               <span className="text-xs text-muted-foreground">
                 A <span className="font-bold text-foreground">Necrus</span> Product
