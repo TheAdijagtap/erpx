@@ -316,45 +316,49 @@ const Dashboard = () => {
               Start free with a 14-day trial. Upgrade anytime via WhatsApp — no complicated checkout.
             </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-6 items-start">
+          <div className="grid md:grid-cols-3 gap-6 items-stretch">
             {/* Free Trial */}
-            <Card className="p-8 hover:shadow-md transition-shadow">
-              <h3 className="text-lg font-semibold text-foreground mb-1">Free Trial</h3>
-              <p className="text-sm text-muted-foreground mb-6">Perfect to get started</p>
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-foreground">₹0</span>
-                <span className="text-muted-foreground text-sm"> / 14 days</span>
+            <Card className="p-8 hover:shadow-md transition-shadow flex flex-col">
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-foreground mb-1">Free Trial</h3>
+                <p className="text-sm text-muted-foreground mb-6">Perfect to get started</p>
+                <div className="mb-6">
+                  <span className="text-4xl font-bold text-foreground">₹0</span>
+                  <span className="text-muted-foreground text-sm"> / 14 days</span>
+                </div>
+                <ul className="space-y-3 text-sm text-muted-foreground mb-8 text-left">
+                  {["Full access to all features", "GST invoicing", "Expense tracking", "Up to 50 invoices", "Basic reports", "Email support"].map((f) => (
+                    <li key={f} className="flex items-center gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-muted-foreground/50 shrink-0" /> {f}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <ul className="space-y-3 text-sm text-muted-foreground mb-8 text-left">
-                {["Full access to all features", "GST invoicing", "Expense tracking", "Up to 50 invoices", "Basic reports"].map((f) => (
-                  <li key={f} className="flex items-center gap-2.5">
-                    <CheckCircle2 className="w-4 h-4 text-muted-foreground/50 shrink-0" /> {f}
-                  </li>
-                ))}
-              </ul>
               <Button asChild variant="outline" className="w-full" size="lg">
                 <Link to="/auth">Start Free Trial</Link>
               </Button>
             </Card>
 
             {/* Monthly - Most Popular */}
-            <Card className="p-8 border-2 border-primary relative hover:shadow-lg transition-shadow shadow-md">
+            <Card className="p-8 border-2 border-primary relative hover:shadow-lg transition-shadow shadow-md flex flex-col">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-semibold px-4 py-1 rounded-full flex items-center gap-1.5">
                 <Zap className="w-3 h-3" /> Most Popular
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-1">Monthly</h3>
-              <p className="text-sm text-muted-foreground mb-6">For growing businesses</p>
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-foreground">₹499</span>
-                <span className="text-muted-foreground text-sm"> / month</span>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-foreground mb-1">Monthly</h3>
+                <p className="text-sm text-muted-foreground mb-6">For growing businesses</p>
+                <div className="mb-6">
+                  <span className="text-4xl font-bold text-foreground">₹499</span>
+                  <span className="text-muted-foreground text-sm"> / month</span>
+                </div>
+                <ul className="space-y-3 text-sm text-muted-foreground mb-8 text-left">
+                  {["Everything in Free Trial", "Unlimited invoices", "Advanced GST reports", "Credit & Debit notes", "Priority WhatsApp support", "CSV & PDF exports"].map((f) => (
+                    <li key={f} className="flex items-center gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> {f}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <ul className="space-y-3 text-sm text-muted-foreground mb-8 text-left">
-                {["Everything in Free Trial", "Unlimited invoices", "Advanced GST reports (GSTR-1, 3B)", "Credit & Debit notes", "Priority WhatsApp support", "CSV & PDF exports"].map((f) => (
-                  <li key={f} className="flex items-center gap-2.5">
-                    <CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> {f}
-                  </li>
-                ))}
-              </ul>
               <Button asChild className="w-full" size="lg">
                 <a href={`https://wa.me/919373751128?text=${encodeURIComponent("Hi! I'd like to subscribe to the OPIS Monthly Plan (₹499/month). Please share the payment details.")}`} target="_blank" rel="noopener noreferrer">
                   Subscribe via WhatsApp
@@ -363,24 +367,26 @@ const Dashboard = () => {
             </Card>
 
             {/* Yearly */}
-            <Card className="p-8 hover:shadow-md transition-shadow relative">
+            <Card className="p-8 hover:shadow-md transition-shadow relative flex flex-col">
               <div className="absolute -top-3 right-4 bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full">
                 Save 33%
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-1">Yearly</h3>
-              <p className="text-sm text-muted-foreground mb-6">Best value for committed teams</p>
-              <div className="mb-1">
-                <span className="text-4xl font-bold text-foreground">₹3,999</span>
-                <span className="text-muted-foreground text-sm"> / year</span>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-foreground mb-1">Yearly</h3>
+                <p className="text-sm text-muted-foreground mb-6">Best value for committed teams</p>
+                <div className="mb-6">
+                  <span className="text-4xl font-bold text-foreground">₹3,999</span>
+                  <span className="text-muted-foreground text-sm"> / year</span>
+                  <p className="text-xs text-muted-foreground line-through mt-1">₹5,988/year</p>
+                </div>
+                <ul className="space-y-3 text-sm text-muted-foreground mb-8 text-left">
+                  {["Everything in Monthly", "Unlimited everything", "Dedicated account manager", "Custom invoice branding", "Data backup & export", "2 months free"].map((f) => (
+                    <li key={f} className="flex items-center gap-2.5">
+                      <CheckCircle2 className="w-4 h-4 text-muted-foreground/50 shrink-0" /> {f}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <p className="text-xs text-muted-foreground line-through mb-5">₹5,988/year</p>
-              <ul className="space-y-3 text-sm text-muted-foreground mb-8 text-left">
-                {["Everything in Monthly", "Unlimited everything", "Dedicated account manager", "Custom invoice branding", "Data backup & export", "2 months free"].map((f) => (
-                  <li key={f} className="flex items-center gap-2.5">
-                    <CheckCircle2 className="w-4 h-4 text-muted-foreground/50 shrink-0" /> {f}
-                  </li>
-                ))}
-              </ul>
               <Button asChild variant="outline" className="w-full" size="lg">
                 <a href={`https://wa.me/919373751128?text=${encodeURIComponent("Hi! I'd like to subscribe to the OPIS Yearly Plan (₹3,999/year). Please share the payment details.")}`} target="_blank" rel="noopener noreferrer">
                   Subscribe via WhatsApp
