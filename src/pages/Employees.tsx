@@ -41,8 +41,8 @@ interface Employee {
 
 const emptyForm = {
   name: "", email: "", phone: "", department: "", designation: "",
-  joining_date: "", status: "active", gender: "", basic_salary: 0, allowances: 0,
-  deductions: 0, bank_name: "", bank_account_number: "", bank_ifsc_code: "",
+  joining_date: "", status: "active", gender: "", basic_salary: 0,
+  bank_name: "", bank_account_number: "", bank_ifsc_code: "",
   address: "", emergency_contact: "", notes: "", uan: "", ot_pay: 0,
 };
 
@@ -82,8 +82,6 @@ const Employees = () => {
       status: form.status,
       gender: form.gender || null,
       basic_salary: Number(form.basic_salary) || 0,
-      allowances: Number(form.allowances) || 0,
-      deductions: Number(form.deductions) || 0,
       bank_name: form.bank_name || null,
       bank_account_number: form.bank_account_number || null,
       bank_ifsc_code: form.bank_ifsc_code || null,
@@ -115,8 +113,8 @@ const Employees = () => {
       name: emp.name, email: emp.email || "", phone: emp.phone || "",
       department: emp.department || "", designation: emp.designation || "",
       joining_date: emp.joining_date || "", status: emp.status, gender: emp.gender || "",
-      basic_salary: emp.basic_salary, allowances: emp.allowances,
-      deductions: emp.deductions, bank_name: emp.bank_name || "",
+      basic_salary: emp.basic_salary,
+      bank_name: emp.bank_name || "",
       bank_account_number: emp.bank_account_number || "",
       bank_ifsc_code: emp.bank_ifsc_code || "", address: emp.address || "",
       emergency_contact: emp.emergency_contact || "", notes: emp.notes || "",
@@ -202,8 +200,6 @@ const Employees = () => {
                 </Select>
               </div>
               <div><Label>Basic Salary</Label><Input type="number" value={form.basic_salary} onChange={e => setForm(f => ({ ...f, basic_salary: Number(e.target.value) }))} /></div>
-              <div><Label>Allowances</Label><Input type="number" value={form.allowances} onChange={e => setForm(f => ({ ...f, allowances: Number(e.target.value) }))} /></div>
-              <div><Label>Deductions</Label><Input type="number" value={form.deductions} onChange={e => setForm(f => ({ ...f, deductions: Number(e.target.value) }))} /></div>
               <div><Label>OT Pay (per hour)</Label><Input type="number" value={form.ot_pay} onChange={e => setForm(f => ({ ...f, ot_pay: Number(e.target.value) }))} placeholder="Overtime rate per hour" /></div>
               <div><Label>UAN</Label><Input value={form.uan} onChange={e => setForm(f => ({ ...f, uan: e.target.value }))} placeholder="Universal Account Number" /></div>
               <div><Label>Bank Name</Label><Input value={form.bank_name} onChange={e => setForm(f => ({ ...f, bank_name: e.target.value }))} /></div>
@@ -259,7 +255,7 @@ const Employees = () => {
                         {emp.status}
                       </Badge>
                     </TableCell>
-                    <TableCell>{formatINR(emp.basic_salary + emp.allowances - emp.deductions)}</TableCell>
+                    <TableCell>{formatINR(emp.basic_salary)}</TableCell>
                     <TableCell>
                       <div className="flex gap-1" onClick={e => e.stopPropagation()}>
                         <Button variant="ghost" size="icon" onClick={() => handleEdit(emp)}><Pencil className="h-4 w-4" /></Button>
@@ -302,10 +298,7 @@ const Employees = () => {
               <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Salary Details</div>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div><span className="text-muted-foreground">Basic:</span> {formatINR(selectedEmployee.basic_salary)}</div>
-                <div><span className="text-muted-foreground">Allowances:</span> {formatINR(selectedEmployee.allowances)}</div>
-                <div><span className="text-muted-foreground">Deductions:</span> {formatINR(selectedEmployee.deductions)}</div>
                 <div><span className="text-muted-foreground">OT Pay/hr:</span> {formatINR(selectedEmployee.ot_pay)}</div>
-                <div className="font-semibold"><span className="text-muted-foreground">Net:</span> {formatINR(selectedEmployee.basic_salary + selectedEmployee.allowances - selectedEmployee.deductions)}</div>
               </div>
 
               <Separator className="my-3" />
