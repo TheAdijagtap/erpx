@@ -26,8 +26,6 @@ interface Employee {
   status: string;
   gender: string | null;
   basic_salary: number;
-  allowances: number;
-  deductions: number;
   bank_name: string | null;
   bank_account_number: string | null;
   bank_ifsc_code: string | null;
