@@ -7,7 +7,7 @@ import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { TrialBanner, TrialStatusBadge, TrialExpiredOverlay, calculateTrialStatus } from "@/components/TrialBanner";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 const WHATSAPP_NUMBER = "919373751128";
 
@@ -39,13 +39,9 @@ const Layout = () => {
   const { isAdmin } = useAdminCheck();
   const location = useLocation();
 
-  const hrmPaths = ["/employees", "/attendance", "/leaves", "/payroll", "/payroll-settings"];
-  const isHrmActive = hrmPaths.includes(location.pathname);
-  const [hrmOpen, setHrmOpen] = useState(isHrmActive);
-
-  useEffect(() => {
-    if (isHrmActive) setHrmOpen(true);
-  }, [isHrmActive]);
+  const hrmPaths = ["/employees", "/attendance", "/leaves", "/payroll"];
+  const isHrmActive = hrmPaths.some(p => location.pathname.startsWith(p));
+  const [hrmOpen, setHrmOpen] = useState(true);
 
   const allNavigation: NavEntry[] = [
     { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
