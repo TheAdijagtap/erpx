@@ -141,11 +141,14 @@ export function generatePayslipHTML(payslip: PayslipData, business: BusinessData
     <div class="info-section" style="border-right:1px solid #e2e8f0;">
       <div class="info-label">Bank Name</div>
       <div class="info-value">${eBankName}</div>
+      <div class="info-label">Account No.</div>
+      <div class="info-value">${eBankAcc}</div>
     </div>
-    <div class="info-section" style="display:flex;gap:24px;">
-      <div><div class="info-label">Account No.</div><div class="info-value">${eBankAcc}</div></div>
-      <div><div class="info-label">IFSC</div><div class="info-value">${eBankIfsc}</div></div>
-      <div><div class="info-label">UAN</div><div class="info-value">${eUan}</div></div>
+    <div class="info-section">
+      <div class="info-label">IFSC</div>
+      <div class="info-value">${eBankIfsc}</div>
+      <div class="info-label">UAN</div>
+      <div class="info-value">${eUan}</div>
     </div>
   </div>
 
