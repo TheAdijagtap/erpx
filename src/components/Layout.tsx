@@ -140,7 +140,7 @@ const Layout = () => {
                       className={cn(
                         "flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-md transition-colors",
                         isHrmActive
-                          ? "text-sidebar-primary-foreground bg-sidebar-accent"
+                          ? "text-foreground font-semibold bg-sidebar-accent"
                           : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                       )}
                     >
