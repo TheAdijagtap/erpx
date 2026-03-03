@@ -112,18 +112,18 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
-      <Card className="w-full max-w-md shadow-lg">
-        <CardHeader className="text-center space-y-4">
-          <div className="mx-auto flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-sm shadow-sm border">
+        <CardHeader className="text-center space-y-3 pb-4">
+          <div className="mx-auto">
             <img 
               src="/assets/opis-logo.png" 
               alt="OPIS Logo" 
-              className="h-16 object-contain" 
+              className="h-10 object-contain" 
             />
           </div>
-          <CardDescription className="text-muted-foreground">
-            Manage your inventory, orders, and business
+          <CardDescription className="text-muted-foreground text-sm">
+            Sign in to manage your business
           </CardDescription>
         </CardHeader>
         <CardContent>
