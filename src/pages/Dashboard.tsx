@@ -304,65 +304,93 @@ const Dashboard = () => {
 
       {/* ── Pricing ── */}
       <section id="pricing" className="py-20 md:py-28 px-6 bg-muted/30">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
-            <span className="text-xs font-semibold tracking-widest uppercase text-primary">Pricing</span>
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-widest uppercase text-primary bg-primary/10 px-3 py-1.5 rounded-full mb-4">
+              <Zap className="w-3.5 h-3.5" /> Simple Pricing
+            </span>
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mt-3 mb-4">
-              Simple, Transparent Pricing
+              Choose the Right Plan for Your Business
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              All features included in every plan. No hidden fees.
+              Start free with a 14-day trial. Upgrade anytime via WhatsApp — no complicated checkout.
             </p>
           </div>
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Monthly */}
-            <Card className="p-8 text-center hover:shadow-md transition-shadow">
-              <h3 className="text-lg font-semibold text-foreground mb-1">Monthly</h3>
-              <p className="text-sm text-muted-foreground mb-6">Pay as you go</p>
+          <div className="grid md:grid-cols-3 gap-6 items-start">
+            {/* Free Trial */}
+            <Card className="p-8 hover:shadow-md transition-shadow">
+              <h3 className="text-lg font-semibold text-foreground mb-1">Free Trial</h3>
+              <p className="text-sm text-muted-foreground mb-6">Perfect to get started</p>
               <div className="mb-6">
-                <span className="text-4xl font-bold text-foreground">₹499</span>
-                <span className="text-muted-foreground text-sm">/month</span>
+                <span className="text-4xl font-bold text-foreground">₹0</span>
+                <span className="text-muted-foreground text-sm"> / 14 days</span>
               </div>
-              <ul className="space-y-2.5 text-sm text-muted-foreground mb-8">
-                {["All features included", "Unlimited transactions", "Priority support"].map((f) => (
-                  <li key={f} className="flex items-center gap-2 justify-center">
-                    <CheckCircle2 className="w-4 h-4 text-success shrink-0" /> {f}
+              <ul className="space-y-3 text-sm text-muted-foreground mb-8 text-left">
+                {["Full access to all features", "GST invoicing", "Expense tracking", "Up to 50 invoices", "Basic reports"].map((f) => (
+                  <li key={f} className="flex items-center gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-muted-foreground/50 shrink-0" /> {f}
                   </li>
                 ))}
               </ul>
               <Button asChild variant="outline" className="w-full" size="lg">
-                <a href="mailto:necrus@yahoo.com?subject=OPIS%20Monthly%20Subscription&body=Hi%2C%20I%20would%20like%20to%20subscribe%20to%20the%20OPIS%20Monthly%20Plan%20(%E2%82%B9499%2Fmonth).%20Please%20share%20the%20payment%20details.">
-                  Choose Monthly
+                <Link to="/auth">Start Free Trial</Link>
+              </Button>
+            </Card>
+
+            {/* Monthly - Most Popular */}
+            <Card className="p-8 border-2 border-primary relative hover:shadow-lg transition-shadow shadow-md">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-semibold px-4 py-1 rounded-full flex items-center gap-1.5">
+                <Zap className="w-3 h-3" /> Most Popular
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-1">Monthly</h3>
+              <p className="text-sm text-muted-foreground mb-6">For growing businesses</p>
+              <div className="mb-6">
+                <span className="text-4xl font-bold text-foreground">₹499</span>
+                <span className="text-muted-foreground text-sm"> / month</span>
+              </div>
+              <ul className="space-y-3 text-sm text-muted-foreground mb-8 text-left">
+                {["Everything in Free Trial", "Unlimited invoices", "Advanced GST reports (GSTR-1, 3B)", "Credit & Debit notes", "Priority WhatsApp support", "CSV & PDF exports"].map((f) => (
+                  <li key={f} className="flex items-center gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> {f}
+                  </li>
+                ))}
+              </ul>
+              <Button asChild className="w-full" size="lg">
+                <a href={`https://wa.me/919373751128?text=${encodeURIComponent("Hi! I'd like to subscribe to the OPIS Monthly Plan (₹499/month). Please share the payment details.")}`} target="_blank" rel="noopener noreferrer">
+                  Subscribe via WhatsApp
                 </a>
               </Button>
             </Card>
 
             {/* Yearly */}
-            <Card className="p-8 text-center border-2 border-primary relative hover:shadow-md transition-shadow">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
-                BEST VALUE
+            <Card className="p-8 hover:shadow-md transition-shadow relative">
+              <div className="absolute -top-3 right-4 bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full">
+                Save 33%
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-1">Yearly</h3>
-              <p className="text-sm text-primary font-medium mb-6">Save ₹998/year</p>
+              <p className="text-sm text-muted-foreground mb-6">Best value for committed teams</p>
               <div className="mb-1">
-                <span className="text-4xl font-bold text-foreground">₹4,990</span>
-                <span className="text-muted-foreground text-sm">/year</span>
+                <span className="text-4xl font-bold text-foreground">₹3,999</span>
+                <span className="text-muted-foreground text-sm"> / year</span>
               </div>
-              <p className="text-xs text-muted-foreground mb-6">₹416/month</p>
-              <ul className="space-y-2.5 text-sm text-muted-foreground mb-8">
-                {["All features included", "Unlimited transactions", "Priority support"].map((f) => (
-                  <li key={f} className="flex items-center gap-2 justify-center">
-                    <CheckCircle2 className="w-4 h-4 text-success shrink-0" /> {f}
+              <p className="text-xs text-muted-foreground line-through mb-5">₹5,988/year</p>
+              <ul className="space-y-3 text-sm text-muted-foreground mb-8 text-left">
+                {["Everything in Monthly", "Unlimited everything", "Dedicated account manager", "Custom invoice branding", "Data backup & export", "2 months free"].map((f) => (
+                  <li key={f} className="flex items-center gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-muted-foreground/50 shrink-0" /> {f}
                   </li>
                 ))}
               </ul>
-              <Button asChild className="w-full" size="lg">
-                <a href="mailto:necrus@yahoo.com?subject=OPIS%20Yearly%20Subscription&body=Hi%2C%20I%20would%20like%20to%20subscribe%20to%20the%20OPIS%20Yearly%20Plan%20(%E2%82%B94%2C990%2Fyear).%20Please%20share%20the%20payment%20details.">
-                  Choose Yearly
+              <Button asChild variant="outline" className="w-full" size="lg">
+                <a href={`https://wa.me/919373751128?text=${encodeURIComponent("Hi! I'd like to subscribe to the OPIS Yearly Plan (₹3,999/year). Please share the payment details.")}`} target="_blank" rel="noopener noreferrer">
+                  Subscribe via WhatsApp
                 </a>
               </Button>
             </Card>
           </div>
+          <p className="text-center text-sm text-muted-foreground mt-8">
+            All plans include GST. Subscribe easily via WhatsApp — we activate your account instantly.
+          </p>
         </div>
       </section>
 
