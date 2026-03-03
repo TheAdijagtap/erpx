@@ -1,5 +1,5 @@
-import { Outlet, NavLink } from "react-router-dom";
-import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt, LogOut, Shield, HelpCircle, UserCheck, CalendarDays, IndianRupee } from "lucide-react";
+import { Outlet, NavLink, useLocation } from "react-router-dom";
+import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt, LogOut, Shield, HelpCircle, UserCheck, CalendarDays, IndianRupee, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useData } from "@/store/SupabaseDataContext";
@@ -7,6 +7,7 @@ import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { TrialBanner, TrialStatusBadge, TrialExpiredOverlay, calculateTrialStatus } from "@/components/TrialBanner";
+import { useState, useEffect } from "react";
 
 const WHATSAPP_NUMBER = "919373751128";
 
@@ -25,35 +26,64 @@ const ROUTE_TO_FEATURE: Record<string, string> = {
   "/business": "business",
 };
 
+type NavItem = { name: string; href: string; icon: any };
+type NavGroup = { label: string; icon: any; children: NavItem[] };
+type NavEntry = NavItem | NavGroup;
+
+const isGroup = (entry: NavEntry): entry is NavGroup => "children" in entry;
+
 const Layout = () => {
   const { user, signOut } = useAuth();
   const { trialStartDate, subscriptionEndDate, isSubUser, subUserPermissions } = useData();
   const { isExpired } = calculateTrialStatus(trialStartDate, subscriptionEndDate);
   const { isAdmin } = useAdminCheck();
+  const location = useLocation();
 
-  const allNavigation = [
+  const hrmPaths = ["/employees", "/attendance", "/leaves", "/payroll", "/payroll-settings"];
+  const isHrmActive = hrmPaths.includes(location.pathname);
+  const [hrmOpen, setHrmOpen] = useState(isHrmActive);
+
+  useEffect(() => {
+    if (isHrmActive) setHrmOpen(true);
+  }, [isHrmActive]);
+
+  const allNavigation: NavEntry[] = [
     { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
     { name: "Inventory", href: "/inventory", icon: Package },
     { name: "Purchase Orders", href: "/purchase-orders", icon: ShoppingCart },
     { name: "Goods Receipt", href: "/goods-receipt", icon: FileText },
     { name: "Proforma Invoice", href: "/proforma", icon: Receipt },
     { name: "Suppliers", href: "/suppliers", icon: Users },
-    { name: "Employees", href: "/employees", icon: UserCheck },
-    { name: "Attendance", href: "/attendance", icon: CalendarDays },
-    { name: "Leave Mgmt", href: "/leaves", icon: CalendarDays },
-    { name: "Payroll", href: "/payroll", icon: IndianRupee },
+    {
+      label: "HRM",
+      icon: UserCheck,
+      children: [
+        { name: "Employees", href: "/employees", icon: UserCheck },
+        { name: "Attendance", href: "/attendance", icon: CalendarDays },
+        { name: "Leave Mgmt", href: "/leaves", icon: CalendarDays },
+        { name: "Payroll", href: "/payroll", icon: IndianRupee },
+      ],
+    },
     { name: "Business Setup", href: "/business", icon: Building },
     ...(isAdmin ? [{ name: "Admin Panel", href: "/admin", icon: Shield }] : []),
   ];
 
   // Filter navigation based on sub-user permissions
-  // Dashboard is always accessible for sub-users
   const navigation = isSubUser
-    ? allNavigation.filter(item => {
-        if (item.href === "/dashboard") return true; // Always show dashboard
-        const featureKey = ROUTE_TO_FEATURE[item.href];
-        return featureKey ? subUserPermissions.includes(featureKey) : false;
-      })
+    ? allNavigation.map((entry) => {
+        if (isGroup(entry)) {
+          return {
+            ...entry,
+            children: entry.children.filter((item) => {
+              const featureKey = ROUTE_TO_FEATURE[item.href];
+              return featureKey ? subUserPermissions.includes(featureKey) : false;
+            }),
+          };
+        }
+        if (entry.href === "/dashboard") return entry;
+        const featureKey = ROUTE_TO_FEATURE[entry.href];
+        return featureKey && subUserPermissions.includes(featureKey) ? entry : null;
+      }).filter((e): e is NavEntry => e !== null && (!isGroup(e) || e.children.length > 0))
     : allNavigation;
 
   const handleSignOut = async () => {
@@ -66,6 +96,28 @@ const Layout = () => {
       "Hi! I would like to subscribe to OPIS app. Please share the subscription details."
     );
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, "_blank");
+  };
+
+  const renderNavItem = (item: NavItem) => {
+    const Icon = item.icon;
+    return (
+      <NavLink
+        key={item.name}
+        to={item.href}
+        end={item.href === "/"}
+        className={({ isActive }) =>
+          cn(
+            "flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-[var(--transition-fast)]",
+            isActive
+              ? "bg-sidebar-primary text-sidebar-primary-foreground"
+              : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          )
+        }
+      >
+        <Icon className="mr-3 h-4 w-4" />
+        {item.name}
+      </NavLink>
+    );
   };
 
   return (
@@ -81,27 +133,39 @@ const Layout = () => {
             <img src="/assets/opis-logo.png" alt="OPIS Logo" className="h-10 object-contain" />
           </div>
           {/* Navigation */}
-          <nav className="flex-1 space-y-0.5 px-3 pt-6 pb-6">
-            {navigation.map((item) => {
-              const Icon = item.icon;
-              return (
-                <NavLink
-                  key={item.name}
-                  to={item.href}
-                  end={item.href === "/"}
-                  className={({ isActive }) =>
-                    cn(
-                      "flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-[var(--transition-fast)]",
-                      isActive
-                        ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                        : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                    )
-                  }
-                >
-                  <Icon className="mr-3 h-4 w-4" />
-                  {item.name}
-                </NavLink>
-              );
+          <nav className="flex-1 space-y-0.5 px-3 pt-6 pb-6 overflow-y-auto">
+            {navigation.map((entry) => {
+              if (isGroup(entry)) {
+                const GroupIcon = entry.icon;
+                return (
+                  <div key={entry.label}>
+                    <button
+                      onClick={() => setHrmOpen(!hrmOpen)}
+                      className={cn(
+                        "flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-md transition-colors",
+                        isHrmActive
+                          ? "text-sidebar-primary-foreground bg-sidebar-accent"
+                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                      )}
+                    >
+                      <GroupIcon className="mr-3 h-4 w-4" />
+                      {entry.label}
+                      <ChevronDown
+                        className={cn(
+                          "ml-auto h-4 w-4 transition-transform duration-200",
+                          hrmOpen && "rotate-180"
+                        )}
+                      />
+                    </button>
+                    {hrmOpen && (
+                      <div className="ml-4 mt-0.5 space-y-0.5 border-l border-sidebar-border pl-3">
+                        {entry.children.map(renderNavItem)}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+              return renderNavItem(entry);
             })}
           </nav>
           
