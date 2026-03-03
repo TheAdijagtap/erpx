@@ -1,8 +1,7 @@
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
   Package,
-  TrendingUp,
   ShoppingCart,
   FileText,
   BarChart3,
@@ -12,434 +11,215 @@ import {
   CheckCircle2,
   ArrowRight,
   Users,
-  DollarSign,
-  Lock,
-  AlertCircle,
-  Target,
-  Layers,
-  RefreshCw,
-  Eye,
-  Truck,
-  FileCheck,
-  Receipt,
-  AlertTriangle,
   UserCheck,
   CalendarDays,
   IndianRupee,
   QrCode,
-  Sparkles
+  ChevronRight,
+  Menu,
+  X,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { formatINR } from "@/lib/format";
+import { useState } from "react";
 
 const Dashboard = () => {
-  // Demo statistics for showcase
-  const stats = {
-    totalItems: 156,
-    totalInventoryValue: 2450000,
-    lowStockItems: 8,
-    totalPurchaseOrders: 47,
-    pendingPOs: 12,
-    totalPOValue: 1875000,
-    totalGoodsReceipts: 38,
-    pendingGRs: 3,
-    totalProformaInvoices: 29,
-    totalProformaValue: 980000,
-    pendingProformas: 5
-  };
-  
-  const features = [
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const modules = [
     {
       icon: Package,
-      title: "Smart Inventory Management",
-      description: "Track stock levels in real-time with automatic low-stock alerts and detailed analytics"
+      title: "Inventory",
+      description: "Real-time stock tracking with low-stock alerts, batch management, and item categorization.",
     },
     {
       icon: ShoppingCart,
       title: "Purchase Orders",
-      description: "Create and manage purchase orders with automated calculations and supplier tracking"
+      description: "Create, track, and manage purchase orders with automated GST calculations.",
     },
     {
       icon: FileText,
-      title: "Goods Receipt Notes",
-      description: "Record incoming inventory with complete audit trails and automatic stock updates"
+      title: "Goods Receipt",
+      description: "Record incoming inventory with quality checks and automatic stock updates.",
     },
     {
       icon: BarChart3,
       title: "Proforma Invoices",
-      description: "Generate professional invoices with GST calculations and customizable templates"
+      description: "Generate professional GST-compliant invoices with customizable templates.",
     },
     {
       icon: UserCheck,
       title: "Employee Management",
-      description: "Complete employee directory with profiles, departments, salary details, and bank info"
+      description: "Complete employee directory with profiles, departments, and salary details.",
     },
     {
       icon: CalendarDays,
-      title: "Attendance & Leave Tracking",
-      description: "Daily attendance with check-in/out, leave management, and calendar views"
+      title: "Attendance & Leave",
+      description: "Daily check-in/out tracking, leave approvals, and calendar overviews.",
     },
     {
       icon: QrCode,
-      title: "QR-Based Leave Requests",
-      description: "Employees scan a QR code to submit leave requests — no login needed, instant sync"
+      title: "QR Leave Requests",
+      description: "Employees scan a QR code to submit leave requests — no login needed.",
     },
     {
       icon: IndianRupee,
       title: "Payroll & Payslips",
-      description: "Auto-calculate salaries based on attendance, generate and download PDF payslips"
+      description: "Auto-calculate salaries from attendance and generate downloadable PDF payslips.",
     },
-    {
-      icon: TrendingUp,
-      title: "Real-time Analytics",
-      description: "Monitor your business performance with comprehensive dashboards and reports"
-    },
-    {
-      icon: Shield,
-      title: "Complete Compliance",
-      description: "Built-in GST support with automatic tax calculations and detailed records"
-    }
   ];
 
-  const benefits = [
-    {
-      icon: Zap,
-      title: "Boost Efficiency",
-      stat: "3x Faster",
-      description: "Streamline operations"
-    },
-    {
-      icon: DollarSign,
-      title: "Reduce Costs",
-      stat: "40% Savings",
-      description: "Optimize inventory"
-    },
-    {
-      icon: Clock,
-      title: "Save Time",
-      stat: "10hrs/week",
-      description: "Automate processes"
-    },
-    {
-      icon: Users,
-      title: "Scale Business",
-      stat: "Unlimited",
-      description: "Grow with confidence"
-    }
+  const metrics = [
+    { value: "20+", label: "Features" },
+    { value: "100%", label: "GST Compliant" },
+    { value: "<30min", label: "Setup Time" },
+    { value: "∞", label: "Scalability" },
   ];
 
-  const workflows = [
-    { step: "01", title: "Set Up", description: "Configure your business details and suppliers" },
-    { step: "02", title: "Add Items", description: "Create your inventory catalog with details" },
-    { step: "03", title: "Create Orders", description: "Generate purchase orders and track deliveries" },
-    { step: "04", title: "Manage Stock", description: "Receive goods and monitor inventory levels" }
+  const steps = [
+    { num: "01", title: "Configure Business", desc: "Add your business details, GST info, and branding." },
+    { num: "02", title: "Add Suppliers & Items", desc: "Build your supplier list and inventory catalog." },
+    { num: "03", title: "Start Operations", desc: "Create orders, receive goods, and generate invoices." },
+    { num: "04", title: "Manage Workforce", desc: "Track attendance, process payroll, and download payslips." },
   ];
 
-
-  const indianBusinessFeatures = [
-    {
-      icon: Shield,
-      title: "GST Compliance",
-      description: "Automatic GST calculations and compliance ready for Indian tax requirements"
-    },
-    {
-      icon: Lock,
-      title: "Secure Data",
-      description: "Enterprise-level security with encrypted data storage and regular backups"
-    },
-    {
-      icon: DollarSign,
-      title: "Cost Optimization",
-      description: "Track supplier prices, manage discounts, and optimize purchase costs"
-    },
-    {
-      icon: RefreshCw,
-      title: "Automated Workflows",
-      description: "Streamline repetitive tasks with automated purchase order and invoice generation"
-    }
+  const faqs = [
+    { q: "How long does it take to set up?", a: "Most businesses are fully operational within 30 minutes. Just configure your business details, add suppliers, and start managing inventory." },
+    { q: "Is OPIS GST compliant?", a: "Yes — all invoices, purchase orders, and receipts automatically calculate GST. Reports are compliance-ready for Indian tax requirements." },
+    { q: "Are there any item or transaction limits?", a: "No limits. OPIS scales with your business from small operations to large enterprises — unlimited items, suppliers, and transactions." },
+    { q: "How is my data secured?", a: "We use enterprise-grade encrypted storage, regular backups, and secure row-level access controls. Your business data is fully protected." },
   ];
 
-  const keyCapabilities = [
-    { number: "20+", label: "Key Features" },
-    { number: "100%", label: "GST Compliant" },
-    { number: "24/7", label: "Support Ready" },
-    { number: "∞", label: "Scalability" }
+  const navLinks = [
+    { label: "Features", href: "#features" },
+    { label: "How It Works", href: "#how-it-works" },
+    { label: "Pricing", href: "#pricing" },
+    { label: "FAQ", href: "#faq" },
   ];
 
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-accent/5 py-20 px-6">
-        <div className="absolute inset-0 bg-grid-pattern opacity-5" />
-        <div className="max-w-6xl mx-auto relative z-10">
-          <div className="text-center space-y-6 animate-fade-in">
-            <div className="mb-6">
-              <img src="/assets/opis-logo.png" alt="OPIS Logo" className="h-20 mx-auto object-contain" />
+    <div className="min-h-screen bg-background">
+      {/* ── Header ── */}
+      <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-lg">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2">
+            <img src="/assets/opis-logo.png" alt="OPIS" className="h-7 object-contain" />
+          </Link>
+
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-8">
+            {navLinks.map((l) => (
+              <a key={l.label} href={l.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                {l.label}
+              </a>
+            ))}
+          </nav>
+
+          <div className="hidden md:flex items-center gap-3">
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/auth">Sign In</Link>
+            </Button>
+            <Button asChild size="sm">
+              <Link to="/auth">Get Started <ArrowRight className="ml-1 h-3.5 w-3.5" /></Link>
+            </Button>
+          </div>
+
+          {/* Mobile menu toggle */}
+          <button className="md:hidden p-2" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
+
+        {/* Mobile nav */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-border bg-background px-6 py-4 space-y-3">
+            {navLinks.map((l) => (
+              <a key={l.label} href={l.href} onClick={() => setMobileMenuOpen(false)} className="block text-sm text-muted-foreground hover:text-foreground">
+                {l.label}
+              </a>
+            ))}
+            <div className="pt-3 border-t border-border flex gap-3">
+              <Button asChild variant="outline" size="sm" className="flex-1">
+                <Link to="/auth">Sign In</Link>
+              </Button>
+              <Button asChild size="sm" className="flex-1">
+                <Link to="/auth">Get Started</Link>
+              </Button>
             </div>
-            <div className="inline-block px-4 py-2 bg-primary/10 rounded-full text-primary text-sm font-medium">
-              <p>Order, Purchase & Inventory System</p>
-            </div>
-            <h1 className="text-5xl md:text-6xl font-bold text-foreground leading-tight">
-              Manage Your Inventory
+          </div>
+        )}
+      </header>
+
+      {/* ── Hero ── */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.06] via-background to-accent/[0.03]" />
+        <div className="relative max-w-6xl mx-auto px-6 pt-20 pb-24 md:pt-28 md:pb-32">
+          <div className="max-w-3xl mx-auto text-center space-y-6">
+            <span className="inline-block text-xs font-semibold tracking-widest uppercase text-primary bg-primary/10 px-4 py-1.5 rounded-full">
+              Built for Indian MSMEs
+            </span>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-foreground leading-[1.1] tracking-tight">
+              The All-in-One ERP
               <br />
-              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Like Never Before
-              </span>
+              <span className="text-primary">Your Business Needs</span>
             </h1>
-             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-               Streamline inventory, HR, payroll & invoicing — all in one place. 
-               With QR-based leave requests, real-time attendance, and automated payslips. Built for Indian businesses.
-             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-              <Button asChild size="lg" className="text-lg px-8 group">
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Inventory, purchasing, HR, payroll & invoicing — unified in one GST-compliant platform. Set up in under 30 minutes.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+              <Button asChild size="lg" className="text-base px-8">
                 <Link to="/auth">
-                  Sign In / Sign Up
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  Start Free Trial
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="text-lg px-8">
-                <Link to="/dashboard">Go to Dashboard</Link>
+              <Button asChild size="lg" variant="outline" className="text-base px-8">
+                <a href="#features">Explore Features</a>
               </Button>
             </div>
+            <p className="text-xs text-muted-foreground pt-1">No credit card required · 14-day free trial</p>
           </div>
         </div>
       </section>
 
-      {/* Real-Time Statistics Section */}
-      <section className="py-16 px-6 bg-gradient-to-br from-primary/5 via-background to-accent/5">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Your Business at a Glance
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Sample statistics showcasing system capabilities
-            </p>
-          </div>
-          
-          {/* Main Stats Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card className="p-6 hover:shadow-lg transition-shadow border-l-4 border-l-primary">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Total Inventory Items</p>
-                  <p className="text-3xl font-bold text-foreground">{stats.totalItems}</p>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Value: {formatINR(stats.totalInventoryValue)}
-                  </p>
-                </div>
-                <div className="p-3 bg-primary/10 rounded-lg">
-                  <Package className="w-6 h-6 text-primary" />
-                </div>
+      {/* ── Metrics Strip ── */}
+      <section className="border-y border-border bg-muted/30">
+        <div className="max-w-6xl mx-auto px-6 py-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {metrics.map((m) => (
+              <div key={m.label} className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-primary">{m.value}</div>
+                <div className="text-sm text-muted-foreground mt-1 font-medium">{m.label}</div>
               </div>
-            </Card>
-
-            <Card className="p-6 hover:shadow-lg transition-shadow border-l-4 border-l-blue-500">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Purchase Orders</p>
-                  <p className="text-3xl font-bold text-foreground">{stats.totalPurchaseOrders}</p>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {stats.pendingPOs} pending
-                  </p>
-                </div>
-                <div className="p-3 bg-blue-500/10 rounded-lg">
-                  <ShoppingCart className="w-6 h-6 text-blue-500" />
-                </div>
-              </div>
-            </Card>
-
-            <Card className="p-6 hover:shadow-lg transition-shadow border-l-4 border-l-green-500">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Goods Receipts</p>
-                  <p className="text-3xl font-bold text-foreground">{stats.totalGoodsReceipts}</p>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {stats.pendingGRs} in quality check
-                  </p>
-                </div>
-                <div className="p-3 bg-green-500/10 rounded-lg">
-                  <Receipt className="w-6 h-6 text-green-500" />
-                </div>
-              </div>
-            </Card>
-
-            <Card className="p-6 hover:shadow-lg transition-shadow border-l-4 border-l-purple-500">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Proforma Invoices</p>
-                  <p className="text-3xl font-bold text-foreground">{stats.totalProformaInvoices}</p>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {stats.pendingProformas} pending
-                  </p>
-                </div>
-                <div className="p-3 bg-purple-500/10 rounded-lg">
-                  <FileText className="w-6 h-6 text-purple-500" />
-                </div>
-              </div>
-            </Card>
-          </div>
-
-          {/* Financial Overview */}
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
-            <Card className="p-6 hover:shadow-lg transition-shadow">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Total Purchase Value</p>
-                  <p className="text-2xl font-bold text-foreground">{formatINR(stats.totalPOValue)}</p>
-                </div>
-                <div className="p-3 bg-blue-500/10 rounded-lg">
-                  <DollarSign className="w-6 h-6 text-blue-500" />
-                </div>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <TrendingUp className="w-4 h-4 text-green-500" />
-                <span className="text-muted-foreground">Across {stats.totalPurchaseOrders} orders</span>
-              </div>
-            </Card>
-
-            <Card className="p-6 hover:shadow-lg transition-shadow">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-1">Total Proforma Value</p>
-                  <p className="text-2xl font-bold text-foreground">{formatINR(stats.totalProformaValue)}</p>
-                </div>
-                <div className="p-3 bg-purple-500/10 rounded-lg">
-                  <BarChart3 className="w-6 h-6 text-purple-500" />
-                </div>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <TrendingUp className="w-4 h-4 text-green-500" />
-                <span className="text-muted-foreground">Across {stats.totalProformaInvoices} invoices</span>
-              </div>
-            </Card>
-          </div>
-
-          {/* Alert Section */}
-          {stats.lowStockItems > 0 && (
-            <Card className="p-6 bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900">
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-amber-500/10 rounded-lg">
-                  <AlertTriangle className="w-6 h-6 text-amber-500" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-foreground mb-1">Low Stock Alert</h3>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    {stats.lowStockItems} {stats.lowStockItems === 1 ? 'item is' : 'items are'} below minimum stock level
-                  </p>
-                  <Button asChild size="sm" variant="outline">
-                    <Link to="/inventory">View Inventory</Link>
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          )}
-        </div>
-      </section>
-
-      {/* Key Metrics Section */}
-      <section className="py-16 px-6 bg-muted/30">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {keyCapabilities.map((metric) => (
-              <Card key={metric.label} className="p-8 text-center hover:shadow-lg transition-[var(--transition-smooth)]">
-                <div className="text-4xl font-bold text-primary mb-2">{metric.number}</div>
-                <div className="text-sm text-muted-foreground font-medium">{metric.label}</div>
-              </Card>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section className="py-16 px-6">
+      {/* ── Features ── */}
+      <section id="features" className="py-20 md:py-28 px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Why Choose OPIS?
+          <div className="text-center mb-14">
+            <span className="text-xs font-semibold tracking-widest uppercase text-primary">Modules</span>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mt-3 mb-4">
+              Everything You Need, Nothing You Don't
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Experience the benefits of streamlined inventory management
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Eight powerful modules working together to run your entire business from one dashboard.
             </p>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {benefits.map((benefit) => {
-              const Icon = benefit.icon;
-              return (
-                <Card key={benefit.title} className="p-6 text-center hover:shadow-lg transition-[var(--transition-smooth)]">
-                  <Icon className="w-8 h-8 text-primary mx-auto mb-3" />
-                  <div className="text-3xl font-bold text-foreground mb-1">{benefit.stat}</div>
-                  <div className="text-sm font-medium text-foreground mb-1">{benefit.title}</div>
-                  <div className="text-xs text-muted-foreground">{benefit.description}</div>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-20 px-6 bg-muted/30">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Everything You Need to Succeed
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Comprehensive features designed to simplify your inventory management
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {modules.map((mod) => {
+              const Icon = mod.icon;
               return (
                 <Card
-                  key={feature.title}
-                  className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)] animate-fade-in"
-                  style={{ animationDelay: `${index * 100}ms` }}
+                  key={mod.title}
+                  className="group p-6 hover:shadow-md transition-all duration-300 hover:border-primary/30"
                 >
-                  <div className="p-3 bg-primary/10 rounded-lg w-fit mb-4">
-                    <Icon className="w-6 h-6 text-primary" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
-                    {feature.title}
-                  </h3>
-                  <p className="text-muted-foreground text-sm">
-                    {feature.description}
-                  </p>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-
-      {/* Indian Business Features */}
-      <section className="py-20 px-6 bg-muted/30">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Built for Indian Businesses
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Features specifically designed to meet Indian business requirements
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {indianBusinessFeatures.map((feature) => {
-              const Icon = feature.icon;
-              return (
-                <Card key={feature.title} className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
-                  <div className="p-3 bg-primary/10 rounded-lg w-fit mb-4">
+                  <div className="p-2.5 bg-primary/10 rounded-lg w-fit mb-4 group-hover:bg-primary/15 transition-colors">
                     <Icon className="w-5 h-5 text-primary" />
                   </div>
-                  <h3 className="font-semibold text-foreground mb-2">
-                    {feature.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {feature.description}
-                  </p>
+                  <h3 className="font-semibold text-foreground mb-1.5">{mod.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{mod.description}</p>
                 </Card>
               );
             })}
@@ -447,28 +227,74 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-20 px-6">
+      {/* ── Why OPIS ── */}
+      <section className="py-20 md:py-28 px-6 bg-muted/30">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Get Started in Minutes
+          <div className="grid md:grid-cols-2 gap-16 items-center">
+            <div>
+              <span className="text-xs font-semibold tracking-widest uppercase text-primary">Why OPIS</span>
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground mt-3 mb-6">
+                Purpose-Built for Indian MSMEs
+              </h2>
+              <p className="text-muted-foreground mb-8 leading-relaxed">
+                Large ERPs are expensive and complex. Spreadsheets don't scale. OPIS bridges the gap — affordable, intuitive, and GST-ready from day one.
+              </p>
+              <div className="space-y-5">
+                {[
+                  { icon: Shield, text: "100% GST compliant with automatic tax calculations" },
+                  { icon: Zap, text: "Set up your entire business in under 30 minutes" },
+                  { icon: Clock, text: "Save 10+ hours per week on manual processes" },
+                  { icon: Users, text: "Scale from 1 to 1,000+ employees seamlessly" },
+                ].map((item) => (
+                  <div key={item.text} className="flex items-start gap-3">
+                    <div className="p-1.5 bg-primary/10 rounded-md mt-0.5">
+                      <item.icon className="w-4 h-4 text-primary" />
+                    </div>
+                    <p className="text-sm text-foreground">{item.text}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { num: "3×", label: "Faster Operations", sub: "vs manual tracking" },
+                { num: "40%", label: "Cost Savings", sub: "inventory optimization" },
+                { num: "10hrs", label: "Saved Weekly", sub: "automated workflows" },
+                { num: "0", label: "Paper Required", sub: "fully digital" },
+              ].map((stat) => (
+                <Card key={stat.label} className="p-6 text-center">
+                  <div className="text-2xl md:text-3xl font-bold text-primary mb-1">{stat.num}</div>
+                  <div className="text-sm font-medium text-foreground">{stat.label}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">{stat.sub}</div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── How It Works ── */}
+      <section id="how-it-works" className="py-20 md:py-28 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-14">
+            <span className="text-xs font-semibold tracking-widest uppercase text-primary">Getting Started</span>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mt-3 mb-4">
+              Up and Running in 4 Steps
             </h2>
-            <p className="text-lg text-muted-foreground">
-              Four simple steps to transform your inventory management
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              From sign-up to your first payslip — in under 30 minutes.
             </p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {workflows.map((workflow, index) => (
-              <div key={workflow.step} className="relative">
-                <Card className="p-6 h-full hover:shadow-lg transition-[var(--transition-smooth)]">
-                  <div className="text-5xl font-bold text-primary/20 mb-4">{workflow.step}</div>
-                  <h3 className="text-lg font-semibold text-foreground mb-2">{workflow.title}</h3>
-                  <p className="text-muted-foreground text-sm">{workflow.description}</p>
-                  <CheckCircle2 className="w-5 h-5 text-success absolute top-6 right-6" />
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {steps.map((step, i) => (
+              <div key={step.num} className="relative">
+                <Card className="p-6 h-full">
+                  <div className="text-4xl font-bold text-primary/15 mb-3">{step.num}</div>
+                  <h3 className="font-semibold text-foreground mb-2">{step.title}</h3>
+                  <p className="text-sm text-muted-foreground">{step.desc}</p>
                 </Card>
-                {index < workflows.length - 1 && (
-                  <ArrowRight className="hidden lg:block absolute top-1/2 -right-3 transform -translate-y-1/2 text-primary/30 w-6 h-6" />
+                {i < steps.length - 1 && (
+                  <ChevronRight className="hidden lg:block absolute top-1/2 -right-3.5 -translate-y-1/2 w-5 h-5 text-primary/25" />
                 )}
               </div>
             ))}
@@ -476,468 +302,142 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Key Workflows Section */}
-      <section className="py-20 px-6 bg-muted/30">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Essential Workflows
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Streamlined processes for your daily inventory operations
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <ShoppingCart className="w-5 h-5 text-primary" />
-                </div>
-                <h3 className="font-semibold text-foreground">Purchase Order Management</h3>
-              </div>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  Create orders from supplier lists
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  Track order status and deliveries
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  Manage supplier communications
-                </li>
-              </ul>
-            </Card>
-
-            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <Truck className="w-5 h-5 text-primary" />
-                </div>
-                <h3 className="font-semibold text-foreground">Goods Receipt</h3>
-              </div>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  Record incoming inventory
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  Quality check workflows
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  Automatic stock updates
-                </li>
-              </ul>
-            </Card>
-
-            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <TrendingUp className="w-5 h-5 text-primary" />
-                </div>
-                <h3 className="font-semibold text-foreground">Price Analytics</h3>
-              </div>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  Track price fluctuations
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  Compare supplier pricing
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  Optimize procurement costs
-                </li>
-              </ul>
-            </Card>
-
-            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <FileCheck className="w-5 h-5 text-primary" />
-                </div>
-                <h3 className="font-semibold text-foreground">Invoice Management</h3>
-              </div>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  Generate proforma invoices
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  GST calculations included
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  Professional templates
-                </li>
-              </ul>
-            </Card>
-
-            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <AlertCircle className="w-5 h-5 text-primary" />
-                </div>
-                <h3 className="font-semibold text-foreground">Inventory Alerts</h3>
-              </div>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  Low stock notifications
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  Expiry date tracking
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  Real-time monitoring
-                </li>
-              </ul>
-            </Card>
-
-            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <BarChart3 className="w-5 h-5 text-primary" />
-                </div>
-                <h3 className="font-semibold text-foreground">Reports & Analytics</h3>
-              </div>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  Detailed inventory reports
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  Supplier performance metrics
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  Business KPI dashboard
-                </li>
-              </ul>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* NEW: HR & Payroll Section */}
-      <section className="py-20 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-primary text-sm font-medium mb-4">
-              <Sparkles className="w-4 h-4" />
-              New Features
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              HR & Payroll — Now Built In
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Manage your workforce alongside your inventory — employees, attendance, leaves, and payroll all in one platform.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)] border-primary/20">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <UserCheck className="w-5 h-5 text-primary" />
-                </div>
-                <h3 className="font-semibold text-foreground">Employee Directory</h3>
-              </div>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  Complete employee profiles
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  Department & designation tracking
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  Bank & salary details management
-                </li>
-              </ul>
-            </Card>
-
-            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)] border-primary/20">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <CalendarDays className="w-5 h-5 text-primary" />
-                </div>
-                <h3 className="font-semibold text-foreground">Attendance & Leave</h3>
-              </div>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  Daily check-in / check-out
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  Leave approval workflow
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  QR code leave requests — no login needed
-                </li>
-              </ul>
-            </Card>
-
-            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)] border-primary/20">
-              <div className="flex items-start gap-3 mb-4">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <IndianRupee className="w-5 h-5 text-primary" />
-                </div>
-                <h3 className="font-semibold text-foreground">Payroll & Payslips</h3>
-              </div>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  Auto salary calculation from attendance
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  Configurable payroll rules & deductions
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-success shrink-0 mt-0.5" />
-                  PDF payslip generation & download
-                </li>
-              </ul>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="py-20 px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Quick Questions?
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Everything you need to know to get started
-            </p>
-          </div>
-          <div className="space-y-4">
-            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
-              <details className="cursor-pointer">
-                <summary className="flex items-center justify-between font-semibold text-foreground hover:text-primary transition-colors">
-                  <span>How long does it take to set up?</span>
-                  <span className="text-sm">+</span>
-                </summary>
-                <p className="text-muted-foreground text-sm mt-4">
-                  OPIS is designed for quick setup. You can start in minutes by configuring your business details, adding suppliers, and creating your first inventory items. Most businesses are fully operational within 30 minutes.
-                </p>
-              </details>
-            </Card>
-
-            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
-              <details className="cursor-pointer">
-                <summary className="flex items-center justify-between font-semibold text-foreground hover:text-primary transition-colors">
-                  <span>Is it GST compliant?</span>
-                  <span className="text-sm">+</span>
-                </summary>
-                <p className="text-muted-foreground text-sm mt-4">
-                  Yes, OPIS is fully GST compliant for Indian businesses. All invoices and receipts automatically calculate GST based on your configured rates, and you can generate compliant tax reports.
-                </p>
-              </details>
-            </Card>
-
-            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
-              <details className="cursor-pointer">
-                <summary className="flex items-center justify-between font-semibold text-foreground hover:text-primary transition-colors">
-                  <span>What inventory limits do I have?</span>
-                  <span className="text-sm">+</span>
-                </summary>
-                <p className="text-muted-foreground text-sm mt-4">
-                  There are no limits on the number of items, suppliers, or transactions you can manage. OPIS scales with your business from small operations to large enterprises.
-                </p>
-              </details>
-            </Card>
-
-            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
-              <details className="cursor-pointer">
-                <summary className="flex items-center justify-between font-semibold text-foreground hover:text-primary transition-colors">
-                  <span>Can I import existing data?</span>
-                  <span className="text-sm">+</span>
-                </summary>
-                <p className="text-muted-foreground text-sm mt-4">
-                  Yes, you can manually add your existing inventory and supplier data through our intuitive interface. We're also working on bulk import features for easier data migration.
-                </p>
-              </details>
-            </Card>
-
-            <Card className="p-6 hover:shadow-[var(--shadow-medium)] transition-[var(--transition-smooth)]">
-              <details className="cursor-pointer">
-                <summary className="flex items-center justify-between font-semibold text-foreground hover:text-primary transition-colors">
-                  <span>How is my data secured?</span>
-                  <span className="text-sm">+</span>
-                </summary>
-                <p className="text-muted-foreground text-sm mt-4">
-                  We employ enterprise-level security with encrypted data storage, regular backups, and secure access controls. Your business data is protected with industry-standard security practices.
-                </p>
-              </details>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section className="py-20 px-6 bg-gradient-to-br from-primary/5 via-background to-accent/5">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+      {/* ── Pricing ── */}
+      <section id="pricing" className="py-20 md:py-28 px-6 bg-muted/30">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-14">
+            <span className="text-xs font-semibold tracking-widest uppercase text-primary">Pricing</span>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mt-3 mb-4">
               Simple, Transparent Pricing
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Choose the plan that works best for your business
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              All features included in every plan. No hidden fees.
             </p>
           </div>
-          
-          <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-            {/* Monthly Plan */}
-            <Card className="p-8 hover:shadow-lg transition-shadow border-2 border-border">
-              <div className="text-center">
-                <h3 className="text-xl font-semibold text-foreground mb-2">Monthly</h3>
-                <p className="text-sm text-muted-foreground mb-6">Pay as you go</p>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold text-foreground">₹499</span>
-                  <span className="text-muted-foreground">/month</span>
-                </div>
-                <ul className="space-y-3 text-sm text-muted-foreground mb-8">
-                  <li className="flex items-center gap-2 justify-center">
-                    <CheckCircle2 className="w-4 h-4 text-success" />
-                    All features included
-                  </li>
-                  <li className="flex items-center gap-2 justify-center">
-                    <CheckCircle2 className="w-4 h-4 text-success" />
-                    Unlimited transactions
-                  </li>
-                  <li className="flex items-center gap-2 justify-center">
-                    <CheckCircle2 className="w-4 h-4 text-success" />
-                    Priority support
-                  </li>
-                </ul>
-                <Button asChild className="w-full" size="lg">
-                  <a href="mailto:necrus@yahoo.com?subject=OPIS%20Monthly%20Subscription&body=Hi%2C%20I%20would%20like%20to%20subscribe%20to%20the%20OPIS%20Monthly%20Plan%20(%E2%82%B9499%2Fmonth).%20Please%20share%20the%20payment%20details.">Get Started</a>
-                </Button>
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Monthly */}
+            <Card className="p-8 text-center hover:shadow-md transition-shadow">
+              <h3 className="text-lg font-semibold text-foreground mb-1">Monthly</h3>
+              <p className="text-sm text-muted-foreground mb-6">Pay as you go</p>
+              <div className="mb-6">
+                <span className="text-4xl font-bold text-foreground">₹499</span>
+                <span className="text-muted-foreground text-sm">/month</span>
               </div>
+              <ul className="space-y-2.5 text-sm text-muted-foreground mb-8">
+                {["All features included", "Unlimited transactions", "Priority support"].map((f) => (
+                  <li key={f} className="flex items-center gap-2 justify-center">
+                    <CheckCircle2 className="w-4 h-4 text-success shrink-0" /> {f}
+                  </li>
+                ))}
+              </ul>
+              <Button asChild variant="outline" className="w-full" size="lg">
+                <a href="mailto:necrus@yahoo.com?subject=OPIS%20Monthly%20Subscription&body=Hi%2C%20I%20would%20like%20to%20subscribe%20to%20the%20OPIS%20Monthly%20Plan%20(%E2%82%B9499%2Fmonth).%20Please%20share%20the%20payment%20details.">
+                  Choose Monthly
+                </a>
+              </Button>
             </Card>
 
-            {/* Yearly Plan */}
-            <Card className="p-8 hover:shadow-lg transition-shadow border-2 border-primary relative overflow-hidden">
-              <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-bl-lg">
-                SAVE ₹998
+            {/* Yearly */}
+            <Card className="p-8 text-center border-2 border-primary relative hover:shadow-md transition-shadow">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
+                BEST VALUE
               </div>
-              <div className="text-center">
-                <h3 className="text-xl font-semibold text-foreground mb-2">Yearly</h3>
-                <p className="text-sm text-muted-foreground mb-6">Best value</p>
-                <div className="mb-2">
-                  <span className="text-4xl font-bold text-foreground">₹4,990</span>
-                  <span className="text-muted-foreground">/year</span>
-                </div>
-                <p className="text-sm text-primary font-medium mb-6">
-                  ₹416/month • Save ₹998
-                </p>
-                <ul className="space-y-3 text-sm text-muted-foreground mb-8">
-                  <li className="flex items-center gap-2 justify-center">
-                    <CheckCircle2 className="w-4 h-4 text-success" />
-                    All features included
-                  </li>
-                  <li className="flex items-center gap-2 justify-center">
-                    <CheckCircle2 className="w-4 h-4 text-success" />
-                    Unlimited transactions
-                  </li>
-                  <li className="flex items-center gap-2 justify-center">
-                    <CheckCircle2 className="w-4 h-4 text-success" />
-                    Priority support
-                  </li>
-                </ul>
-                <Button asChild className="w-full" size="lg">
-                  <a href="mailto:necrus@yahoo.com?subject=OPIS%20Yearly%20Subscription&body=Hi%2C%20I%20would%20like%20to%20subscribe%20to%20the%20OPIS%20Yearly%20Plan%20(%E2%82%B94%2C990%2Fyear).%20Please%20share%20the%20payment%20details.">Get Started</a>
-                </Button>
+              <h3 className="text-lg font-semibold text-foreground mb-1">Yearly</h3>
+              <p className="text-sm text-primary font-medium mb-6">Save ₹998/year</p>
+              <div className="mb-1">
+                <span className="text-4xl font-bold text-foreground">₹4,990</span>
+                <span className="text-muted-foreground text-sm">/year</span>
               </div>
+              <p className="text-xs text-muted-foreground mb-6">₹416/month</p>
+              <ul className="space-y-2.5 text-sm text-muted-foreground mb-8">
+                {["All features included", "Unlimited transactions", "Priority support"].map((f) => (
+                  <li key={f} className="flex items-center gap-2 justify-center">
+                    <CheckCircle2 className="w-4 h-4 text-success shrink-0" /> {f}
+                  </li>
+                ))}
+              </ul>
+              <Button asChild className="w-full" size="lg">
+                <a href="mailto:necrus@yahoo.com?subject=OPIS%20Yearly%20Subscription&body=Hi%2C%20I%20would%20like%20to%20subscribe%20to%20the%20OPIS%20Yearly%20Plan%20(%E2%82%B94%2C990%2Fyear).%20Please%20share%20the%20payment%20details.">
+                  Choose Yearly
+                </a>
+              </Button>
             </Card>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 px-6 bg-muted/30">
-        <div className="max-w-4xl mx-auto">
-          <Card className="p-12 bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20">
-            <div className="text-center space-y-6">
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-                Ready to Transform Your Business?
-              </h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Join hundreds of businesses using OPIS to streamline their inventory management, reduce costs, and scale efficiently.
-              </p>
-              <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">Get started in three easy steps:</p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                  <Button asChild size="lg" className="text-base px-8">
-                    <Link to="/business">1. Configure Business</Link>
-                  </Button>
-                  <Button asChild size="lg" className="text-base px-8">
-                    <Link to="/suppliers">2. Add Suppliers</Link>
-                  </Button>
-                  <Button asChild size="lg" className="text-base px-8">
-                    <Link to="/inventory">3. Manage Inventory</Link>
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </Card>
+      {/* ── FAQ ── */}
+      <section id="faq" className="py-20 md:py-28 px-6">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-14">
+            <span className="text-xs font-semibold tracking-widest uppercase text-primary">FAQ</span>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mt-3 mb-4">
+              Common Questions
+            </h2>
+          </div>
+          <div className="space-y-3">
+            {faqs.map((faq) => (
+              <Card key={faq.q} className="overflow-hidden">
+                <details className="group">
+                  <summary className="flex items-center justify-between p-5 cursor-pointer font-medium text-foreground hover:text-primary transition-colors text-sm">
+                    {faq.q}
+                    <ChevronRight className="w-4 h-4 text-muted-foreground transition-transform group-open:rotate-90 shrink-0 ml-4" />
+                  </summary>
+                  <div className="px-5 pb-5 text-sm text-muted-foreground leading-relaxed">
+                    {faq.a}
+                  </div>
+                </details>
+              </Card>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 px-6 border-t border-border bg-muted/30">
+      {/* ── CTA ── */}
+      <section className="py-20 md:py-28 px-6 bg-primary/[0.04]">
+        <div className="max-w-3xl mx-auto text-center space-y-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+            Ready to Streamline Your Business?
+          </h2>
+          <p className="text-muted-foreground max-w-xl mx-auto">
+            Join hundreds of Indian MSMEs running smarter operations with OPIS. Start your free trial today.
+          </p>
+          <Button asChild size="lg" className="text-base px-10">
+            <Link to="/auth">
+              Get Started Free
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      </section>
+
+      {/* ── Footer ── */}
+      <footer className="border-t border-border bg-background py-12 px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            {/* Brand */}
+          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-8 mb-10">
             <div>
-              <img src="/assets/opis-logo.png" alt="OPIS Logo" className="h-8 object-contain mb-3" />
-              <p className="text-sm text-muted-foreground mb-2">
-                Order, Purchase & Inventory System
-              </p>
+              <img src="/assets/opis-logo.png" alt="OPIS" className="h-7 object-contain mb-3" />
+              <p className="text-sm text-muted-foreground mb-1">Order, Purchase & Inventory System</p>
               <span className="text-xs text-muted-foreground">
-                A <span className="font-bold text-foreground">Necrus</span> Product
+                A <span className="font-semibold text-foreground">Necrus</span> Product
               </span>
             </div>
-
-            {/* Company */}
             <div>
               <h4 className="font-semibold text-foreground mb-3 text-sm">Company</h4>
               <ul className="space-y-2 text-sm">
-                <li><Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">About Us</Link></li>
+                <li><Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">About</Link></li>
                 <li><Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors">Contact</Link></li>
                 <li><Link to="/blog" className="text-muted-foreground hover:text-primary transition-colors">Blog</Link></li>
               </ul>
             </div>
-
-            {/* Product */}
             <div>
               <h4 className="font-semibold text-foreground mb-3 text-sm">Product</h4>
               <ul className="space-y-2 text-sm">
-                <li><Link to="/auth" className="text-muted-foreground hover:text-primary transition-colors">Sign In / Sign Up</Link></li>
+                <li><Link to="/auth" className="text-muted-foreground hover:text-primary transition-colors">Sign In</Link></li>
                 <li><a href="#features" className="text-muted-foreground hover:text-primary transition-colors">Features</a></li>
                 <li><a href="#pricing" className="text-muted-foreground hover:text-primary transition-colors">Pricing</a></li>
               </ul>
             </div>
-
-            {/* Legal */}
             <div>
               <h4 className="font-semibold text-foreground mb-3 text-sm">Legal</h4>
               <ul className="space-y-2 text-sm">
@@ -946,11 +446,8 @@ const Dashboard = () => {
               </ul>
             </div>
           </div>
-
           <div className="pt-8 border-t border-border text-center">
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} OPIS. All rights reserved.
-            </p>
+            <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} OPIS. All rights reserved.</p>
           </div>
         </div>
       </footer>
