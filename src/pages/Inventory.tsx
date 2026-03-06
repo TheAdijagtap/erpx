@@ -160,7 +160,7 @@ function StockTransferHistory({ itemId }: { itemId: string }) {
     const fetch = async () => {
       const { data } = await supabase
         .from("stock_transfers")
-        .select("id, date, transfer_number, from_location_id, to_location_id, stock_transfer_items!inner(item_id, quantity)")
+        .select("id, date, transfer_number, from_location_id, to_location_id, notes, stock_transfer_items!inner(item_id, quantity)")
         .eq("stock_transfer_items.item_id", itemId)
         .order("date", { ascending: false });
 
@@ -179,7 +179,9 @@ function StockTransferHistory({ itemId }: { itemId: string }) {
         const items = Array.isArray(t.stock_transfer_items) ? t.stock_transfer_items : [t.stock_transfer_items];
         const qty = items.reduce((s: number, i: any) => s + Number(i.quantity), 0);
         const isGrn = t.transfer_number?.startsWith("ST-GR-");
-        const grnNumber = isGrn ? t.transfer_number.replace("ST-GR-", "GR-") : null;
+        // Extract real GR number from notes like "Auto-created from Goods Receipt GR-XXXX acceptance"
+        const notesMatch = isGrn && t.notes ? t.notes.match(/Goods Receipt (GR-[^\s]+)/) : null;
+        const grnNumber = notesMatch ? notesMatch[1] : (isGrn ? t.transfer_number.replace("ST-GR-", "GR-") : null);
         return {
           date: t.date,
           transferNumber: isGrn ? grnNumber : t.transfer_number,
