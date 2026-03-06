@@ -1,14 +1,16 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, ShoppingCart, FileText, Users, TrendingUp, AlertCircle, Plus, ArrowRight, Download, DollarSign } from "lucide-react";
+import { Package, ShoppingCart, FileText, Users, TrendingUp, AlertCircle, Plus, ArrowRight, Download, DollarSign, ArrowRightLeft, Layers } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
-import { useMemo, memo, useCallback } from "react";
+import { useMemo, memo, useCallback, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { formatINR } from "@/lib/format";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { supabase } from "@/integrations/supabase/client";
+import { useSubUser } from "@/hooks/useSubUser";
 
 const QUICK_ACTIONS = [
   { label: "Add New Inventory Item", icon: Plus, route: "/inventory", color: "text-blue-600" },
@@ -21,6 +23,22 @@ const QUICK_ACTIONS = [
 const AppDashboard = memo(() => {
   const navigate = useNavigate();
   const { inventoryItems: items, purchaseOrders, goodsReceipts, proformaInvoices } = useData();
+  const { effectiveUserId } = useSubUser();
+  const [stockTransferCount, setStockTransferCount] = useState(0);
+  const [bomCount, setBomCount] = useState(0);
+
+  useEffect(() => {
+    if (!effectiveUserId) return;
+    const fetchCounts = async () => {
+      const [stRes, bomRes] = await Promise.all([
+        supabase.from("stock_transfers").select("id", { count: "exact", head: true }).eq("user_id", effectiveUserId),
+        supabase.from("bom").select("id", { count: "exact", head: true }).eq("user_id", effectiveUserId),
+      ]);
+      setStockTransferCount(stRes.count || 0);
+      setBomCount(bomRes.count || 0);
+    };
+    fetchCounts();
+  }, [effectiveUserId]);
 
   const stats = useMemo(() => {
     const totalItems = items.length;
@@ -112,7 +130,7 @@ const AppDashboard = memo(() => {
         <p className="text-muted-foreground mt-1">Overview of your inventory management system</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Items</CardTitle>
@@ -141,7 +159,7 @@ const AppDashboard = memo(() => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Inventory Value</CardTitle>
+            <CardTitle className="text-sm font-medium">Inventory Value</CardTitle>
             <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
               <DollarSign className="h-4 w-4 text-green-600" />
             </div>
@@ -162,6 +180,32 @@ const AppDashboard = memo(() => {
           <CardContent>
             <div className="text-2xl font-bold">{stats.lowStockCount}</div>
             <p className="text-xs text-muted-foreground">Items need restock</p>
+          </CardContent>
+        </Card>
+
+        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate("/stock-transfer")}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Stock Transfers</CardTitle>
+            <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
+              <ArrowRightLeft className="h-4 w-4 text-indigo-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stockTransferCount}</div>
+            <p className="text-xs text-muted-foreground">Total transfers</p>
+          </CardContent>
+        </Card>
+
+        <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate("/bom")}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Bill of Materials</CardTitle>
+            <div className="h-8 w-8 rounded-full bg-teal-100 flex items-center justify-center">
+              <Layers className="h-4 w-4 text-teal-600" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{bomCount}</div>
+            <p className="text-xs text-muted-foreground">Defined BOMs</p>
           </CardContent>
         </Card>
       </div>
