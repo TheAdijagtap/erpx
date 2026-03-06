@@ -41,7 +41,7 @@ const Layout = () => {
 
   const hrmPaths = ["/employees", "/attendance", "/leaves", "/payroll"];
   const isHrmActive = hrmPaths.some(p => location.pathname.startsWith(p));
-  const [hrmOpen, setHrmOpen] = useState(true);
+  const [hrmOpen, setHrmOpen] = useState(isHrmActive);
 
   const allNavigation: NavEntry[] = [
     { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
