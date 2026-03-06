@@ -358,7 +358,14 @@ const BillOfMaterials = () => {
       <Dialog open={!!showView} onOpenChange={() => setShowView(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>{showView?.productName}</DialogTitle>
+            <DialogTitle className="flex items-center justify-between pr-6">
+              {showView?.productName}
+              {showView && (
+                <Button variant="outline" size="sm" className="gap-1" onClick={() => printElementById("bom-print", `BOM - ${showView.productName}`)}>
+                  <Printer className="w-4 h-4" /> Print
+                </Button>
+              )}
+            </DialogTitle>
           </DialogHeader>
           {showView && (
             <div className="space-y-4">
@@ -388,6 +395,47 @@ const BillOfMaterials = () => {
                   </TableRow>
                 </TableBody>
               </Table>
+              {/* Hidden printable content */}
+              <div id="bom-print" className="hidden">
+                <h2>Bill of Materials</h2>
+                <div className="section">
+                  <strong>Product:</strong> {escapeHtml(showView.productName)}<br />
+                  {showView.productDescription && <><strong>Description:</strong> {escapeHtml(showView.productDescription)}<br /></>}
+                  <strong>Output Quantity:</strong> {showView.quantity} {escapeHtml(showView.unit)}
+                </div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Material</th>
+                      <th>Quantity</th>
+                      <th>Unit</th>
+                      <th>Unit Price</th>
+                      <th style={{ textAlign: "right" }}>Cost</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {showView.items.map((i, idx) => (
+                      <tr key={i.id}>
+                        <td>{idx + 1}</td>
+                        <td>{escapeHtml(i.itemName)}</td>
+                        <td>{i.quantity}</td>
+                        <td>{escapeHtml(i.unit)}</td>
+                        <td>₹{i.unitPrice.toFixed(2)}</td>
+                        <td style={{ textAlign: "right" }}>₹{(i.quantity * i.unitPrice).toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <table className="totals">
+                  <tbody>
+                    <tr>
+                      <td className="label">Total Estimated Cost</td>
+                      <td className="value">₹{totalCost(showView.items).toFixed(2)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </DialogContent>
