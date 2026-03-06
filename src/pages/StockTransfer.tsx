@@ -40,7 +40,7 @@ interface TransferItem {
 }
 
 const StockTransfer = () => {
-  const { inventoryItems, effectiveUserId, refreshData } = useData();
+  const { inventoryItems, effectiveUserId } = useData();
   const { user } = useAuth();
   const [locations, setLocations] = useState<Location[]>([]);
   const [transfers, setTransfers] = useState<StockTransfer[]>([]);
@@ -56,18 +56,18 @@ const StockTransfer = () => {
 
   const fetchData = async () => {
     if (!user) return;
-    setLoading(true);
     const [{ data: locs }, { data: trans }] = await Promise.all([
       supabase.from("locations").select("*").order("created_at", { ascending: false }),
       supabase.from("stock_transfers").select("*, stock_transfer_items(*)").order("created_at", { ascending: false }),
     ]);
 
-    setLocations((locs || []).map((l: any) => ({ id: l.id, name: l.name, address: l.address })));
+    const locsArr = (locs || []).map((l: any) => ({ id: l.id, name: l.name, address: l.address }));
+    setLocations(locsArr);
     setTransfers((trans || []).map((t: any) => ({
       id: t.id,
       transferNumber: t.transfer_number,
-      fromLocation: (locs || []).find((l: any) => l.id === t.from_location_id)?.name || "Unknown",
-      toLocation: (locs || []).find((l: any) => l.id === t.to_location_id)?.name || "Unknown",
+      fromLocation: locsArr.find((l: any) => l.id === t.from_location_id)?.name || "Unknown",
+      toLocation: locsArr.find((l: any) => l.id === t.to_location_id)?.name || "Unknown",
       status: t.status,
       date: t.date,
       notes: t.notes,
@@ -203,7 +203,6 @@ const StockTransfer = () => {
     setShowCreate(false);
     resetForm();
     fetchData();
-    refreshData();
   };
 
   const resetForm = () => {

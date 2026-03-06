@@ -60,7 +60,6 @@ const BillOfMaterials = () => {
 
   const fetchBoms = async () => {
     if (!user) return;
-    setLoading(true);
     const { data } = await supabase
       .from("bom")
       .select("*, bom_items(*)")
