@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useLocation } from "react-router-dom";
-import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt, LogOut, Shield, HelpCircle, UserCheck, CalendarDays, IndianRupee, ChevronDown } from "lucide-react";
+import { Package, ShoppingCart, FileText, Users, Building, BarChart3, Receipt, LogOut, Shield, HelpCircle, UserCheck, CalendarDays, IndianRupee, ChevronDown, ArrowRightLeft, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useData } from "@/store/SupabaseDataContext";
@@ -17,6 +17,8 @@ const ROUTE_TO_FEATURE: Record<string, string> = {
   "/inventory": "inventory",
   "/purchase-orders": "purchase-orders",
   "/goods-receipt": "goods-receipt",
+  "/stock-transfer": "inventory",
+  "/bom": "inventory",
   "/proforma": "proforma",
   "/suppliers": "suppliers",
   "/employees": "employees",
@@ -40,12 +42,23 @@ const Layout = () => {
   const location = useLocation();
 
   const hrmPaths = ["/employees", "/attendance", "/leaves", "/payroll"];
+  const invPaths = ["/inventory", "/stock-transfer", "/bom"];
   const isHrmActive = hrmPaths.some(p => location.pathname.startsWith(p));
+  const isInvActive = invPaths.some(p => location.pathname.startsWith(p));
   const [hrmOpen, setHrmOpen] = useState(isHrmActive);
+  const [invOpen, setInvOpen] = useState(isInvActive);
 
   const allNavigation: NavEntry[] = [
     { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
-    { name: "Inventory", href: "/inventory", icon: Package },
+    {
+      label: "Inventory",
+      icon: Package,
+      children: [
+        { name: "Items", href: "/inventory", icon: Package },
+        { name: "Stock Transfer", href: "/stock-transfer", icon: ArrowRightLeft },
+        { name: "BOM", href: "/bom", icon: Layers },
+      ],
+    },
     { name: "Purchase Orders", href: "/purchase-orders", icon: ShoppingCart },
     { name: "Goods Receipt", href: "/goods-receipt", icon: FileText },
     { name: "Proforma Invoice", href: "/proforma", icon: Receipt },
@@ -136,10 +149,13 @@ const Layout = () => {
                 return (
                   <div key={entry.label}>
                     <button
-                      onClick={() => setHrmOpen(!hrmOpen)}
+                      onClick={() => {
+                        if (entry.label === "HRM") setHrmOpen(!hrmOpen);
+                        else if (entry.label === "Inventory") setInvOpen(!invOpen);
+                      }}
                       className={cn(
                         "flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-md transition-colors",
-                        isHrmActive
+                        (entry.label === "HRM" ? isHrmActive : isInvActive)
                           ? "text-foreground font-semibold bg-sidebar-accent"
                           : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                       )}
@@ -149,11 +165,11 @@ const Layout = () => {
                       <ChevronDown
                         className={cn(
                           "ml-auto h-4 w-4 transition-transform duration-200",
-                          hrmOpen && "rotate-180"
+                          (entry.label === "HRM" ? hrmOpen : invOpen) && "rotate-180"
                         )}
                       />
                     </button>
-                    {hrmOpen && (
+                    {(entry.label === "HRM" ? hrmOpen : invOpen) && (
                       <div className="ml-4 mt-0.5 space-y-0.5 border-l border-sidebar-border pl-3">
                         {entry.children.map(renderNavItem)}
                       </div>

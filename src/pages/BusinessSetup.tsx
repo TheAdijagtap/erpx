@@ -8,6 +8,7 @@ import { Building, Upload, Save, Settings, X, FileText, RotateCcw } from "lucide
 import { useData } from "@/store/SupabaseDataContext";
 import { toast } from "@/hooks/use-toast";
 import SubUserManagement from "@/components/SubUserManagement";
+import LocationsManager from "@/components/LocationsManager";
 
 interface LocalBusinessInfo {
   name: string;
@@ -370,6 +371,9 @@ const BusinessSetup = () => {
           </Card>
         </div>
       </div>
+
+      {/* Locations Management */}
+      <LocationsManager />
 
       {/* Sub-User Management - only for main users */}
       {!isSubUser && <SubUserManagement />}

@@ -27,6 +27,8 @@ const attendanceImport = () => import("./pages/Attendance");
 const leaveManagementImport = () => import("./pages/LeaveManagement");
 const payrollImport = () => import("./pages/Payroll");
 const payrollSettingsImport = () => import("./pages/PayrollSettings");
+const stockTransferImport = () => import("./pages/StockTransfer");
+const bomImport = () => import("./pages/BillOfMaterials");
 const blogImport = () => import("./pages/Blog");
 const blogPostImport = () => import("./pages/BlogPost");
 const aboutImport = () => import("./pages/About");
@@ -47,6 +49,8 @@ const AttendancePage = lazy(attendanceImport);
 const LeaveManagementPage = lazy(leaveManagementImport);
 const PayrollPage = lazy(payrollImport);
 const PayrollSettingsPage = lazy(payrollSettingsImport);
+const StockTransferPage = lazy(stockTransferImport);
+const BOMPage = lazy(bomImport);
 const BlogPage = lazy(blogImport);
 const BlogPostPage = lazy(blogPostImport);
 const AboutPage = lazy(aboutImport);
@@ -69,6 +73,8 @@ export const preloadAllPages = () => {
   leaveManagementImport();
   payrollImport();
   payrollSettingsImport();
+  stockTransferImport();
+  bomImport();
 };
 
 // Optimized QueryClient with caching
@@ -123,6 +129,16 @@ const App = () => (
               <Route path="inventory" element={
                 <Suspense fallback={<PageLoader />}>
                   <Inventory />
+                </Suspense>
+              } />
+              <Route path="stock-transfer" element={
+                <Suspense fallback={<PageLoader />}>
+                  <StockTransferPage />
+                </Suspense>
+              } />
+              <Route path="bom" element={
+                <Suspense fallback={<PageLoader />}>
+                  <BOMPage />
                 </Suspense>
               } />
               <Route path="purchase-orders" element={

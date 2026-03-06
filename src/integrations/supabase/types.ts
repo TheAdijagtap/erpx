@@ -61,6 +61,84 @@ export type Database = {
           },
         ]
       }
+      bom: {
+        Row: {
+          created_at: string
+          id: string
+          product_description: string | null
+          product_name: string
+          quantity: number
+          unit: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_description?: string | null
+          product_name: string
+          quantity?: number
+          unit?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_description?: string | null
+          product_name?: string
+          quantity?: number
+          unit?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      bom_items: {
+        Row: {
+          bom_id: string
+          id: string
+          item_id: string | null
+          item_name: string
+          quantity: number
+          unit: string
+          unit_price: number | null
+        }
+        Insert: {
+          bom_id: string
+          id?: string
+          item_id?: string | null
+          item_name: string
+          quantity: number
+          unit?: string
+          unit_price?: number | null
+        }
+        Update: {
+          bom_id?: string
+          id?: string
+          item_id?: string | null
+          item_name?: string
+          quantity?: number
+          unit?: string
+          unit_price?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bom_items_bom_id_fkey"
+            columns: ["bom_id"]
+            isOneToOne: false
+            referencedRelation: "bom"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bom_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_activities: {
         Row: {
           created_at: string
@@ -604,6 +682,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      locations: {
+        Row: {
+          address: string | null
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       payroll_rules: {
         Row: {
@@ -1176,6 +1278,99 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      stock_transfer_items: {
+        Row: {
+          id: string
+          item_id: string | null
+          item_name: string
+          quantity: number
+          stock_transfer_id: string
+          unit: string
+        }
+        Insert: {
+          id?: string
+          item_id?: string | null
+          item_name: string
+          quantity: number
+          stock_transfer_id: string
+          unit?: string
+        }
+        Update: {
+          id?: string
+          item_id?: string | null
+          item_name?: string
+          quantity?: number
+          stock_transfer_id?: string
+          unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_transfer_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_transfer_items_stock_transfer_id_fkey"
+            columns: ["stock_transfer_id"]
+            isOneToOne: false
+            referencedRelation: "stock_transfers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_transfers: {
+        Row: {
+          created_at: string
+          date: string
+          from_location_id: string | null
+          id: string
+          notes: string | null
+          status: string
+          to_location_id: string | null
+          transfer_number: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          from_location_id?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
+          to_location_id?: string | null
+          transfer_number: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          from_location_id?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
+          to_location_id?: string | null
+          transfer_number?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_transfers_from_location_id_fkey"
+            columns: ["from_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_transfers_to_location_id_fkey"
+            columns: ["to_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sub_user_links: {
         Row: {
