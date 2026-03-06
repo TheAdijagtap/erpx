@@ -520,7 +520,12 @@ function ItemViewDialog({ itemId, children }: { itemId: string; children: React.
           </div>
         )}
 
-        {/* Transactions Table - View only */}
+        {/* Stock Transfer History - View only */}
+        {!isEditing && (
+          <StockTransferHistory itemId={itemId} />
+        )}
+
+        {/* Transactions Table - View only (excluding stock transfers) */}
         {!isEditing && (
           <div className="pt-4 border-t">
             <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
@@ -540,14 +545,14 @@ function ItemViewDialog({ itemId, children }: { itemId: string; children: React.
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {itemTx.length === 0 && (
+                  {itemTx.filter(t => t.reason !== 'Stock Transfer').length === 0 && (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center text-muted-foreground py-6">
                         No transactions yet
                       </TableCell>
                     </TableRow>
                   )}
-                  {itemTx.slice(0, 10).map((t) => (
+                  {itemTx.filter(t => t.reason !== 'Stock Transfer').slice(0, 10).map((t) => (
                     <TableRow key={t.id}>
                       <TableCell className="text-xs">{new Date(t.date).toLocaleDateString('en-IN')}</TableCell>
                       <TableCell>
@@ -564,9 +569,9 @@ function ItemViewDialog({ itemId, children }: { itemId: string; children: React.
                 </TableBody>
               </Table>
             </div>
-            {itemTx.length > 10 && (
+            {itemTx.filter(t => t.reason !== 'Stock Transfer').length > 10 && (
               <p className="text-xs text-muted-foreground mt-2 text-center">
-                Showing 10 of {itemTx.length} transactions
+                Showing 10 of {itemTx.filter(t => t.reason !== 'Stock Transfer').length} transactions
               </p>
             )}
           </div>
