@@ -947,6 +947,56 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     const { error } = await supabase.from("goods_receipts").update(updateData).eq("id", id);
     if (error) throw error;
+
+    // When accepting a GR, auto-create stock transfer IN to the primary/default location
+    if (patch.status === "ACCEPTED") {
+      const gr = goodsReceipts.find(g => g.id === id);
+      if (gr && gr.items.length > 0) {
+        try {
+          // Find the user's default/primary location
+          const { data: defaultLoc } = await supabase
+            .from("locations")
+            .select("id, name")
+            .eq("is_default", true)
+            .maybeSingle();
+
+          if (defaultLoc) {
+            const uid = effectiveUserId || user!.id;
+            const transferNumber = `ST-GR-${Date.now().toString(36).toUpperCase()}`;
+
+            // Create stock transfer record
+            const { data: transfer } = await supabase
+              .from("stock_transfers")
+              .insert({
+                user_id: uid,
+                transfer_number: transferNumber,
+                to_location_id: defaultLoc.id,
+                from_location_id: null,
+                notes: `Auto-created from Goods Receipt ${gr.grNumber} acceptance`,
+                status: "completed",
+              })
+              .select()
+              .single();
+
+            if (transfer) {
+              // Create transfer items
+              const transferItems = gr.items.map(item => ({
+                stock_transfer_id: transfer.id,
+                item_id: item.itemId || null,
+                item_name: item.item?.name || "Item",
+                quantity: item.receivedQuantity,
+                unit: item.item?.unit || "pcs",
+              }));
+              await supabase.from("stock_transfer_items").insert(transferItems);
+
+              toast.success(`Stock received at ${defaultLoc.name} (${transferNumber})`);
+            }
+          }
+        } catch (err) {
+          console.error("Failed to create auto stock transfer for GR acceptance:", err);
+        }
+      }
+    }
     
     // Optimistic update
     setGoodsReceipts(prev => prev.map(gr => gr.id === id ? { ...gr, ...patch } : gr));
