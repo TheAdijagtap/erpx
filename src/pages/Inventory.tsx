@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Package, Eye, Edit, Minus, PlusCircle, Trash2, MapPin } from "lucide-react";
+import { Plus, Search, Package, Eye, Edit, Minus, PlusCircle, Trash2, MapPin, ArrowRightLeft } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
 import { toast } from "@/hooks/use-toast";
 import { formatINR } from "@/lib/format";
