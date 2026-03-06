@@ -8,8 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRightLeft, Plus, Trash2, Eye } from "lucide-react";
+import { ArrowRightLeft, Plus, Trash2, Eye, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { printElementById } from "@/lib/print";
+import { escapeHtml } from "@/lib/htmlEscape";
 import { useData } from "@/store/SupabaseDataContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -382,7 +384,14 @@ const StockTransfer = () => {
       <Dialog open={!!showView} onOpenChange={() => setShowView(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Transfer {showView?.transferNumber}</DialogTitle>
+            <DialogTitle className="flex items-center justify-between pr-6">
+              Transfer {showView?.transferNumber}
+              {showView?.status === "completed" && (
+                <Button variant="outline" size="sm" className="gap-1" onClick={() => printElementById("st-print", `Stock Transfer - ${showView.transferNumber}`)}>
+                  <Printer className="w-4 h-4" /> Print
+                </Button>
+              )}
+            </DialogTitle>
           </DialogHeader>
           {showView && (
             <div className="space-y-4">
@@ -411,6 +420,44 @@ const StockTransfer = () => {
                   ))}
                 </TableBody>
               </Table>
+              {/* Hidden printable content */}
+              {showView.status === "completed" && (
+                <div id="st-print" className="hidden">
+                  <h2>Stock Transfer Note</h2>
+                  <div className="section">
+                    <div className="grid">
+                      <div><strong>Transfer #:</strong> {escapeHtml(showView.transferNumber)}</div>
+                      <div><strong>Date:</strong> {new Date(showView.date).toLocaleDateString("en-IN")}</div>
+                    </div>
+                    <div className="grid" style={{ marginTop: 8 }}>
+                      <div><strong>From Location:</strong> {escapeHtml(showView.fromLocation)}</div>
+                      <div><strong>To Location:</strong> {escapeHtml(showView.toLocation)}</div>
+                    </div>
+                    <div style={{ marginTop: 8 }}><strong>Status:</strong> {escapeHtml(showView.status)}</div>
+                    {showView.notes && <div style={{ marginTop: 4 }}><strong>Notes:</strong> {escapeHtml(showView.notes)}</div>}
+                  </div>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                        <th>Unit</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {showView.items.map((i, idx) => (
+                        <tr key={i.id}>
+                          <td>{idx + 1}</td>
+                          <td>{escapeHtml(i.itemName)}</td>
+                          <td>{i.quantity}</td>
+                          <td>{escapeHtml(i.unit)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
