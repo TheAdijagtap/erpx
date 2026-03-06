@@ -160,7 +160,7 @@ function StockTransferHistory({ itemId }: { itemId: string }) {
     const fetch = async () => {
       const { data } = await supabase
         .from("stock_transfers")
-        .select("id, date, transfer_number, from_location_id, to_location_id, stock_transfer_items!inner(item_id, quantity)")
+        .select("id, date, transfer_number, from_location_id, to_location_id, notes, stock_transfer_items!inner(item_id, quantity)")
         .eq("stock_transfer_items.item_id", itemId)
         .order("date", { ascending: false });
 
