@@ -183,7 +183,7 @@ function StockTransferHistory({ itemId }: { itemId: string }) {
         return {
           date: t.date,
           transferNumber: isGrn ? grnNumber : t.transfer_number,
-          fromLocation: !t.from_location_id ? (isGrn ? "GRN" : "Unknown") : (locMap.get(t.from_location_id) || "Unknown"),
+          fromLocation: !t.from_location_id ? (isGrn ? `GRN (${grnNumber})` : "Unknown") : (locMap.get(t.from_location_id) || "Unknown"),
           toLocation: locMap.get(t.to_location_id) || "Unknown",
           quantity: qty,
         };
