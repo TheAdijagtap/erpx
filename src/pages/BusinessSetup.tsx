@@ -26,16 +26,14 @@ interface LocalBusinessInfo {
 }
 
 const DEFAULT_PO_TERMS = `1. Delivery must be made within the agreed timeline.
-2. Payment will be processed within 30 days of receipt of goods.
-3. All goods must conform to the specifications mentioned in the PO.
-4. Any damaged or defective goods will be returned at the supplier's cost.
-5. Prices are inclusive of all taxes unless stated otherwise.`;
+2. All goods must conform to the specifications mentioned in the PO.
+3. Any damaged or defective goods will be returned at the supplier's cost.
+4. Prices are inclusive of all taxes unless stated otherwise.`;
 
 const DEFAULT_PI_TERMS = `1. This is a Quotation Cum Proforma Invoice and not a tax invoice.
 2. Prices are valid for 30 days from the date of issue.
-3. Payment terms: 50% advance, 50% before dispatch.
-4. Delivery timeline will be confirmed upon order confirmation.
-5. GST will be charged as applicable.`;
+3. Delivery timeline will be confirmed upon order confirmation.
+4. GST will be charged as applicable.`;
 
 const DEFAULT_GR_TERMS = `1. Goods received are subject to quality inspection.
 2. Any discrepancy must be reported within 48 hours of receipt.
