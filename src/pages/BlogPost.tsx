@@ -97,7 +97,7 @@ Manual PO creation is error-prone and time-consuming. OPIS lets you create purch
 
 ## 8. Use Batch Tracking
 
-Track inventory by batch numbers for quality control and traceability. OPIS's goods receipt module supports batch-level tracking with T-code stickers.
+Track inventory by batch numbers for quality control and traceability. OPIS's goods receipt module supports batch-level tracking.
 
 ## 9. Monitor Price Fluctuations
 
@@ -194,7 +194,7 @@ Maintain a complete supplier directory with:
 When goods arrive, create a Goods Receipt Note linked to the original PO. OPIS automatically:
 - Compares ordered vs. received quantities
 - Updates inventory stock levels
-- Generates T-code stickers for tracking
+- Tracks batch numbers for traceability
 
 ## Real Impact
 
