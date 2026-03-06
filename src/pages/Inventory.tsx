@@ -153,6 +153,85 @@ const Inventory = () => {
   );
 };
 
+function StockTransferHistory({ itemId }: { itemId: string }) {
+  const [transfers, setTransfers] = useState<{ date: string; transferNumber: string; fromLocation: string; toLocation: string; quantity: number }[]>([]);
+
+  useEffect(() => {
+    const fetch = async () => {
+      const { data } = await supabase
+        .from("stock_transfers")
+        .select("id, date, transfer_number, from_location_id, to_location_id, stock_transfer_items!inner(item_id, quantity)")
+        .eq("stock_transfer_items.item_id", itemId)
+        .order("date", { ascending: false });
+
+      if (!data || data.length === 0) { setTransfers([]); return; }
+
+      const locIds = new Set<string>();
+      data.forEach((t: any) => {
+        if (t.from_location_id) locIds.add(t.from_location_id);
+        if (t.to_location_id) locIds.add(t.to_location_id);
+      });
+
+      const { data: locs } = await supabase.from("locations").select("id, name").in("id", Array.from(locIds));
+      const locMap = new Map((locs || []).map((l: any) => [l.id, l.name]));
+
+      setTransfers(data.map((t: any) => {
+        const items = Array.isArray(t.stock_transfer_items) ? t.stock_transfer_items : [t.stock_transfer_items];
+        const qty = items.reduce((s: number, i: any) => s + Number(i.quantity), 0);
+        return {
+          date: t.date,
+          transferNumber: t.transfer_number,
+          fromLocation: locMap.get(t.from_location_id) || "Unknown",
+          toLocation: locMap.get(t.to_location_id) || "Unknown",
+          quantity: qty,
+        };
+      }));
+    };
+    fetch();
+  }, [itemId]);
+
+  if (transfers.length === 0) return null;
+
+  return (
+    <div className="pt-4 border-t">
+      <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+        <span className="w-1 h-4 bg-primary rounded-full"></span>
+        <ArrowRightLeft className="w-3.5 h-3.5" />
+        Stock Transfer History
+      </h4>
+      <div className="rounded-md border max-h-48 overflow-y-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-muted/50">
+              <TableHead className="text-xs">Date</TableHead>
+              <TableHead className="text-xs">Transfer #</TableHead>
+              <TableHead className="text-xs">From</TableHead>
+              <TableHead className="text-xs">To</TableHead>
+              <TableHead className="text-xs">Qty</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {transfers.slice(0, 10).map((t, idx) => (
+              <TableRow key={idx}>
+                <TableCell className="text-xs">{new Date(t.date).toLocaleDateString('en-IN')}</TableCell>
+                <TableCell className="text-xs font-mono">{t.transferNumber}</TableCell>
+                <TableCell className="text-xs">{t.fromLocation}</TableCell>
+                <TableCell className="text-xs">{t.toLocation}</TableCell>
+                <TableCell className="text-xs font-medium">{t.quantity}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+      {transfers.length > 10 && (
+        <p className="text-xs text-muted-foreground mt-2 text-center">
+          Showing 10 of {transfers.length} transfers
+        </p>
+      )}
+    </div>
+  );
+}
+
 function ItemViewDialog({ itemId, children }: { itemId: string; children: React.ReactNode }) {
   const { inventoryItems: items, transactions, suppliers, updateItem, goodsReceipts } = useData();
   const item = items.find(i => i.id === itemId)!;
