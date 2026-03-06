@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -53,6 +53,7 @@ const StockTransfer = () => {
   const [toLocationId, setToLocationId] = useState("");
   const [notes, setNotes] = useState("");
   const [items, setItems] = useState<TransferItem[]>([{ itemId: "", itemName: "", quantity: 0, unit: "pcs" }]);
+  const [itemSearches, setItemSearches] = useState<Record<number, string>>({});
 
   const fetchData = async () => {
     if (!user) return;
@@ -210,6 +211,7 @@ const StockTransfer = () => {
     setToLocationId("");
     setNotes("");
     setItems([{ itemId: "", itemName: "", quantity: 0, unit: "pcs" }]);
+    setItemSearches({});
   };
 
   return (
@@ -316,12 +318,33 @@ const StockTransfer = () => {
               {items.map((item, idx) => (
                 <div key={idx} className="flex gap-2 items-end">
                   <div className="flex-1">
-                    <Select value={item.itemId} onValueChange={v => updateItem(idx, "itemId", v)}>
+                    <Select
+                      value={item.itemId}
+                      onValueChange={v => {
+                        updateItem(idx, "itemId", v);
+                        setItemSearches(prev => ({ ...prev, [idx]: "" }));
+                      }}
+                    >
                       <SelectTrigger><SelectValue placeholder="Select item" /></SelectTrigger>
                       <SelectContent>
-                        {inventoryItems.map(i => (
-                          <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
-                        ))}
+                        <div className="p-2">
+                          <Input
+                            placeholder="Search items..."
+                            value={itemSearches[idx] || ""}
+                            onChange={e => setItemSearches(prev => ({ ...prev, [idx]: e.target.value }))}
+                            onKeyDown={e => e.stopPropagation()}
+                            className="h-8"
+                          />
+                        </div>
+                        {inventoryItems
+                          .filter(i => {
+                            const search = (itemSearches[idx] || "").toLowerCase();
+                            if (!search) return true;
+                            return i.name.toLowerCase().includes(search) || (i.itemCode || "").toLowerCase().includes(search);
+                          })
+                          .map(i => (
+                            <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                   </div>
