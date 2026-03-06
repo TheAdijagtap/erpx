@@ -143,10 +143,38 @@ const StockTransfer = () => {
       return;
     }
 
+    // Record inventory transactions for each item
+    const fromLocName = locations.find(l => l.id === fromLocationId)?.name || "Unknown";
+    const toLocName = locations.find(l => l.id === toLocationId)?.name || "Unknown";
+    const txRecords = items.flatMap(i => [
+      {
+        user_id: effectiveUserId,
+        item_id: i.itemId,
+        item_name: i.itemName,
+        type: "OUT",
+        quantity: i.quantity,
+        reason: "Stock Transfer",
+        reference: transferNumber,
+        notes: `Transferred from ${fromLocName} to ${toLocName}`,
+      },
+      {
+        user_id: effectiveUserId,
+        item_id: i.itemId,
+        item_name: i.itemName,
+        type: "IN",
+        quantity: i.quantity,
+        reason: "Stock Transfer",
+        reference: transferNumber,
+        notes: `Received from ${fromLocName} to ${toLocName}`,
+      },
+    ]);
+    await supabase.from("inventory_transactions").insert(txRecords);
+
     toast.success(`Stock transfer ${transferNumber} created`);
     setShowCreate(false);
     resetForm();
     fetchData();
+    refreshData();
   };
 
   const resetForm = () => {
