@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MapPin, Plus, Trash2, Edit, Save, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { MapPin, Plus, Trash2, Edit, Save, X, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useData } from "@/store/SupabaseDataContext";
 import { toast } from "sonner";
@@ -12,6 +13,7 @@ interface Location {
   id: string;
   name: string;
   address?: string;
+  is_default?: boolean;
 }
 
 const LocationsManager = () => {
@@ -24,7 +26,7 @@ const LocationsManager = () => {
 
   const fetchLocations = async () => {
     const { data } = await supabase.from("locations").select("*").order("created_at", { ascending: true });
-    setLocations((data || []).map((l: any) => ({ id: l.id, name: l.name, address: l.address })));
+    setLocations((data || []).map((l: any) => ({ id: l.id, name: l.name, address: l.address, is_default: l.is_default })));
   };
 
   useEffect(() => { fetchLocations(); }, []);
@@ -54,9 +56,21 @@ const LocationsManager = () => {
   };
 
   const handleDelete = async (id: string) => {
+    const loc = locations.find(l => l.id === id);
+    if (loc?.is_default) { toast.error("Cannot delete the default location. Set another location as default first."); return; }
     const { error } = await supabase.from("locations").delete().eq("id", id);
     if (error) { toast.error("Cannot delete (may be in use)"); return; }
     toast.success("Location deleted");
+    fetchLocations();
+  };
+
+  const handleSetDefault = async (id: string) => {
+    // First unset any existing default for this user
+    await supabase.from("locations").update({ is_default: false } as any).eq("user_id", effectiveUserId);
+    // Set the new default
+    const { error } = await supabase.from("locations").update({ is_default: true } as any).eq("id", id);
+    if (error) { toast.error("Failed to set default location"); return; }
+    toast.success("Default location updated");
     fetchLocations();
   };
 
@@ -72,17 +86,24 @@ const LocationsManager = () => {
         </div>
         <h2 className="text-xl font-semibold text-foreground">Stock Locations</h2>
       </div>
-      <p className="text-sm text-muted-foreground mb-4">Define warehouse/stock locations for stock transfers.</p>
+      <p className="text-sm text-muted-foreground mb-4">Define warehouse/stock locations. Set a primary location where stock is received after Goods Receipt.</p>
 
       {locations.length > 0 && (
         <div className="space-y-2 mb-4">
           {locations.map(loc => (
             <div key={loc.id} className="flex items-center justify-between p-3 rounded-md bg-muted/50">
-              <div>
+              <div className="flex items-center gap-2">
                 <span className="font-medium">{loc.name}</span>
-                {loc.address && <span className="text-sm text-muted-foreground ml-2">— {loc.address}</span>}
+                {loc.address && <span className="text-sm text-muted-foreground">— {loc.address}</span>}
+                {loc.is_default && <Badge variant="default" className="ml-1 text-xs">Primary</Badge>}
               </div>
               <div className="flex gap-1">
+                {!loc.is_default && (
+                  <Button variant="ghost" size="sm" onClick={() => handleSetDefault(loc.id)} title="Set as primary location">
+                    <Star className="w-3.5 h-3.5 text-muted-foreground" />
+                  </Button>
+                )}
+                {loc.is_default && <Star className="w-3.5 h-3.5 text-primary fill-primary mx-2" />}
                 <Button variant="ghost" size="sm" onClick={() => handleEdit(loc)}><Edit className="w-3.5 h-3.5" /></Button>
                 <Button variant="ghost" size="sm" onClick={() => handleDelete(loc.id)}><Trash2 className="w-3.5 h-3.5 text-destructive" /></Button>
               </div>
