@@ -8,8 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRightLeft, Plus, Trash2, Eye } from "lucide-react";
+import { ArrowRightLeft, Plus, Trash2, Eye, Printer } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { printElementById } from "@/lib/print";
+import { escapeHtml } from "@/lib/htmlEscape";
 import { useData } from "@/store/SupabaseDataContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
