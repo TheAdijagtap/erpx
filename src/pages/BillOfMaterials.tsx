@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -38,6 +38,7 @@ interface FormItem {
   quantity: number;
   unit: string;
   unitPrice: number;
+  search: string;
 }
 
 const BillOfMaterials = () => {
@@ -55,7 +56,7 @@ const BillOfMaterials = () => {
   const [productDescription, setProductDescription] = useState("");
   const [productUnit, setProductUnit] = useState("pcs");
   const [productQty, setProductQty] = useState(1);
-  const [formItems, setFormItems] = useState<FormItem[]>([{ itemId: "", itemName: "", quantity: 0, unit: "pcs", unitPrice: 0 }]);
+  const [formItems, setFormItems] = useState<FormItem[]>([{ itemId: "", itemName: "", quantity: 0, unit: "pcs", unitPrice: 0, search: "" }]);
 
   const fetchBoms = async () => {
     if (!user) return;
@@ -86,7 +87,7 @@ const BillOfMaterials = () => {
 
   useEffect(() => { fetchBoms(); }, [user]);
 
-  const addFormItem = () => setFormItems([...formItems, { itemId: "", itemName: "", quantity: 0, unit: "pcs", unitPrice: 0 }]);
+  const addFormItem = () => setFormItems([...formItems, { itemId: "", itemName: "", quantity: 0, unit: "pcs", unitPrice: 0, search: "" }]);
 
   const removeFormItem = (idx: number) => {
     if (formItems.length > 1) setFormItems(formItems.filter((_, i) => i !== idx));
@@ -108,7 +109,7 @@ const BillOfMaterials = () => {
     setProductDescription("");
     setProductUnit("pcs");
     setProductQty(1);
-    setFormItems([{ itemId: "", itemName: "", quantity: 0, unit: "pcs", unitPrice: 0 }]);
+    setFormItems([{ itemId: "", itemName: "", quantity: 0, unit: "pcs", unitPrice: 0, search: "" }]);
     setEditingId(null);
   };
 
@@ -184,6 +185,7 @@ const BillOfMaterials = () => {
       quantity: i.quantity,
       unit: i.unit,
       unitPrice: i.unitPrice,
+      search: "",
     })));
     setShowForm(true);
   };
@@ -291,15 +293,39 @@ const BillOfMaterials = () => {
               </div>
               {formItems.map((item, idx) => (
                 <div key={idx} className="flex gap-2 items-end">
-                  <div className="flex-1">
-                    <Select value={item.itemId} onValueChange={v => updateFormItem(idx, "itemId", v)}>
-                      <SelectTrigger><SelectValue placeholder="Select inventory item" /></SelectTrigger>
-                      <SelectContent>
-                        {inventoryItems.map(i => (
-                          <SelectItem key={i.id} value={i.id}>{i.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  <div className="flex-1 relative">
+                    <Input
+                      placeholder="Search inventory item..."
+                      value={item.itemId ? item.itemName : item.search}
+                      onChange={e => {
+                        const updated = [...formItems];
+                        updated[idx] = { ...updated[idx], search: e.target.value, itemId: "", itemName: "" };
+                        setFormItems(updated);
+                      }}
+                    />
+                    {!item.itemId && item.search.length > 0 && (() => {
+                      const filtered = inventoryItems.filter(i =>
+                        i.name.toLowerCase().includes(item.search.toLowerCase())
+                      );
+                      return filtered.length > 0 ? (
+                        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-md max-h-48 overflow-y-auto">
+                          {filtered.map(i => (
+                            <button
+                              key={i.id}
+                              type="button"
+                              className="w-full text-left px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground"
+                              onClick={() => updateFormItem(idx, "itemId", i.id)}
+                            >
+                              {i.name} <span className="text-muted-foreground">({i.unit})</span>
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-popover border border-border rounded-md shadow-md px-3 py-2 text-sm text-muted-foreground">
+                          No items found
+                        </div>
+                      );
+                    })()}
                   </div>
                   <div className="w-20">
                     <Input type="number" placeholder="Qty" value={item.quantity || ""} onChange={e => updateFormItem(idx, "quantity", Number(e.target.value))} />
