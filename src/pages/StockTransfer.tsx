@@ -421,7 +421,7 @@ const StockTransfer = () => {
                 </TableBody>
               </Table>
               {/* Hidden printable content */}
-              {showView.status === "completed" && (
+              {showView && (
                 <div id="st-print" className="hidden">
                   <h2>Stock Transfer Note</h2>
                   <div className="section">
