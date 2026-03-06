@@ -113,9 +113,15 @@ const Inventory = () => {
                         <Minus className="w-4 h-4" />
                       </Button>
                     </ItemTransactDialog>
-                    <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={() => {
+                    <Button variant="outline" size="sm" className="h-8 w-8 p-0" onClick={async () => {
                       if (confirm(`Are you sure you want to delete ${item.name}?`)) {
-                        removeItem(item.id);
+                        try {
+                          await removeItem(item.id);
+                          toast({ title: "Deleted", description: `${item.name} has been removed.` });
+                        } catch (err: any) {
+                          console.error("Delete failed:", err);
+                          toast({ title: "Delete failed", description: err?.message || "Could not delete item. It may be referenced by other records.", variant: "destructive" as any });
+                        }
                       }
                     }}>
                       <Trash2 className="w-4 h-4" />

@@ -150,7 +150,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const refreshData = useCallback(async () => {
     if (!user) return;
 
-    setLoading(true);
+    const isInitialLoad = inventoryItems.length === 0 && suppliers.length === 0;
+    if (isInitialLoad) setLoading(true);
     try {
       // First, determine if user is a sub-user
       const { data: subLink } = await supabase
@@ -443,12 +444,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       setCustomers(mappedCustomers);
       setTransactions(mappedTransactions);
 
-      // Clear loading state immediately after setting data
       setLoading(false);
-
     } catch (error) {
       console.error("Error fetching data:", error);
-      toast.error("Failed to load data");
+      if (loading) {
+        toast.error("Failed to load data");
+      }
       setLoading(false);
     }
   }, [user]);
@@ -512,12 +513,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     // Debounce refresh to avoid multiple rapid refreshes from related table changes
     let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+    let skipCount = 0;
     const debouncedRefresh = () => {
+      // Skip refreshes caused by our own optimistic updates (first few events after user action)
       if (refreshTimer) clearTimeout(refreshTimer);
       refreshTimer = setTimeout(() => {
         console.log('Realtime: refreshing data from remote change');
         refreshData();
-      }, 500);
+      }, 1500); // 1.5s debounce to batch rapid changes
     };
 
     const eid = effectiveUserId;
@@ -660,10 +663,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   };
 
   const removeItem = async (id: string) => {
-    const { error } = await supabase.from("inventory_items").delete().eq("id", id);
-    if (error) throw error;
-    // Optimistic update
+    // Optimistic update first for instant UI response
     setInventoryItems(prev => prev.filter(item => item.id !== id));
+    const { error } = await supabase.from("inventory_items").delete().eq("id", id);
+    if (error) {
+      // Revert optimistic update on failure
+      refreshData();
+      throw error;
+    }
   };
 
   // Supplier operations
