@@ -353,7 +353,7 @@ function ItemViewDialog({ itemId, children }: { itemId: string; children: React.
 
         {/* Quick Stats - View only */}
         {!isEditing && (
-          <div className="grid grid-cols-4 gap-3 py-4">
+          <div className="grid grid-cols-2 gap-3 py-4">
             <div className="text-center p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
               <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{item.currentStock}</div>
               <div className="text-xs text-muted-foreground mt-1">Current Stock ({item.unit})</div>
@@ -361,14 +361,6 @@ function ItemViewDialog({ itemId, children }: { itemId: string; children: React.
             <div className="text-center p-3 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800">
               <div className="text-2xl font-bold text-green-600 dark:text-green-400">{formatINR(stockValue)}</div>
               <div className="text-xs text-muted-foreground mt-1">Stock Value</div>
-            </div>
-            <div className="text-center p-3 rounded-lg bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800">
-              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{totalIn}</div>
-              <div className="text-xs text-muted-foreground mt-1">Total Received</div>
-            </div>
-            <div className="text-center p-3 rounded-lg bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800">
-              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{totalOut}</div>
-              <div className="text-xs text-muted-foreground mt-1">Total Used</div>
             </div>
           </div>
         )}
