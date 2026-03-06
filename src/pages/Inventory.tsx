@@ -178,10 +178,12 @@ function StockTransferHistory({ itemId }: { itemId: string }) {
       setTransfers(data.map((t: any) => {
         const items = Array.isArray(t.stock_transfer_items) ? t.stock_transfer_items : [t.stock_transfer_items];
         const qty = items.reduce((s: number, i: any) => s + Number(i.quantity), 0);
+        const isGrn = t.transfer_number?.startsWith("ST-GR-");
+        const grnNumber = isGrn ? t.transfer_number.replace("ST-GR-", "GR-") : null;
         return {
           date: t.date,
-          transferNumber: t.transfer_number,
-          fromLocation: locMap.get(t.from_location_id) || "Unknown",
+          transferNumber: isGrn ? grnNumber : t.transfer_number,
+          fromLocation: !t.from_location_id ? (isGrn ? "GRN" : "Unknown") : (locMap.get(t.from_location_id) || "Unknown"),
           toLocation: locMap.get(t.to_location_id) || "Unknown",
           quantity: qty,
         };
