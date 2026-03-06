@@ -430,16 +430,7 @@ function ItemViewDialog({ itemId, children }: { itemId: string; children: React.
               </div>
               <div className="p-3 rounded-md bg-muted/50">
                 <div className="text-xs text-muted-foreground mb-1">Recent Supplier</div>
-                {recentSupplier ? (
-                  <div>
-                    <div className="font-medium truncate" title={recentSupplier.name}>{recentSupplier.name}</div>
-                    <div className="text-xs text-muted-foreground mt-0.5">
-                      via {recentSupplier.grNumber} · {new Date(recentSupplier.date).toLocaleDateString('en-IN')}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="font-medium text-muted-foreground">-</div>
-                )}
+                <div className="font-medium truncate" title={recentSupplier?.name || '-'}>{recentSupplier?.name || '-'}</div>
               </div>
             </div>
           </div>
