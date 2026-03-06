@@ -100,6 +100,25 @@ const StockTransfer = () => {
     setItems(updated);
   };
 
+  const getLocationStock = async (locationId: string, itemId: string): Promise<number> => {
+    // Get all completed transfers involving this location and item
+    const { data: transfers } = await supabase
+      .from("stock_transfers")
+      .select("id, from_location_id, to_location_id, stock_transfer_items(item_id, quantity)")
+      .or(`from_location_id.eq.${locationId},to_location_id.eq.${locationId}`);
+
+    let stock = 0;
+    (transfers || []).forEach((t: any) => {
+      (t.stock_transfer_items || []).forEach((si: any) => {
+        if (si.item_id === itemId) {
+          if (t.to_location_id === locationId) stock += Number(si.quantity);
+          if (t.from_location_id === locationId) stock -= Number(si.quantity);
+        }
+      });
+    });
+    return stock;
+  };
+
   const handleCreate = async () => {
     if (!fromLocationId || !toLocationId || fromLocationId === toLocationId) {
       toast.error("Select different from/to locations");
@@ -108,6 +127,16 @@ const StockTransfer = () => {
     if (items.some(i => !i.itemId || i.quantity <= 0)) {
       toast.error("Fill all items with valid quantities");
       return;
+    }
+
+    // Validate stock availability at source location
+    for (const item of items) {
+      const availableStock = await getLocationStock(fromLocationId, item.itemId);
+      if (availableStock < item.quantity) {
+        const fromLocName = locations.find(l => l.id === fromLocationId)?.name || "Unknown";
+        toast.error(`Insufficient stock for "${item.itemName}" at ${fromLocName}. Available: ${availableStock}, Requested: ${item.quantity}`);
+        return;
+      }
     }
 
     const transferNumber = `ST-${Date.now().toString(36).toUpperCase()}`;
