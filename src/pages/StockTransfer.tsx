@@ -386,7 +386,7 @@ const StockTransfer = () => {
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between pr-6">
               Transfer {showView?.transferNumber}
-              {showView?.status === "completed" && (
+              {showView && (
                 <Button variant="outline" size="sm" className="gap-1" onClick={() => printElementById("st-print", `Stock Transfer - ${showView.transferNumber}`)}>
                   <Printer className="w-4 h-4" /> Print
                 </Button>
@@ -421,7 +421,7 @@ const StockTransfer = () => {
                 </TableBody>
               </Table>
               {/* Hidden printable content */}
-              {showView.status === "completed" && (
+              {showView && (
                 <div id="st-print" className="hidden">
                   <h2>Stock Transfer Note</h2>
                   <div className="section">
