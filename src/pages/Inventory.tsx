@@ -1,4 +1,4 @@
-import { useMemo, useState, memo } from "react";
+import { useMemo, useState, useEffect, memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,11 +7,12 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Plus, Search, Package, Eye, Edit, Minus, PlusCircle, Trash2 } from "lucide-react";
+import { Plus, Search, Package, Eye, Edit, Minus, PlusCircle, Trash2, MapPin } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
 import { toast } from "@/hooks/use-toast";
 import { formatINR } from "@/lib/format";
 import { useDebounce } from "@/hooks/useDebounce";
+import { supabase } from "@/integrations/supabase/client";
 
 const Inventory = () => {
   const { inventoryItems: items, transactions, transactItem, removeItem, addItem } = useData();
@@ -228,6 +229,55 @@ function ItemViewDialog({ itemId, children }: { itemId: string; children: React.
   const stockValue = item.currentStock * item.unitPrice;
   const stockStatus = item.currentStock <= item.minStock ? 'low' : item.currentStock <= item.minStock * 1.5 ? 'medium' : 'good';
 
+  // Location-wise stock breakdown
+  const [locationStock, setLocationStock] = useState<{ locationName: string; quantity: number }[]>([]);
+  useEffect(() => {
+    const fetchLocationStock = async () => {
+      // Get all completed stock transfers involving this item
+      const { data: transfers } = await supabase
+        .from("stock_transfers")
+        .select("id, from_location_id, to_location_id, stock_transfer_items!inner(item_id, quantity)")
+        .eq("stock_transfer_items.item_id", itemId);
+
+      if (!transfers || transfers.length === 0) { setLocationStock([]); return; }
+
+      // Get all location IDs involved
+      const locIds = new Set<string>();
+      transfers.forEach((t: any) => {
+        if (t.from_location_id) locIds.add(t.from_location_id);
+        if (t.to_location_id) locIds.add(t.to_location_id);
+      });
+
+      const { data: locations } = await supabase
+        .from("locations")
+        .select("id, name")
+        .in("id", Array.from(locIds));
+
+      const locMap = new Map((locations || []).map((l: any) => [l.id, l.name]));
+
+      // Calculate net stock per location
+      const stockMap = new Map<string, number>();
+      transfers.forEach((t: any) => {
+        const items = Array.isArray(t.stock_transfer_items) ? t.stock_transfer_items : [t.stock_transfer_items];
+        const qty = items.reduce((s: number, i: any) => s + Number(i.quantity), 0);
+        if (t.from_location_id) {
+          stockMap.set(t.from_location_id, (stockMap.get(t.from_location_id) || 0) - qty);
+        }
+        if (t.to_location_id) {
+          stockMap.set(t.to_location_id, (stockMap.get(t.to_location_id) || 0) + qty);
+        }
+      });
+
+      const result = Array.from(stockMap.entries())
+        .map(([locId, qty]) => ({ locationName: locMap.get(locId) || "Unknown", quantity: qty }))
+        .filter(l => l.quantity !== 0)
+        .sort((a, b) => b.quantity - a.quantity);
+
+      setLocationStock(result);
+    };
+    fetchLocationStock();
+  }, [itemId]);
+
   return (
     <Dialog onOpenChange={(open) => !open && setIsEditing(false)}>
       <DialogTrigger asChild>{children}</DialogTrigger>
@@ -313,6 +363,27 @@ function ItemViewDialog({ itemId, children }: { itemId: string; children: React.
             <div className="text-center p-3 rounded-lg bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800">
               <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{totalOut}</div>
               <div className="text-xs text-muted-foreground mt-1">Total Used</div>
+            </div>
+          </div>
+        )}
+
+        {/* Location-wise Stock */}
+        {!isEditing && locationStock.length > 0 && (
+          <div className="py-4 border-t">
+            <h4 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+              <span className="w-1 h-4 bg-primary rounded-full"></span>
+              <MapPin className="w-3.5 h-3.5" />
+              Stock by Location
+            </h4>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {locationStock.map((loc) => (
+                <div key={loc.locationName} className="p-3 rounded-md bg-muted/50 border">
+                  <div className="text-xs text-muted-foreground mb-1">{loc.locationName}</div>
+                  <div className="text-sm font-semibold">
+                    {loc.quantity} {item.unit}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
