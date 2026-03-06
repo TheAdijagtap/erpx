@@ -327,7 +327,7 @@ const Dashboard = () => {
                   <span className="text-muted-foreground text-sm"> / 14 days</span>
                 </div>
                 <ul className="space-y-3 text-sm text-muted-foreground mb-8 text-left">
-                  {["Full access to all features", "GST invoicing", "Expense tracking", "Up to 50 invoices", "Basic reports", "Email support"].map((f) => (
+                  {["Full access to all modules", "Inventory management", "Purchase Orders & Goods Receipt", "Proforma Invoices", "Employee & Attendance tracking", "Email support"].map((f) => (
                     <li key={f} className="flex items-center gap-2.5">
                       <CheckCircle2 className="w-4 h-4 text-muted-foreground/50 shrink-0" /> {f}
                     </li>
@@ -352,7 +352,7 @@ const Dashboard = () => {
                   <span className="text-muted-foreground text-sm"> / month</span>
                 </div>
                 <ul className="space-y-3 text-sm text-muted-foreground mb-8 text-left">
-                  {["Everything in Free Trial", "Unlimited invoices", "Advanced GST reports", "Credit & Debit notes", "Priority WhatsApp support", "CSV & PDF exports"].map((f) => (
+                  {["Everything in Free Trial", "Unlimited data entries", "Payroll & Leave management", "Supplier management", "Priority WhatsApp support", "PDF & print exports"].map((f) => (
                     <li key={f} className="flex items-center gap-2.5">
                       <CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> {f}
                     </li>
@@ -380,7 +380,7 @@ const Dashboard = () => {
                   <p className="text-xs text-muted-foreground line-through mt-1">₹5,988/year</p>
                 </div>
                 <ul className="space-y-3 text-sm text-muted-foreground mb-8 text-left">
-                  {["Everything in Monthly", "Unlimited everything", "Dedicated account manager", "Custom invoice branding", "Data backup & export", "2 months free"].map((f) => (
+                  {["Everything in Monthly", "Unlimited everything", "Dedicated account manager", "Sub-user access control", "Data backup & export", "2 months free"].map((f) => (
                     <li key={f} className="flex items-center gap-2.5">
                       <CheckCircle2 className="w-4 h-4 text-muted-foreground/50 shrink-0" /> {f}
                     </li>
