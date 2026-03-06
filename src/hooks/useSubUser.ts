@@ -13,6 +13,8 @@ export interface SubUserInfo {
 
 export const ALL_FEATURES = [
   { key: "inventory", label: "Inventory" },
+  { key: "stock-transfer", label: "Stock Transfer" },
+  { key: "bom", label: "Bill of Materials" },
   { key: "purchase-orders", label: "Purchase Orders" },
   { key: "goods-receipt", label: "Goods Receipt" },
   { key: "proforma", label: "Proforma Invoice" },
