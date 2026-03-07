@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import heroImg from "@/assets/hero-illustration.png";
+
 import whyImg from "@/assets/why-opis-illustration.png";
 import ctaImg from "@/assets/cta-illustration.png";
 
@@ -180,97 +180,94 @@ const Dashboard = () => {
       {/* ── Hero ── */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.06] via-background to-accent/[0.03]" />
-        {/* Decorative dots */}
-        <div className="absolute top-20 left-10 w-2 h-2 rounded-full bg-primary/20" />
-        <div className="absolute top-40 right-20 w-3 h-3 rounded-full bg-primary/10" />
-        <div className="absolute bottom-20 left-1/4 w-2 h-2 rounded-full bg-primary/15" />
+        {/* Decorative shapes */}
+        <div className="absolute top-16 left-[10%] w-72 h-72 bg-primary/[0.04] rounded-full blur-3xl" />
+        <div className="absolute bottom-10 right-[5%] w-96 h-96 bg-primary/[0.03] rounded-full blur-3xl" />
+        <div className="absolute top-32 right-[15%] w-2 h-2 rounded-full bg-primary/20" />
+        <div className="absolute top-48 left-[20%] w-3 h-3 rounded-full bg-primary/10" />
         
-        <div className="relative max-w-6xl mx-auto px-6 pt-16 pb-20 md:pt-20 md:pb-28">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6 text-center md:text-left">
-              <span className="inline-block text-xs font-semibold tracking-widest uppercase text-primary bg-primary/10 px-4 py-1.5 rounded-full">
-                Built for Indian MSMEs
-              </span>
-              <h1 className="text-4xl sm:text-5xl md:text-[3.25rem] font-bold text-foreground leading-[1.1] tracking-tight">
-                The All-in-One ERP
-                <br />
-                <span className="text-primary">Your Business Needs</span>
-              </h1>
-              <p className="text-lg text-muted-foreground leading-relaxed max-w-lg mx-auto md:mx-0">
-                Inventory, purchasing, HR, payroll & invoicing — unified in one GST-compliant platform. Replace spreadsheets and paper registers forever.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start pt-2">
-                <Button asChild size="lg" className="text-base px-8">
-                  <Link to="/auth">
-                    Start Free Trial
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button asChild size="lg" variant="outline" className="text-base px-8">
-                  <a href="#features">Explore Features</a>
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground pt-1">No credit card required · 14-day free trial · Cancel anytime</p>
-            </div>
-            <div className="hidden md:flex justify-center">
-              <div className="relative w-full max-w-2xl">
-                <img 
-                  src={heroImg} 
-                  alt="OPIS Dashboard Preview" 
-                  className="w-full drop-shadow-2xl" 
-                  loading="eager"
-                />
-                {/* Gradient fade */}
-                <div className="absolute bottom-0 left-0 right-0 h-36 bg-gradient-to-t from-[hsl(var(--background))] via-[hsl(var(--background))/90%] to-transparent" />
-                {/* Decorative floating cards over bottom */}
-                <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3 z-10">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3, duration: 0.5, ease: "easeOut" }}
-                    className="bg-white/90 dark:bg-card/90 backdrop-blur-sm rounded-xl shadow-lg px-4 py-3 flex items-center gap-3 border border-border/50"
-                  >
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Package className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Inventory</p>
-                      <p className="text-sm font-bold">2,450+ Items</p>
-                    </div>
-                  </motion.div>
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5, duration: 0.5, ease: "easeOut" }}
-                    className="bg-white/90 dark:bg-card/90 backdrop-blur-sm rounded-xl shadow-lg px-4 py-3 flex items-center gap-3 border border-border/50"
-                  >
-                    <div className="h-10 w-10 rounded-full bg-accent/50 flex items-center justify-center">
-                      <Users className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Employees</p>
-                      <p className="text-sm font-bold">120+ Active</p>
-                    </div>
-                  </motion.div>
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.7, duration: 0.5, ease: "easeOut" }}
-                    className="bg-white/90 dark:bg-card/90 backdrop-blur-sm rounded-xl shadow-lg px-4 py-3 flex items-center gap-3 border border-border/50"
-                  >
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <TrendingUp className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground">Efficiency</p>
-                      <p className="text-sm font-bold">98.5% ↑</p>
-                    </div>
-                  </motion.div>
-                </div>
-                {/* Shadow base */}
-                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[85%] h-6 rounded-[50%] bg-primary/8 blur-lg" />
-              </div>
-            </div>
+        <div className="relative max-w-6xl mx-auto px-6 pt-20 pb-24 md:pt-28 md:pb-36">
+          {/* Centered text hero */}
+          <div className="text-center max-w-3xl mx-auto space-y-6">
+            <motion.span
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="inline-block text-xs font-semibold tracking-widest uppercase text-primary bg-primary/10 px-4 py-1.5 rounded-full"
+            >
+              Built for Indian MSMEs
+            </motion.span>
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.5 }}
+              className="text-4xl sm:text-5xl md:text-6xl font-bold text-foreground leading-[1.08] tracking-tight"
+            >
+              The All-in-One ERP
+              <br />
+              <span className="text-primary">Your Business Needs</span>
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-2xl mx-auto"
+            >
+              Inventory, purchasing, HR, payroll & invoicing — unified in one GST-compliant platform. Replace spreadsheets and paper registers forever.
+            </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+              className="flex flex-col sm:flex-row gap-3 justify-center pt-3"
+            >
+              <Button asChild size="lg" className="text-base px-8">
+                <Link to="/auth">
+                  Start Free Trial
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="text-base px-8">
+                <a href="#features">Explore Features</a>
+              </Button>
+            </motion.div>
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+              className="text-xs text-muted-foreground pt-1"
+            >
+              No credit card required · 14-day free trial · Cancel anytime
+            </motion.p>
+          </div>
+
+          {/* Floating stat cards below */}
+          <div className="mt-16 flex flex-wrap justify-center gap-4 md:gap-6">
+            {[
+              { icon: Package, label: "Inventory", value: "2,450+ Items", delay: 0.4 },
+              { icon: ShoppingCart, label: "Purchase Orders", value: "340+ Processed", delay: 0.5 },
+              { icon: Users, label: "Employees", value: "120+ Active", delay: 0.6 },
+              { icon: TrendingUp, label: "Efficiency", value: "98.5% ↑", delay: 0.7 },
+            ].map((card) => {
+              const Icon = card.icon;
+              return (
+                <motion.div
+                  key={card.label}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: card.delay, duration: 0.5, ease: "easeOut" }}
+                  className="bg-card/80 backdrop-blur-sm rounded-xl shadow-lg px-5 py-4 flex items-center gap-3 border border-border/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                >
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <Icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">{card.label}</p>
+                    <p className="text-sm font-bold text-foreground">{card.value}</p>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
