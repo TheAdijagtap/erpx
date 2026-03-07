@@ -7,7 +7,7 @@ import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { TrialBanner, TrialStatusBadge, TrialExpiredOverlay, calculateTrialStatus } from "@/components/TrialBanner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const WHATSAPP_NUMBER = "919373751128";
 
