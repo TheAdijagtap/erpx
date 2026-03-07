@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRightLeft, Plus, Trash2, Eye, Printer } from "lucide-react";
+import { ArrowRightLeft, Plus, Trash2, Eye, Printer, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { printElementById } from "@/lib/print";
 import { escapeHtml } from "@/lib/htmlEscape";
@@ -49,6 +49,7 @@ const StockTransfer = () => {
   const [showCreate, setShowCreate] = useState(false);
   const [showView, setShowView] = useState<StockTransfer | null>(null);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Form state
   const [fromLocationId, setFromLocationId] = useState("");
@@ -239,6 +240,17 @@ const StockTransfer = () => {
 
       {transfers.length > 0 && (
         <Card>
+          <div className="p-4 pb-0">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by transfer #, location..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          </div>
           <Table>
             <TableHeader>
               <TableRow>
@@ -252,7 +264,16 @@ const StockTransfer = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {transfers.map(t => (
+              {transfers
+                .filter(t => {
+                  if (!searchQuery.trim()) return true;
+                  const q = searchQuery.toLowerCase();
+                  return t.transferNumber.toLowerCase().includes(q) ||
+                    t.fromLocation.toLowerCase().includes(q) ||
+                    t.toLocation.toLowerCase().includes(q) ||
+                    t.status.toLowerCase().includes(q);
+                })
+                .map(t => (
                 <TableRow key={t.id}>
                   <TableCell className="font-medium">{t.transferNumber}</TableCell>
                   <TableCell>{t.fromLocation}</TableCell>
