@@ -212,12 +212,16 @@ const Dashboard = () => {
               <p className="text-xs text-muted-foreground pt-1">No credit card required · 14-day free trial · Cancel anytime</p>
             </div>
             <div className="hidden md:flex justify-center">
-              <img 
-                src={heroImg} 
-                alt="OPIS Dashboard Preview" 
-                className="w-full max-w-lg drop-shadow-2xl" 
-                loading="eager"
-              />
+              <div className="relative w-full max-w-lg">
+                <img 
+                  src={heroImg} 
+                  alt="OPIS Dashboard Preview" 
+                  className="w-full drop-shadow-2xl" 
+                  loading="eager"
+                />
+                <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[hsl(var(--background))] via-[hsl(var(--background))/80%] to-transparent" />
+                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-[90%] h-4 rounded-[50%] bg-primary/10 blur-md" />
+              </div>
             </div>
           </div>
         </div>
