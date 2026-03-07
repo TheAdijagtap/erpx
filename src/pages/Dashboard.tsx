@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import heroImg from "@/assets/hero-illustration.png";
+
 import whyImg from "@/assets/why-opis-illustration.png";
 import ctaImg from "@/assets/cta-illustration.png";
 
