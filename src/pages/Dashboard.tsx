@@ -179,12 +179,52 @@ const Dashboard = () => {
 
       {/* ── Hero ── */}
       <section className="relative overflow-hidden">
+        {/* Animated mesh gradient background */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.06] via-background to-accent/[0.03]" />
-        {/* Decorative shapes */}
-        <div className="absolute top-16 left-[10%] w-72 h-72 bg-primary/[0.04] rounded-full blur-3xl" />
-        <div className="absolute bottom-10 right-[5%] w-96 h-96 bg-primary/[0.03] rounded-full blur-3xl" />
-        <div className="absolute top-32 right-[15%] w-2 h-2 rounded-full bg-primary/20" />
-        <div className="absolute top-48 left-[20%] w-3 h-3 rounded-full bg-primary/10" />
+        <motion.div
+          className="absolute -top-24 -left-24 w-[500px] h-[500px] rounded-full bg-primary/[0.07] blur-[100px]"
+          animate={{ x: [0, 60, 0], y: [0, 40, 0], scale: [1, 1.15, 1] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute top-1/3 right-[-10%] w-[400px] h-[400px] rounded-full bg-accent/[0.06] blur-[100px]"
+          animate={{ x: [0, -50, 0], y: [0, -30, 0], scale: [1, 1.1, 1] }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-[-5%] left-[30%] w-[350px] h-[350px] rounded-full bg-primary/[0.05] blur-[80px]"
+          animate={{ x: [0, 40, -20, 0], y: [0, -50, 0], scale: [1, 1.2, 1] }}
+          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+        />
+        {/* Dot grid pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: "radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)",
+            backgroundSize: "32px 32px",
+          }}
+        />
+        {/* Small floating dots */}
+        <motion.div
+          className="absolute top-32 right-[15%] w-2 h-2 rounded-full bg-primary/20"
+          animate={{ y: [0, -12, 0], opacity: [0.2, 0.5, 0.2] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute top-48 left-[20%] w-3 h-3 rounded-full bg-primary/15"
+          animate={{ y: [0, 10, 0], opacity: [0.15, 0.4, 0.15] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        />
+        <motion.div
+          className="absolute bottom-32 left-[12%] w-1.5 h-1.5 rounded-full bg-primary/25"
+          animate={{ y: [0, -8, 0], x: [0, 5, 0] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+        />
+        <motion.div
+          className="absolute top-20 left-[55%] w-1 h-1 rounded-full bg-primary/20"
+          animate={{ y: [0, 15, 0], opacity: [0.2, 0.6, 0.2] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+        />
         
         <div className="relative max-w-6xl mx-auto px-6 pt-20 pb-24 md:pt-28 md:pb-36">
           {/* Centered text hero */}
