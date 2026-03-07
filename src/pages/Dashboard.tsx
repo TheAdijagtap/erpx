@@ -18,9 +18,19 @@ import {
   ChevronRight,
   Menu,
   X,
+  Globe,
+  Smartphone,
+  Lock,
+  TrendingUp,
+  Boxes,
+  ClipboardCheck,
+  RefreshCw,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import heroImg from "@/assets/hero-illustration.png";
+import whyImg from "@/assets/why-opis-illustration.png";
+import ctaImg from "@/assets/cta-illustration.png";
 
 const Dashboard = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -28,65 +38,75 @@ const Dashboard = () => {
   const modules = [
     {
       icon: Package,
-      title: "Inventory",
-      description: "Real-time stock tracking with low-stock alerts, batch management, and item categorization.",
+      title: "Inventory Management",
+      description: "Real-time stock tracking with low-stock alerts, batch management, item categorization, and multi-location support.",
+      highlight: "Track every item across locations",
     },
     {
       icon: ShoppingCart,
       title: "Purchase Orders",
-      description: "Create, track, and manage purchase orders with automated GST calculations.",
+      description: "Create, track, and manage purchase orders with automated GST calculations, supplier linking, and approval workflows.",
+      highlight: "Automate your procurement",
+    },
+    {
+      icon: ClipboardCheck,
+      title: "Goods Receipt & QC",
+      description: "Record incoming inventory with quality checks, batch numbers, and automatic stock updates linked to purchase orders.",
+      highlight: "Never miss a delivery",
     },
     {
       icon: FileText,
-      title: "Goods Receipt",
-      description: "Record incoming inventory with quality checks and automatic stock updates.",
-    },
-    {
-      icon: BarChart3,
       title: "Proforma Invoices",
-      description: "Generate professional GST-compliant invoices with customizable templates.",
+      description: "Generate professional GST-compliant invoices with customizable templates, customer management, and PDF exports.",
+      highlight: "Professional invoicing in seconds",
     },
     {
       icon: UserCheck,
       title: "Employee Management",
-      description: "Complete employee directory with profiles, departments, and salary details.",
+      description: "Complete employee directory with profiles, departments, salary structures, bank details, and document management.",
+      highlight: "All HR data in one place",
     },
     {
       icon: CalendarDays,
       title: "Attendance & Leave",
-      description: "Daily check-in/out tracking, leave approvals, and calendar overviews.",
+      description: "Daily check-in/out tracking, leave approvals, calendar overviews, and automated attendance reports.",
+      highlight: "Effortless workforce tracking",
     },
     {
       icon: QrCode,
       title: "QR Leave Requests",
-      description: "Employees scan a QR code to submit leave requests — no login needed.",
+      description: "Employees scan a QR code to submit leave requests — no login needed. Managers approve from the dashboard instantly.",
+      highlight: "Zero-friction leave management",
     },
     {
       icon: IndianRupee,
       title: "Payroll & Payslips",
-      description: "Auto-calculate salaries from attendance and generate downloadable PDF payslips.",
+      description: "Auto-calculate salaries from attendance, apply PF/ESI/PT rules, and generate downloadable PDF payslips for every employee.",
+      highlight: "Payroll on autopilot",
     },
   ];
 
   const metrics = [
-    { value: "20+", label: "Features" },
+    { value: "500+", label: "Businesses Trust OPIS" },
+    { value: "20+", label: "Integrated Features" },
     { value: "100%", label: "GST Compliant" },
     { value: "<30min", label: "Setup Time" },
-    { value: "∞", label: "Scalability" },
   ];
 
   const steps = [
-    { num: "01", title: "Configure Business", desc: "Add your business details, GST info, and branding." },
-    { num: "02", title: "Add Suppliers & Items", desc: "Build your supplier list and inventory catalog." },
-    { num: "03", title: "Start Operations", desc: "Create orders, receive goods, and generate invoices." },
-    { num: "04", title: "Manage Workforce", desc: "Track attendance, process payroll, and download payslips." },
+    { num: "01", title: "Configure Business", desc: "Add your business details, GST info, logo, and branding. Set up your company profile in minutes.", icon: Globe },
+    { num: "02", title: "Add Suppliers & Items", desc: "Build your supplier directory and inventory catalog with HSN codes, pricing, and stock levels.", icon: Boxes },
+    { num: "03", title: "Start Operations", desc: "Create purchase orders, receive goods with QC, generate invoices, and manage stock transfers.", icon: RefreshCw },
+    { num: "04", title: "Manage Workforce", desc: "Add employees, track attendance, process leaves, run payroll, and download payslips — all automated.", icon: Users },
   ];
 
   const faqs = [
-    { q: "How long does it take to set up?", a: "Most businesses are fully operational within 30 minutes. Just configure your business details, add suppliers, and start managing inventory." },
-    { q: "Is OPIS GST compliant?", a: "Yes — all invoices, purchase orders, and receipts automatically calculate GST. Reports are compliance-ready for Indian tax requirements." },
-    { q: "Are there any item or transaction limits?", a: "No limits. OPIS scales with your business from small operations to large enterprises — unlimited items, suppliers, and transactions." },
-    { q: "How is my data secured?", a: "We use enterprise-grade encrypted storage, regular backups, and secure row-level access controls. Your business data is fully protected." },
+    { q: "How long does it take to set up?", a: "Most businesses are fully operational within 30 minutes. Just configure your business details, add suppliers, and start managing inventory. Our intuitive interface guides you through every step." },
+    { q: "Is OPIS GST compliant?", a: "Yes — all invoices, purchase orders, and receipts automatically calculate GST (CGST, SGST, IGST). Reports are compliance-ready for Indian tax requirements with HSN code support." },
+    { q: "Are there any item or transaction limits?", a: "No limits on any paid plan. OPIS scales with your business from small operations to large enterprises — unlimited items, suppliers, employees, and transactions." },
+    { q: "How is my data secured?", a: "We use enterprise-grade encrypted storage with row-level security, regular backups, and secure access controls. Your business data is isolated and fully protected at all times." },
+    { q: "Can multiple users access OPIS?", a: "Yes! OPIS supports sub-user access with granular permissions. You can assign specific modules to team members while keeping admin controls centralized." },
+    { q: "Do I need to install anything?", a: "No installation needed. OPIS is a cloud-based web application that works on any device — desktop, tablet, or mobile — with just a browser." },
   ];
 
   const navLinks = [
@@ -94,6 +114,13 @@ const Dashboard = () => {
     { label: "How It Works", href: "#how-it-works" },
     { label: "Pricing", href: "#pricing" },
     { label: "FAQ", href: "#faq" },
+  ];
+
+  const capabilities = [
+    { icon: Globe, title: "Cloud-Based", desc: "Access from anywhere, any device. No installations or downloads required." },
+    { icon: Smartphone, title: "Mobile Ready", desc: "Fully responsive design works seamlessly on phones, tablets, and desktops." },
+    { icon: Lock, title: "Enterprise Security", desc: "Row-level data isolation, encrypted storage, and automatic backups." },
+    { icon: TrendingUp, title: "Real-Time Analytics", desc: "Live dashboards with actionable insights on inventory, HR, and finances." },
   ];
 
   return (
@@ -152,31 +179,46 @@ const Dashboard = () => {
       {/* ── Hero ── */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.06] via-background to-accent/[0.03]" />
-        <div className="relative max-w-6xl mx-auto px-6 pt-20 pb-24 md:pt-28 md:pb-32">
-          <div className="max-w-3xl mx-auto text-center space-y-6">
-            <span className="inline-block text-xs font-semibold tracking-widest uppercase text-primary bg-primary/10 px-4 py-1.5 rounded-full">
-              Built for Indian MSMEs
-            </span>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-foreground leading-[1.1] tracking-tight">
-              The All-in-One ERP
-              <br />
-              <span className="text-primary">Your Business Needs</span>
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Inventory, purchasing, HR, payroll & invoicing — unified in one GST-compliant platform. Set up in under 30 minutes.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
-              <Button asChild size="lg" className="text-base px-8">
-                <Link to="/auth">
-                  Start Free Trial
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="text-base px-8">
-                <a href="#features">Explore Features</a>
-              </Button>
+        {/* Decorative dots */}
+        <div className="absolute top-20 left-10 w-2 h-2 rounded-full bg-primary/20" />
+        <div className="absolute top-40 right-20 w-3 h-3 rounded-full bg-primary/10" />
+        <div className="absolute bottom-20 left-1/4 w-2 h-2 rounded-full bg-primary/15" />
+        
+        <div className="relative max-w-6xl mx-auto px-6 pt-16 pb-20 md:pt-20 md:pb-28">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="space-y-6 text-center md:text-left">
+              <span className="inline-block text-xs font-semibold tracking-widest uppercase text-primary bg-primary/10 px-4 py-1.5 rounded-full">
+                Built for Indian MSMEs
+              </span>
+              <h1 className="text-4xl sm:text-5xl md:text-[3.25rem] font-bold text-foreground leading-[1.1] tracking-tight">
+                The All-in-One ERP
+                <br />
+                <span className="text-primary">Your Business Needs</span>
+              </h1>
+              <p className="text-lg text-muted-foreground leading-relaxed max-w-lg mx-auto md:mx-0">
+                Inventory, purchasing, HR, payroll & invoicing — unified in one GST-compliant platform. Replace spreadsheets and paper registers forever.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start pt-2">
+                <Button asChild size="lg" className="text-base px-8">
+                  <Link to="/auth">
+                    Start Free Trial
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="text-base px-8">
+                  <a href="#features">Explore Features</a>
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground pt-1">No credit card required · 14-day free trial · Cancel anytime</p>
             </div>
-            <p className="text-xs text-muted-foreground pt-1">No credit card required · 14-day free trial</p>
+            <div className="hidden md:flex justify-center">
+              <img 
+                src={heroImg} 
+                alt="OPIS Dashboard Preview" 
+                className="w-full max-w-lg drop-shadow-2xl" 
+                loading="eager"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -195,16 +237,38 @@ const Dashboard = () => {
         </div>
       </section>
 
+      {/* ── Platform Capabilities ── */}
+      <section className="py-16 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {capabilities.map((cap) => {
+              const Icon = cap.icon;
+              return (
+                <div key={cap.title} className="flex items-start gap-4 p-5 rounded-xl bg-primary/[0.03] border border-primary/10">
+                  <div className="p-2 bg-primary/10 rounded-lg shrink-0">
+                    <Icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground text-sm mb-1">{cap.title}</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{cap.desc}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* ── Features ── */}
       <section id="features" className="py-20 md:py-28 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
-            <span className="text-xs font-semibold tracking-widest uppercase text-primary">Modules</span>
+            <span className="text-xs font-semibold tracking-widest uppercase text-primary">Powerful Modules</span>
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mt-3 mb-4">
               Everything You Need, Nothing You Don't
             </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
-              Eight powerful modules working together to run your entire business from one dashboard.
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Eight powerful modules working together to run your entire business from one dashboard. From procurement to payroll — every workflow is connected.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -213,13 +277,17 @@ const Dashboard = () => {
               return (
                 <Card
                   key={mod.title}
-                  className="group p-6 hover:shadow-md transition-all duration-300 hover:border-primary/30"
+                  className="group p-6 hover:shadow-md transition-all duration-300 hover:border-primary/30 relative overflow-hidden"
                 >
-                  <div className="p-2.5 bg-primary/10 rounded-lg w-fit mb-4 group-hover:bg-primary/15 transition-colors">
-                    <Icon className="w-5 h-5 text-primary" />
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-primary/[0.03] rounded-bl-[4rem] -mr-4 -mt-4 group-hover:bg-primary/[0.06] transition-colors" />
+                  <div className="relative">
+                    <div className="p-2.5 bg-primary/10 rounded-lg w-fit mb-4 group-hover:bg-primary/15 transition-colors">
+                      <Icon className="w-5 h-5 text-primary" />
+                    </div>
+                    <h3 className="font-semibold text-foreground mb-1.5">{mod.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed mb-3">{mod.description}</p>
+                    <span className="text-xs font-medium text-primary">{mod.highlight} →</span>
                   </div>
-                  <h3 className="font-semibold text-foreground mb-1.5">{mod.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{mod.description}</p>
                 </Card>
               );
             })}
@@ -231,23 +299,27 @@ const Dashboard = () => {
       <section className="py-20 md:py-28 px-6 bg-muted/30">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 gap-16 items-center">
-            <div>
+            <div className="order-2 md:order-1">
               <span className="text-xs font-semibold tracking-widest uppercase text-primary">Why OPIS</span>
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mt-3 mb-6">
                 Purpose-Built for Indian MSMEs
               </h2>
-              <p className="text-muted-foreground mb-8 leading-relaxed">
+              <p className="text-muted-foreground mb-4 leading-relaxed">
                 Large ERPs are expensive and complex. Spreadsheets don't scale. OPIS bridges the gap — affordable, intuitive, and GST-ready from day one.
+              </p>
+              <p className="text-muted-foreground mb-8 leading-relaxed">
+                Whether you're a manufacturer, trader, or service provider with 5 or 500 employees — OPIS adapts to your workflow, not the other way around.
               </p>
               <div className="space-y-5">
                 {[
-                  { icon: Shield, text: "100% GST compliant with automatic tax calculations" },
+                  { icon: Shield, text: "100% GST compliant with CGST, SGST & IGST calculations" },
                   { icon: Zap, text: "Set up your entire business in under 30 minutes" },
                   { icon: Clock, text: "Save 10+ hours per week on manual processes" },
-                  { icon: Users, text: "Scale from 1 to 1,000+ employees seamlessly" },
+                  { icon: Users, text: "Sub-user access with granular permissions" },
+                  { icon: BarChart3, text: "Real-time dashboards with actionable business insights" },
                 ].map((item) => (
                   <div key={item.text} className="flex items-start gap-3">
-                    <div className="p-1.5 bg-primary/10 rounded-md mt-0.5">
+                    <div className="p-1.5 bg-primary/10 rounded-md mt-0.5 shrink-0">
                       <item.icon className="w-4 h-4 text-primary" />
                     </div>
                     <p className="text-sm text-foreground">{item.text}</p>
@@ -255,19 +327,27 @@ const Dashboard = () => {
                 ))}
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { num: "3×", label: "Faster Operations", sub: "vs manual tracking" },
-                { num: "40%", label: "Cost Savings", sub: "inventory optimization" },
-                { num: "10hrs", label: "Saved Weekly", sub: "automated workflows" },
-                { num: "0", label: "Paper Required", sub: "fully digital" },
-              ].map((stat) => (
-                <Card key={stat.label} className="p-6 text-center">
-                  <div className="text-2xl md:text-3xl font-bold text-primary mb-1">{stat.num}</div>
-                  <div className="text-sm font-medium text-foreground">{stat.label}</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">{stat.sub}</div>
-                </Card>
-              ))}
+            <div className="order-1 md:order-2 flex flex-col items-center gap-6">
+              <img 
+                src={whyImg} 
+                alt="Business owner managing inventory with OPIS" 
+                className="w-full max-w-sm drop-shadow-lg"
+                loading="lazy"
+              />
+              <div className="grid grid-cols-2 gap-4 w-full">
+                {[
+                  { num: "3×", label: "Faster Operations", sub: "vs manual tracking" },
+                  { num: "40%", label: "Cost Savings", sub: "inventory optimization" },
+                  { num: "10hrs", label: "Saved Weekly", sub: "automated workflows" },
+                  { num: "0", label: "Paper Required", sub: "fully digital" },
+                ].map((stat) => (
+                  <Card key={stat.label} className="p-5 text-center">
+                    <div className="text-2xl font-bold text-primary mb-1">{stat.num}</div>
+                    <div className="text-sm font-medium text-foreground">{stat.label}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">{stat.sub}</div>
+                  </Card>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -279,31 +359,75 @@ const Dashboard = () => {
           <div className="text-center mb-14">
             <span className="text-xs font-semibold tracking-widest uppercase text-primary">Getting Started</span>
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mt-3 mb-4">
-              Up and Running in 4 Steps
+              Up and Running in 4 Simple Steps
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              From sign-up to your first payslip — in under 30 minutes.
+              From sign-up to your first payslip — in under 30 minutes. No training needed.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {steps.map((step, i) => (
-              <div key={step.num} className="relative">
-                <Card className="p-6 h-full">
-                  <div className="text-4xl font-bold text-primary/15 mb-3">{step.num}</div>
-                  <h3 className="font-semibold text-foreground mb-2">{step.title}</h3>
-                  <p className="text-sm text-muted-foreground">{step.desc}</p>
+            {steps.map((step, i) => {
+              const StepIcon = step.icon;
+              return (
+                <div key={step.num} className="relative">
+                  <Card className="p-6 h-full hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="text-3xl font-bold text-primary/15">{step.num}</div>
+                      <div className="p-2 bg-primary/10 rounded-lg">
+                        <StepIcon className="w-4 h-4 text-primary" />
+                      </div>
+                    </div>
+                    <h3 className="font-semibold text-foreground mb-2">{step.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
+                  </Card>
+                  {i < steps.length - 1 && (
+                    <ChevronRight className="hidden lg:block absolute top-1/2 -right-3.5 -translate-y-1/2 w-5 h-5 text-primary/25" />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Who It's For ── */}
+      <section className="py-20 md:py-28 px-6 bg-muted/30">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-14">
+            <span className="text-xs font-semibold tracking-widest uppercase text-primary">Industries</span>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mt-3 mb-4">
+              Built for Businesses Like Yours
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              OPIS serves a wide range of Indian MSMEs — from manufacturing units to retail shops and service providers.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              { title: "Manufacturing", desc: "Bill of Materials, stock tracking, goods receipt with QC, and supplier management for production-oriented businesses.", icon: Boxes },
+              { title: "Trading & Distribution", desc: "Purchase orders, inventory across locations, proforma invoicing, and stock transfers between warehouses.", icon: RefreshCw },
+              { title: "Retail & E-Commerce", desc: "Product catalog management, low-stock alerts, batch tracking, and GST-compliant invoice generation.", icon: ShoppingCart },
+              { title: "Service Companies", desc: "Employee management, attendance tracking, leave management, payroll processing, and payslip generation.", icon: UserCheck },
+              { title: "Startups & SMBs", desc: "All-in-one solution that grows with you. Start with inventory, add HR and payroll as your team expands.", icon: TrendingUp },
+              { title: "Multi-Location Businesses", desc: "Manage stock across multiple warehouses with inter-location transfers and centralized reporting.", icon: Globe },
+            ].map((ind) => {
+              const Icon = ind.icon;
+              return (
+                <Card key={ind.title} className="p-6 hover:shadow-md transition-shadow">
+                  <div className="p-2.5 bg-primary/10 rounded-lg w-fit mb-4">
+                    <Icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-foreground mb-2">{ind.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{ind.desc}</p>
                 </Card>
-                {i < steps.length - 1 && (
-                  <ChevronRight className="hidden lg:block absolute top-1/2 -right-3.5 -translate-y-1/2 w-5 h-5 text-primary/25" />
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* ── Pricing ── */}
-      <section id="pricing" className="py-20 md:py-28 px-6 bg-muted/30">
+      <section id="pricing" className="py-20 md:py-28 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold tracking-widest uppercase text-primary bg-primary/10 px-3 py-1.5 rounded-full mb-4">
@@ -401,13 +525,16 @@ const Dashboard = () => {
       </section>
 
       {/* ── FAQ ── */}
-      <section id="faq" className="py-20 md:py-28 px-6">
+      <section id="faq" className="py-20 md:py-28 px-6 bg-muted/30">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-14">
             <span className="text-xs font-semibold tracking-widest uppercase text-primary">FAQ</span>
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mt-3 mb-4">
               Common Questions
             </h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Everything you need to know about OPIS. Can't find an answer? <Link to="/contact" className="text-primary hover:underline">Contact us</Link>.
+            </p>
           </div>
           <div className="space-y-3">
             {faqs.map((faq) => (
@@ -429,19 +556,36 @@ const Dashboard = () => {
 
       {/* ── CTA ── */}
       <section className="py-20 md:py-28 px-6 bg-primary/[0.04]">
-        <div className="max-w-3xl mx-auto text-center space-y-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-            Ready to Streamline Your Business?
-          </h2>
-          <p className="text-muted-foreground max-w-xl mx-auto">
-            Join hundreds of Indian MSMEs running smarter operations with OPIS. Start your free trial today.
-          </p>
-          <Button asChild size="lg" className="text-base px-10">
-            <Link to="/auth">
-              Get Started Free
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
+        <div className="max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="text-center md:text-left space-y-6">
+              <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+                Ready to Streamline Your Business?
+              </h2>
+              <p className="text-muted-foreground max-w-lg">
+                Join hundreds of Indian MSMEs running smarter operations with OPIS. From inventory chaos to organized workflows — start your transformation today.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
+                <Button asChild size="lg" className="text-base px-10">
+                  <Link to="/auth">
+                    Get Started Free
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="text-base px-8">
+                  <Link to="/contact">Talk to Us</Link>
+                </Button>
+              </div>
+            </div>
+            <div className="hidden md:flex justify-center">
+              <img 
+                src={ctaImg} 
+                alt="Team collaborating with OPIS" 
+                className="w-full max-w-md drop-shadow-lg"
+                loading="lazy"
+              />
+            </div>
+          </div>
         </div>
       </section>
 
