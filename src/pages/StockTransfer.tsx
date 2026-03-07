@@ -49,6 +49,7 @@ const StockTransfer = () => {
   const [showCreate, setShowCreate] = useState(false);
   const [showView, setShowView] = useState<StockTransfer | null>(null);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Form state
   const [fromLocationId, setFromLocationId] = useState("");
