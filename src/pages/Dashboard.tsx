@@ -212,7 +212,7 @@ const Dashboard = () => {
               <p className="text-xs text-muted-foreground pt-1">No credit card required · 14-day free trial · Cancel anytime</p>
             </div>
             <div className="hidden md:flex justify-center">
-              <div className="relative w-full max-w-lg">
+              <div className="relative w-full max-w-2xl">
                 <img 
                   src={heroImg} 
                   alt="OPIS Dashboard Preview" 
