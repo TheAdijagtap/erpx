@@ -48,6 +48,11 @@ const Layout = () => {
   const [hrmOpen, setHrmOpen] = useState(isHrmActive);
   const [invOpen, setInvOpen] = useState(isInvActive);
 
+  useEffect(() => {
+    setHrmOpen(isHrmActive);
+    setInvOpen(isInvActive);
+  }, [location.pathname]);
+
   const allNavigation: NavEntry[] = [
     { name: "Dashboard", href: "/dashboard", icon: BarChart3 },
     {
