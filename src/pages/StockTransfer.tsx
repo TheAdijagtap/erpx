@@ -67,7 +67,9 @@ const StockTransfer = () => {
 
     const locsArr = (locs || []).map((l: any) => ({ id: l.id, name: l.name, address: l.address }));
     setLocations(locsArr);
-    setTransfers((trans || []).map((t: any) => ({
+    setTransfers((trans || [])
+      .filter((t: any) => !t.transfer_number?.startsWith("ST-GR-"))
+      .map((t: any) => ({
       id: t.id,
       transferNumber: t.transfer_number,
       fromLocation: locsArr.find((l: any) => l.id === t.from_location_id)?.name || "Unknown",
