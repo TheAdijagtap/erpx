@@ -219,8 +219,31 @@ const Dashboard = () => {
                   className="w-full drop-shadow-2xl" 
                   loading="eager"
                 />
-                <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[hsl(var(--background))] via-[hsl(var(--background))/80%] to-transparent" />
-                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-[90%] h-4 rounded-[50%] bg-primary/10 blur-md" />
+                {/* Gradient fade */}
+                <div className="absolute bottom-0 left-0 right-0 h-36 bg-gradient-to-t from-[hsl(var(--background))] via-[hsl(var(--background))/90%] to-transparent" />
+                {/* Decorative floating cards over bottom */}
+                <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3 z-10">
+                  <div className="bg-white/90 dark:bg-card/90 backdrop-blur-sm rounded-xl shadow-lg px-4 py-3 flex items-center gap-3 border border-border/50">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Package className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Inventory</p>
+                      <p className="text-sm font-bold">2,450+ Items</p>
+                    </div>
+                  </div>
+                  <div className="bg-white/90 dark:bg-card/90 backdrop-blur-sm rounded-xl shadow-lg px-4 py-3 flex items-center gap-3 border border-border/50">
+                    <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
+                      <TrendingUp className="h-5 w-5 text-orange-600" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Efficiency</p>
+                      <p className="text-sm font-bold">98.5% ↑</p>
+                    </div>
+                  </div>
+                </div>
+                {/* Shadow base */}
+                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-[85%] h-6 rounded-[50%] bg-primary/8 blur-lg" />
               </div>
             </div>
           </div>
