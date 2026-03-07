@@ -175,17 +175,15 @@ function StockTransferHistory({ itemId }: { itemId: string }) {
       const { data: locs } = await supabase.from("locations").select("id, name").in("id", Array.from(locIds));
       const locMap = new Map((locs || []).map((l: any) => [l.id, l.name]));
 
-      setTransfers(data.map((t: any) => {
+      // Filter out GRN auto-transfers and map remaining
+      const filtered = data.filter((t: any) => !t.transfer_number?.startsWith("ST-GR-"));
+      setTransfers(filtered.map((t: any) => {
         const items = Array.isArray(t.stock_transfer_items) ? t.stock_transfer_items : [t.stock_transfer_items];
         const qty = items.reduce((s: number, i: any) => s + Number(i.quantity), 0);
-        const isGrn = t.transfer_number?.startsWith("ST-GR-");
-        // Extract real GR number from notes like "Auto-created from Goods Receipt GR-XXXX acceptance"
-        const notesMatch = isGrn && t.notes ? t.notes.match(/Goods Receipt (GR-[^\s]+)/) : null;
-        const grnNumber = notesMatch ? notesMatch[1] : (isGrn ? t.transfer_number.replace("ST-GR-", "GR-") : null);
         return {
           date: t.date,
-          transferNumber: isGrn ? grnNumber : t.transfer_number,
-          fromLocation: !t.from_location_id ? (isGrn ? `GRN (${grnNumber})` : "Unknown") : (locMap.get(t.from_location_id) || "Unknown"),
+          transferNumber: t.transfer_number,
+          fromLocation: !t.from_location_id ? "Unknown" : (locMap.get(t.from_location_id) || "Unknown"),
           toLocation: locMap.get(t.to_location_id) || "Unknown",
           quantity: qty,
         };
