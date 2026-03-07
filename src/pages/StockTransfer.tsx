@@ -240,6 +240,17 @@ const StockTransfer = () => {
 
       {transfers.length > 0 && (
         <Card>
+          <div className="p-4 pb-0">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by transfer #, location..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          </div>
           <Table>
             <TableHeader>
               <TableRow>
@@ -253,7 +264,16 @@ const StockTransfer = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {transfers.map(t => (
+              {transfers
+                .filter(t => {
+                  if (!searchQuery.trim()) return true;
+                  const q = searchQuery.toLowerCase();
+                  return t.transferNumber.toLowerCase().includes(q) ||
+                    t.fromLocation.toLowerCase().includes(q) ||
+                    t.toLocation.toLowerCase().includes(q) ||
+                    t.status.toLowerCase().includes(q);
+                })
+                .map(t => (
                 <TableRow key={t.id}>
                   <TableCell className="font-medium">{t.transferNumber}</TableCell>
                   <TableCell>{t.fromLocation}</TableCell>
