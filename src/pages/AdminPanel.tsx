@@ -329,7 +329,7 @@ const AdminPanel = () => {
               Expired
             </div>
             <div className="text-2xl font-bold mt-1 text-destructive">
-              {users.filter((u) => getStatus(u).type === "expired").length}
+              {mainUsers.filter((u) => getStatus(u).type === "expired").length}
             </div>
           </Card>
           <Card className="p-4">
