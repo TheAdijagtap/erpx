@@ -9,6 +9,24 @@ const WHATSAPP_NUMBER = "919373751128";
 const Contact = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Contact OPIS - Get Help with Your MSME ERP"
+        description="Get in touch with the OPIS team via WhatsApp, email, or phone. We're here to help Indian MSMEs streamline their business operations."
+        canonical="https://erpx.lovable.app/contact"
+        keywords="contact OPIS, MSME ERP support, business software help India"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "ContactPage",
+          "name": "Contact OPIS",
+          "url": "https://erpx.lovable.app/contact",
+          "mainEntity": {
+            "@type": "Organization",
+            "name": "Necrus Technologies",
+            "telephone": "+919373751128",
+            "contactType": "customer support"
+          }
+        }}
+      />
       {/* Header */}
       <header className="border-b border-border bg-background/95 backdrop-blur sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">

@@ -7,6 +7,20 @@ import SEOHead from "@/components/SEOHead";
 const About = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="About OPIS - India's Purpose-Built ERP for MSMEs"
+        description="Learn about OPIS by Necrus Technologies — India's affordable ERP platform combining inventory, purchasing, HR, and payroll for MSMEs."
+        canonical="https://erpx.lovable.app/about"
+        keywords="about OPIS, Necrus Technologies, MSME ERP India, affordable ERP, inventory management"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "name": "Necrus Technologies",
+          "url": "https://erpx.lovable.app",
+          "description": "Necrus Technologies builds OPIS, India's purpose-built ERP for MSMEs.",
+          "brand": { "@type": "Brand", "name": "OPIS" }
+        }}
+      />
       {/* Header */}
       <header className="border-b border-border bg-background/95 backdrop-blur sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">

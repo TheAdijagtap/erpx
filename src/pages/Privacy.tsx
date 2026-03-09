@@ -5,6 +5,12 @@ import SEOHead from "@/components/SEOHead";
 const Privacy = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Privacy Policy - OPIS ERP"
+        description="Read the OPIS privacy policy. Learn how we collect, use, and protect your data when using our ERP platform."
+        canonical="https://erpx.lovable.app/privacy"
+        keywords="OPIS privacy policy, data protection, ERP privacy"
+      />
       <header className="border-b border-border bg-background/95 backdrop-blur sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
