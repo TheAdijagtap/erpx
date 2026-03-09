@@ -1409,6 +1409,7 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
                 <TableRow>
                   <TableHead>Item</TableHead>
                   <TableHead>HSN (Optional)</TableHead>
+                  <TableHead>Unit</TableHead>
                   <TableHead>Quantity</TableHead>
                   <TableHead>Unit Price</TableHead>
                   <TableHead>Total</TableHead>
