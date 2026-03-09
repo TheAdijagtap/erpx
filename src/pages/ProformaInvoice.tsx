@@ -2213,26 +2213,22 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
                       </div>
                     </TableCell>
                     <TableCell className="min-w-[80px]">
-                      {item.itemId?.startsWith('quick-') ? (
-                        <Select value={item.item?.unit || 'PCS'} onValueChange={(value) => updateItem(index, 'unit', value)}>
-                          <SelectTrigger className="w-20 h-8 text-xs">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="PCS">PCS</SelectItem>
-                            <SelectItem value="KG">KG</SelectItem>
-                            <SelectItem value="LTR">LTR</SelectItem>
-                            <SelectItem value="MTR">MTR</SelectItem>
-                            <SelectItem value="SET">SET</SelectItem>
-                            <SelectItem value="BOX">BOX</SelectItem>
-                            <SelectItem value="NOS">NOS</SelectItem>
-                            <SelectItem value="SQM">SQM</SelectItem>
-                            <SelectItem value="RFT">RFT</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">{item.item?.unit || '-'}</span>
-                      )}
+                      <Select value={item.item?.unit || 'PCS'} onValueChange={(value) => updateItem(index, 'unit', value)}>
+                        <SelectTrigger className="w-20 h-8 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="PCS">PCS</SelectItem>
+                          <SelectItem value="KG">KG</SelectItem>
+                          <SelectItem value="LTR">LTR</SelectItem>
+                          <SelectItem value="MTR">MTR</SelectItem>
+                          <SelectItem value="SET">SET</SelectItem>
+                          <SelectItem value="BOX">BOX</SelectItem>
+                          <SelectItem value="NOS">NOS</SelectItem>
+                          <SelectItem value="SQM">SQM</SelectItem>
+                          <SelectItem value="RFT">RFT</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                     <TableCell className="min-w-[100px]">
                       <Input
