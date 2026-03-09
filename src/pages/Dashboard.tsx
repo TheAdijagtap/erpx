@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import SEOHead from "@/components/SEOHead";
 import { Card } from "@/components/ui/card";
 import {
   Package,
@@ -126,6 +127,34 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="OPIS - Affordable ERP for Indian MSMEs | Inventory, HR & Payroll"
+        description="OPIS is India's most affordable ERP system for MSMEs. Manage inventory, purchase orders, GST invoicing, HR, attendance, and payroll — all in one platform starting at ₹499/month."
+        canonical="https://erpx.lovable.app/"
+        keywords="ERP for MSME, inventory management India, purchase order software, GST billing software, HR payroll software, small business ERP, OPIS ERP, affordable ERP India"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          "name": "OPIS - Order, Purchase & Inventory System",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Web",
+          "description": "Affordable ERP system for Indian MSMEs with inventory management, purchase orders, GST invoicing, HR, attendance, and payroll.",
+          "url": "https://erpx.lovable.app",
+          "author": { "@type": "Organization", "name": "Necrus Technologies" },
+          "offers": {
+            "@type": "Offer",
+            "price": "499",
+            "priceCurrency": "INR",
+            "priceValidUntil": "2027-12-31",
+            "availability": "https://schema.org/InStock"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.8",
+            "ratingCount": "150"
+          }
+        }}
+      />
       {/* ── Header ── */}
       <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-lg">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">

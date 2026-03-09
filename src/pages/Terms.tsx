@@ -1,9 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import SEOHead from "@/components/SEOHead";
 
 const Terms = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="Terms of Service - OPIS ERP"
+        description="Read the terms of service for using OPIS, India's affordable ERP platform for MSMEs."
+        canonical="https://erpx.lovable.app/terms"
+        keywords="OPIS terms of service, ERP terms, software agreement"
+      />
       <header className="border-b border-border bg-background/95 backdrop-blur sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">

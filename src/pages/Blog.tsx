@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Calendar, Clock, User } from "lucide-react";
 import { Link } from "react-router-dom";
+import SEOHead from "@/components/SEOHead";
 
 const blogPosts = [
   {
@@ -63,6 +64,20 @@ const blogPosts = [
 const Blog = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title="OPIS Blog - MSME ERP Tips, Inventory & Business Growth"
+        description="Expert articles on ERP, inventory management, GST compliance, HR, and payroll for Indian MSMEs. Learn how to grow your business with OPIS."
+        canonical="https://erpx.lovable.app/blog"
+        keywords="MSME blog, ERP tips, inventory management blog, GST compliance, small business India"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Blog",
+          "name": "OPIS Blog",
+          "url": "https://erpx.lovable.app/blog",
+          "description": "Expert articles on ERP, inventory management, and business growth for Indian MSMEs.",
+          "publisher": { "@type": "Organization", "name": "Necrus Technologies" }
+        }}
+      />
       {/* Header */}
       <header className="border-b border-border bg-background/95 backdrop-blur sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">

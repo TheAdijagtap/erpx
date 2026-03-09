@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Clock, User } from "lucide-react";
+import SEOHead from "@/components/SEOHead";
 
 const blogContent: Record<string, { title: string; date: string; readTime: string; category: string; metaDescription: string; content: string }> = {
   "why-msme-need-erp": {
@@ -394,6 +395,24 @@ const BlogPost = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEOHead
+        title={post.title}
+        description={post.metaDescription}
+        canonical={`https://erpx.lovable.app/blog/${slug}`}
+        keywords={`${post.category}, MSME ERP, OPIS, ${post.title.split(' ').slice(0, 3).join(' ')}`}
+        ogType="article"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "BlogPosting",
+          "headline": post.title,
+          "description": post.metaDescription,
+          "datePublished": post.date,
+          "author": { "@type": "Organization", "name": "OPIS Team" },
+          "publisher": { "@type": "Organization", "name": "Necrus Technologies" },
+          "url": `https://erpx.lovable.app/blog/${slug}`,
+          "mainEntityOfPage": { "@type": "WebPage", "@id": `https://erpx.lovable.app/blog/${slug}` }
+        }}
+      />
       {/* Header */}
       <header className="border-b border-border bg-background/95 backdrop-blur sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
