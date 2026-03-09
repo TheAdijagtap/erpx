@@ -120,6 +120,8 @@ const AdminPanel = () => {
     }
   };
 
+  const mainUsers = users.filter(u => !u.isSubUser);
+
   const getUserGrowthStats = (): UserGrowthStats => {
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -127,9 +129,9 @@ const AdminPanel = () => {
     const monthStart = subDays(todayStart, 30);
 
     return {
-      today: users.filter(u => new Date(u.created_at) >= todayStart).length,
-      thisWeek: users.filter(u => new Date(u.created_at) >= weekStart).length,
-      thisMonth: users.filter(u => new Date(u.created_at) >= monthStart).length
+      today: mainUsers.filter(u => new Date(u.created_at) >= todayStart).length,
+      thisWeek: mainUsers.filter(u => new Date(u.created_at) >= weekStart).length,
+      thisMonth: mainUsers.filter(u => new Date(u.created_at) >= monthStart).length
     };
   };
 
