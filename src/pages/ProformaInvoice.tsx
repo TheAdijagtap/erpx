@@ -1183,6 +1183,11 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
         ...newItems[index],
         item: { ...newItems[index].item, name: value },
       };
+    } else if (field === 'unit') {
+      newItems[index] = {
+        ...newItems[index],
+        item: { ...newItems[index].item, unit: value },
+      };
     } else if (field === 'quantity' || field === 'unitPrice') {
       newItems[index] = { ...newItems[index], [field]: value };
       newItems[index].total = newItems[index].quantity * newItems[index].unitPrice;
