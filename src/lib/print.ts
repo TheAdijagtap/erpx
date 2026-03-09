@@ -32,7 +32,7 @@ export function printElementById(id: string, title = "Document") {
       @media print {
         @page { margin: 10mm; size: A4; }
         body { margin: 0; font-size: 13px; }
-        .doc { border: 2px solid #0f172a; padding: 12px; }
+        .doc { border: 3px solid #000000; padding: 12px; }
         .section { margin: 4px 0; padding: 8px; }
         h2 { font-size: 16px; }
       }
