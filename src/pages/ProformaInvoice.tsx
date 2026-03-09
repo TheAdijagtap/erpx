@@ -1392,10 +1392,16 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
           <Card className="p-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Items</h3>
-              <Button onClick={addRow} variant="outline" size="sm">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Item
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={quickAddRow} variant="outline" size="sm">
+                  <Plus className="w-4 h-4 mr-1" />
+                  Quick Add
+                </Button>
+                <Button onClick={addRow} variant="outline" size="sm" disabled={!proformaProducts || proformaProducts.length === 0}>
+                  <Plus className="w-4 h-4 mr-1" />
+                  From Products
+                </Button>
+              </div>
             </div>
             
             <Table>
