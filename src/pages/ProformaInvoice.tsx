@@ -1929,10 +1929,14 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
         };
       }
     } else if (field === 'itemName') {
-      // Update item name directly for existing items
       newItems[index] = {
         ...newItems[index],
         item: { ...newItems[index].item, name: value },
+      };
+    } else if (field === 'unit') {
+      newItems[index] = {
+        ...newItems[index],
+        item: { ...newItems[index].item, unit: value },
       };
     } else if (field === 'quantity' || field === 'unitPrice') {
       newItems[index] = { ...newItems[index], [field]: value };
