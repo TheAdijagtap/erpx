@@ -142,6 +142,9 @@
 @layer base {
   html {
     background-color: #ffffff;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
   * {
@@ -151,6 +154,29 @@
   body {
     @apply bg-background text-foreground;
     background-color: #ffffff;
+  }
+
+  /* GPU-accelerated smooth scrolling */
+  main, nav, .overflow-y-auto, .overflow-auto {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* Smooth transitions for interactive elements */
+  button, a, input, select, textarea, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* CSS containment for layout performance */
+  main {
+    contain: layout style;
+  }
+}
+
+/* Optimized animations */
+@layer utilities {
+  .animate-spin {
+    will-change: transform;
   }
 }
 

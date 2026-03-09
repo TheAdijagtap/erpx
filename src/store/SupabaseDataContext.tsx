@@ -153,28 +153,24 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     const isInitialLoad = inventoryItems.length === 0 && suppliers.length === 0;
     if (isInitialLoad) setLoading(true);
     try {
-      // First, determine if user is a sub-user
-      const { data: subLink } = await supabase
-        .from("sub_user_links")
-        .select("parent_user_id")
-        .eq("sub_user_id", user.id)
-        .maybeSingle();
+      // Fetch sub-user link AND permissions in parallel for faster startup
+      const [{ data: subLink }, { data: permsData }] = await Promise.all([
+        supabase
+          .from("sub_user_links")
+          .select("parent_user_id")
+          .eq("sub_user_id", user.id)
+          .maybeSingle(),
+        supabase
+          .from("sub_user_permissions")
+          .select("feature")
+          .eq("sub_user_id", user.id),
+      ]);
 
       const isSub = !!subLink;
       const ownerId = subLink ? subLink.parent_user_id : user.id;
       setIsSubUser(isSub);
       setEffectiveUserId(ownerId);
-
-      // Fetch sub-user permissions if applicable
-      if (isSub) {
-        const { data: perms } = await supabase
-          .from("sub_user_permissions")
-          .select("feature")
-          .eq("sub_user_id", user.id);
-        setSubUserPermissions((perms || []).map((p: any) => p.feature));
-      } else {
-        setSubUserPermissions([]);
-      }
+      setSubUserPermissions(isSub ? (permsData || []).map((p: any) => p.feature) : []);
 
       // Execute ALL queries in parallel simultaneously - no phases, maximum speed
       const [
