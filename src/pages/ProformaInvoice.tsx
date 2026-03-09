@@ -1178,6 +1178,11 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
           hsnCode: selectedProduct.hsnCode || undefined,
         };
       }
+    } else if (field === 'itemName') {
+      newItems[index] = {
+        ...newItems[index],
+        item: { ...newItems[index].item, name: value },
+      };
     } else if (field === 'quantity' || field === 'unitPrice') {
       newItems[index] = { ...newItems[index], [field]: value };
       newItems[index].total = newItems[index].quantity * newItems[index].unitPrice;
