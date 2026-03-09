@@ -2159,6 +2159,7 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
               <TableHeader>
                 <TableRow>
                   <TableHead>Item</TableHead>
+                  <TableHead>Unit</TableHead>
                   <TableHead>HSN (Optional)</TableHead>
                   <TableHead>Quantity</TableHead>
                   <TableHead>Unit Price</TableHead>
