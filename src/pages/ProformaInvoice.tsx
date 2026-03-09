@@ -1876,7 +1876,31 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
     }]);
   };
 
-  const updateItem = (index: number, field: keyof ProformaInvoiceItem | 'itemName', value: any) => {
+  const quickAddRow = () => {
+    setItems([...items, {
+      id: `quick-${Date.now()}`,
+      itemId: `quick-${Date.now()}`,
+      item: {
+        id: `quick-${Date.now()}`,
+        name: "",
+        sku: "",
+        description: "",
+        category: "Quick Add",
+        currentStock: 0,
+        minStock: 0,
+        maxStock: 0,
+        unitPrice: 0,
+        unit: "PCS",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      quantity: 1,
+      unitPrice: 0,
+      total: 0,
+    }]);
+  };
+
+  const updateItem = (index: number, field: keyof ProformaInvoiceItem | 'itemName' | 'unit', value: any) => {
     const newItems = [...items];
     if (field === 'itemId') {
       const selectedProduct = proformaProducts?.find(product => product.id === value);
@@ -1905,10 +1929,14 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
         };
       }
     } else if (field === 'itemName') {
-      // Update item name directly for existing items
       newItems[index] = {
         ...newItems[index],
         item: { ...newItems[index].item, name: value },
+      };
+    } else if (field === 'unit') {
+      newItems[index] = {
+        ...newItems[index],
+        item: { ...newItems[index].item, unit: value },
       };
     } else if (field === 'quantity' || field === 'unitPrice') {
       newItems[index] = { ...newItems[index], [field]: value };
@@ -2115,16 +2143,23 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
           <Card className="p-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Items</h3>
-              <Button onClick={addRow} variant="outline" size="sm" disabled={!proformaProducts || proformaProducts.length === 0}>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Item
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={quickAddRow} variant="outline" size="sm">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Quick Add
+                </Button>
+                <Button onClick={addRow} variant="outline" size="sm" disabled={!proformaProducts || proformaProducts.length === 0}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  From Products
+                </Button>
+              </div>
             </div>
 
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Item</TableHead>
+                  <TableHead>Unit</TableHead>
                   <TableHead>HSN (Optional)</TableHead>
                   <TableHead>Quantity</TableHead>
                   <TableHead>Unit Price</TableHead>
@@ -2176,6 +2211,28 @@ const EditProformaDialog = ({ invoice, proformaProducts }: { invoice: ProformaIn
                           </Select>
                         )}
                       </div>
+                    </TableCell>
+                    <TableCell className="min-w-[80px]">
+                      {item.itemId?.startsWith('quick-') ? (
+                        <Select value={item.item?.unit || 'PCS'} onValueChange={(value) => updateItem(index, 'unit', value)}>
+                          <SelectTrigger className="w-20 h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="PCS">PCS</SelectItem>
+                            <SelectItem value="KG">KG</SelectItem>
+                            <SelectItem value="LTR">LTR</SelectItem>
+                            <SelectItem value="MTR">MTR</SelectItem>
+                            <SelectItem value="SET">SET</SelectItem>
+                            <SelectItem value="BOX">BOX</SelectItem>
+                            <SelectItem value="NOS">NOS</SelectItem>
+                            <SelectItem value="SQM">SQM</SelectItem>
+                            <SelectItem value="RFT">RFT</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">{item.item?.unit || '-'}</span>
+                      )}
                     </TableCell>
                     <TableCell className="min-w-[100px]">
                       <Input
