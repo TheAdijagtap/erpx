@@ -1473,6 +1473,32 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
                       />
                     </TableCell>
                     <TableCell>
+                      {item.itemId?.startsWith('quick-') ? (
+                        <Select
+                          value={item.item?.unit || "PCS"}
+                          onValueChange={(value) => updateItem(index, 'unit', value)}
+                        >
+                          <SelectTrigger className="w-24">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="z-50">
+                            <SelectItem value="PCS">PCS</SelectItem>
+                            <SelectItem value="KG">KG</SelectItem>
+                            <SelectItem value="GM">GM</SelectItem>
+                            <SelectItem value="LTR">LTR</SelectItem>
+                            <SelectItem value="ML">ML</SelectItem>
+                            <SelectItem value="MTR">MTR</SelectItem>
+                            <SelectItem value="FT">FT</SelectItem>
+                            <SelectItem value="SET">SET</SelectItem>
+                            <SelectItem value="BOX">BOX</SelectItem>
+                            <SelectItem value="NOS">NOS</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">{item.item?.unit || "PCS"}</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
                       <Input
                         type="number"
                         value={item.quantity}
