@@ -1124,7 +1124,33 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
     }]);
   };
 
-  const updateItem = (index: number, field: keyof ProformaInvoiceItem, value: any) => {
+  const quickAddRow = () => {
+    const quickId = `quick-${Date.now()}`;
+    const now = new Date();
+    setItems([...items, {
+      id: quickId,
+      itemId: quickId,
+      item: {
+        id: quickId,
+        name: "",
+        sku: "",
+        description: "",
+        category: "Quick Add",
+        currentStock: 0,
+        minStock: 0,
+        maxStock: 0,
+        unitPrice: 0,
+        unit: "PCS",
+        createdAt: now,
+        updatedAt: now,
+      },
+      quantity: 1,
+      unitPrice: 0,
+      total: 0,
+    }]);
+  };
+
+  const updateItem = (index: number, field: keyof ProformaInvoiceItem | 'itemName', value: any) => {
     const newItems = [...items];
     if (field === 'itemId') {
       const selectedProduct = proformaProducts?.find(product => product.id === value);
@@ -1152,6 +1178,11 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
           hsnCode: selectedProduct.hsnCode || undefined,
         };
       }
+    } else if (field === 'itemName') {
+      newItems[index] = {
+        ...newItems[index],
+        item: { ...newItems[index].item, name: value },
+      };
     } else if (field === 'quantity' || field === 'unitPrice') {
       newItems[index] = { ...newItems[index], [field]: value };
       newItems[index].total = newItems[index].quantity * newItems[index].unitPrice;
@@ -1361,10 +1392,16 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
           <Card className="p-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Items</h3>
-              <Button onClick={addRow} variant="outline" size="sm">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Item
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={quickAddRow} variant="outline" size="sm">
+                  <Plus className="w-4 h-4 mr-1" />
+                  Quick Add
+                </Button>
+                <Button onClick={addRow} variant="outline" size="sm" disabled={!proformaProducts || proformaProducts.length === 0}>
+                  <Plus className="w-4 h-4 mr-1" />
+                  From Products
+                </Button>
+              </div>
             </div>
             
             <Table>
@@ -1382,39 +1419,49 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
                 {items.map((item, index) => (
                   <TableRow key={item.id}>
                     <TableCell>
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
-                        <Select
-                          value={item.itemId}
-                          onValueChange={(value) => updateItem(index, 'itemId', value)}
-                        >
-                          <SelectTrigger className="pl-10">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="z-50">
-                            <div className="px-2 pb-2 sticky top-0 bg-background">
-                              <Input
-                                placeholder="Search products..."
-                                value={itemSearch}
-                                onChange={(e) => setItemSearch(e.target.value)}
-                                className="h-8"
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            </div>
-                            {filteredProducts.length === 0 ? (
-                              <div className="px-2 py-4 text-sm text-muted-foreground text-center">
-                                No products found
+                      {item.itemId?.startsWith('quick-') ? (
+                        <Input
+                          value={item.item?.name || ""}
+                          onChange={(e) => updateItem(index, 'itemName', e.target.value)}
+                          placeholder="Enter item name"
+                          className="w-full"
+                          autoFocus
+                        />
+                      ) : (
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+                          <Select
+                            value={item.itemId}
+                            onValueChange={(value) => updateItem(index, 'itemId', value)}
+                          >
+                            <SelectTrigger className="pl-10">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="z-50">
+                              <div className="px-2 pb-2 sticky top-0 bg-background">
+                                <Input
+                                  placeholder="Search products..."
+                                  value={itemSearch}
+                                  onChange={(e) => setItemSearch(e.target.value)}
+                                  className="h-8"
+                                  onClick={(e) => e.stopPropagation()}
+                                />
                               </div>
-                            ) : (
-                              filteredProducts.map((product) => (
-                                <SelectItem key={product.id} value={product.id}>
-                                  {product.name} ({product.unit})
-                                </SelectItem>
-                              ))
-                            )}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                              {filteredProducts.length === 0 ? (
+                                <div className="px-2 py-4 text-sm text-muted-foreground text-center">
+                                  No products found
+                                </div>
+                              ) : (
+                                filteredProducts.map((product) => (
+                                  <SelectItem key={product.id} value={product.id}>
+                                    {product.name} ({product.unit})
+                                  </SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Input
