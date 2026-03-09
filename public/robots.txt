@@ -1,8 +1,10 @@
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 2
 
 User-agent: Twitterbot
 Allow: /
@@ -12,3 +14,20 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+Disallow: /dashboard
+Disallow: /inventory
+Disallow: /purchase-orders
+Disallow: /goods-receipt
+Disallow: /suppliers
+Disallow: /proforma
+Disallow: /business
+Disallow: /admin
+Disallow: /employees
+Disallow: /attendance
+Disallow: /leaves
+Disallow: /payroll
+Disallow: /stock-transfer
+Disallow: /bom
+
+Sitemap: https://erpx.lovable.app/sitemap.xml
