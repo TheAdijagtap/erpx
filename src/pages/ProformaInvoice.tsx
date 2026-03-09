@@ -1150,7 +1150,7 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
     }]);
   };
 
-  const updateItem = (index: number, field: keyof ProformaInvoiceItem | 'itemName', value: any) => {
+  const updateItem = (index: number, field: keyof ProformaInvoiceItem | 'itemName' | 'unit', value: any) => {
     const newItems = [...items];
     if (field === 'itemId') {
       const selectedProduct = proformaProducts?.find(product => product.id === value);
