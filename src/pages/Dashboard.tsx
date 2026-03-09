@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import SEOHead from "@/components/SEOHead";
 import { Card } from "@/components/ui/card";
 import {
   Package,

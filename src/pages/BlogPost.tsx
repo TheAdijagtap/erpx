@@ -1,6 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Clock, User } from "lucide-react";
+import SEOHead from "@/components/SEOHead";
 
 const blogContent: Record<string, { title: string; date: string; readTime: string; category: string; metaDescription: string; content: string }> = {
   "why-msme-need-erp": {
