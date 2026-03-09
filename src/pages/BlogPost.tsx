@@ -398,7 +398,7 @@ const BlogPost = () => {
       <SEOHead
         title={post.title}
         description={post.metaDescription}
-        canonical={`https://erpx.lovable.app/blog/${slug}`}
+        canonical={`https://opis.in/blog/${slug}`}
         keywords={`${post.category}, MSME ERP, OPIS, ${post.title.split(' ').slice(0, 3).join(' ')}`}
         ogType="article"
         jsonLd={{
@@ -409,8 +409,8 @@ const BlogPost = () => {
           "datePublished": post.date,
           "author": { "@type": "Organization", "name": "OPIS Team" },
           "publisher": { "@type": "Organization", "name": "Necrus Technologies" },
-          "url": `https://erpx.lovable.app/blog/${slug}`,
-          "mainEntityOfPage": { "@type": "WebPage", "@id": `https://erpx.lovable.app/blog/${slug}` }
+          "url": `https://opis.in/blog/${slug}`,
+          "mainEntityOfPage": { "@type": "WebPage", "@id": `https://opis.in/blog/${slug}` }
         }}
       />
       {/* Header */}

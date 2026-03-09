@@ -30,4 +30,4 @@ Disallow: /payroll
 Disallow: /stock-transfer
 Disallow: /bom
 
-Sitemap: https://erpx.lovable.app/sitemap.xml
+Sitemap: https://opis.in/sitemap.xml

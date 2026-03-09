@@ -10,13 +10,13 @@ const About = () => {
       <SEOHead
         title="About OPIS - India's Purpose-Built ERP for MSMEs"
         description="Learn about OPIS by Necrus Technologies — India's affordable ERP platform combining inventory, purchasing, HR, and payroll for MSMEs."
-        canonical="https://erpx.lovable.app/about"
+        canonical="https://opis.in/about"
         keywords="about OPIS, Necrus Technologies, MSME ERP India, affordable ERP, inventory management"
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "Organization",
           "name": "Necrus Technologies",
-          "url": "https://erpx.lovable.app",
+          "url": "https://opis.in",
           "description": "Necrus Technologies builds OPIS, India's purpose-built ERP for MSMEs.",
           "brand": { "@type": "Brand", "name": "OPIS" }
         }}

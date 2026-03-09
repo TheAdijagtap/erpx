@@ -8,7 +8,7 @@ const Terms = () => {
       <SEOHead
         title="Terms of Service - OPIS ERP"
         description="Read the terms of service for using OPIS, India's affordable ERP platform for MSMEs."
-        canonical="https://erpx.lovable.app/terms"
+        canonical="https://opis.in/terms"
         keywords="OPIS terms of service, ERP terms, software agreement"
       />
       <header className="border-b border-border bg-background/95 backdrop-blur sticky top-0 z-50">

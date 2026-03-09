@@ -8,7 +8,7 @@ const Privacy = () => {
       <SEOHead
         title="Privacy Policy - OPIS ERP"
         description="Read the OPIS privacy policy. Learn how we collect, use, and protect your data when using our ERP platform."
-        canonical="https://erpx.lovable.app/privacy"
+        canonical="https://opis.in/privacy"
         keywords="OPIS privacy policy, data protection, ERP privacy"
       />
       <header className="border-b border-border bg-background/95 backdrop-blur sticky top-0 z-50">
