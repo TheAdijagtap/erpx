@@ -1150,7 +1150,7 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
     }]);
   };
 
-  const updateItem = (index: number, field: keyof ProformaInvoiceItem | 'itemName', value: any) => {
+  const updateItem = (index: number, field: keyof ProformaInvoiceItem | 'itemName' | 'unit', value: any) => {
     const newItems = [...items];
     if (field === 'itemId') {
       const selectedProduct = proformaProducts?.find(product => product.id === value);
@@ -1182,6 +1182,11 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
       newItems[index] = {
         ...newItems[index],
         item: { ...newItems[index].item, name: value },
+      };
+    } else if (field === 'unit') {
+      newItems[index] = {
+        ...newItems[index],
+        item: { ...newItems[index].item, unit: value },
       };
     } else if (field === 'quantity' || field === 'unitPrice') {
       newItems[index] = { ...newItems[index], [field]: value };
@@ -1409,6 +1414,7 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
                 <TableRow>
                   <TableHead>Item</TableHead>
                   <TableHead>HSN (Optional)</TableHead>
+                  <TableHead>Unit</TableHead>
                   <TableHead>Quantity</TableHead>
                   <TableHead>Unit Price</TableHead>
                   <TableHead>Total</TableHead>
@@ -1470,6 +1476,32 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
                         placeholder="HSN"
                         className="w-24"
                       />
+                    </TableCell>
+                    <TableCell>
+                      {item.itemId?.startsWith('quick-') ? (
+                        <Select
+                          value={item.item?.unit || "PCS"}
+                          onValueChange={(value) => updateItem(index, 'unit', value)}
+                        >
+                          <SelectTrigger className="w-24">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="z-50">
+                            <SelectItem value="PCS">PCS</SelectItem>
+                            <SelectItem value="KG">KG</SelectItem>
+                            <SelectItem value="GM">GM</SelectItem>
+                            <SelectItem value="LTR">LTR</SelectItem>
+                            <SelectItem value="ML">ML</SelectItem>
+                            <SelectItem value="MTR">MTR</SelectItem>
+                            <SelectItem value="FT">FT</SelectItem>
+                            <SelectItem value="SET">SET</SelectItem>
+                            <SelectItem value="BOX">BOX</SelectItem>
+                            <SelectItem value="NOS">NOS</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">{item.item?.unit || "PCS"}</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Input
