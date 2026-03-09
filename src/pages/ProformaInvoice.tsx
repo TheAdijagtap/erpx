@@ -1419,39 +1419,49 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
                 {items.map((item, index) => (
                   <TableRow key={item.id}>
                     <TableCell>
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
-                        <Select
-                          value={item.itemId}
-                          onValueChange={(value) => updateItem(index, 'itemId', value)}
-                        >
-                          <SelectTrigger className="pl-10">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent className="z-50">
-                            <div className="px-2 pb-2 sticky top-0 bg-background">
-                              <Input
-                                placeholder="Search products..."
-                                value={itemSearch}
-                                onChange={(e) => setItemSearch(e.target.value)}
-                                className="h-8"
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                            </div>
-                            {filteredProducts.length === 0 ? (
-                              <div className="px-2 py-4 text-sm text-muted-foreground text-center">
-                                No products found
+                      {item.itemId?.startsWith('quick-') ? (
+                        <Input
+                          value={item.item?.name || ""}
+                          onChange={(e) => updateItem(index, 'itemName', e.target.value)}
+                          placeholder="Enter item name"
+                          className="w-full"
+                          autoFocus
+                        />
+                      ) : (
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+                          <Select
+                            value={item.itemId}
+                            onValueChange={(value) => updateItem(index, 'itemId', value)}
+                          >
+                            <SelectTrigger className="pl-10">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="z-50">
+                              <div className="px-2 pb-2 sticky top-0 bg-background">
+                                <Input
+                                  placeholder="Search products..."
+                                  value={itemSearch}
+                                  onChange={(e) => setItemSearch(e.target.value)}
+                                  className="h-8"
+                                  onClick={(e) => e.stopPropagation()}
+                                />
                               </div>
-                            ) : (
-                              filteredProducts.map((product) => (
-                                <SelectItem key={product.id} value={product.id}>
-                                  {product.name} ({product.unit})
-                                </SelectItem>
-                              ))
-                            )}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                              {filteredProducts.length === 0 ? (
+                                <div className="px-2 py-4 text-sm text-muted-foreground text-center">
+                                  No products found
+                                </div>
+                              ) : (
+                                filteredProducts.map((product) => (
+                                  <SelectItem key={product.id} value={product.id}>
+                                    {product.name} ({product.unit})
+                                  </SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Input
