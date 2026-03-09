@@ -12,7 +12,7 @@ interface SEOHeadProps {
   jsonLd?: Record<string, unknown>;
 }
 
-const BASE_URL = "https://erpx.lovable.app";
+const BASE_URL = "https://opis.in";
 
 const SEOHead = ({
   title,

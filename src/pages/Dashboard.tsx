@@ -130,7 +130,7 @@ const Dashboard = () => {
       <SEOHead
         title="OPIS - Affordable ERP for Indian MSMEs | Inventory, HR & Payroll"
         description="OPIS is India's most affordable ERP system for MSMEs. Manage inventory, purchase orders, GST invoicing, HR, attendance, and payroll — all in one platform starting at ₹499/month."
-        canonical="https://erpx.lovable.app/"
+        canonical="https://opis.in/"
         keywords="ERP for MSME, inventory management India, purchase order software, GST billing software, HR payroll software, small business ERP, OPIS ERP, affordable ERP India"
         jsonLd={{
           "@context": "https://schema.org",
@@ -139,7 +139,7 @@ const Dashboard = () => {
           "applicationCategory": "BusinessApplication",
           "operatingSystem": "Web",
           "description": "Affordable ERP system for Indian MSMEs with inventory management, purchase orders, GST invoicing, HR, attendance, and payroll.",
-          "url": "https://erpx.lovable.app",
+          "url": "https://opis.in",
           "author": { "@type": "Organization", "name": "Necrus Technologies" },
           "offers": {
             "@type": "Offer",

@@ -12,13 +12,13 @@ const Contact = () => {
       <SEOHead
         title="Contact OPIS - Get Help with Your MSME ERP"
         description="Get in touch with the OPIS team via WhatsApp, email, or phone. We're here to help Indian MSMEs streamline their business operations."
-        canonical="https://erpx.lovable.app/contact"
+        canonical="https://opis.in/contact"
         keywords="contact OPIS, MSME ERP support, business software help India"
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "ContactPage",
           "name": "Contact OPIS",
-          "url": "https://erpx.lovable.app/contact",
+          "url": "https://opis.in/contact",
           "mainEntity": {
             "@type": "Organization",
             "name": "Necrus Technologies",

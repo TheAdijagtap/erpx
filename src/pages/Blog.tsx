@@ -67,13 +67,13 @@ const Blog = () => {
       <SEOHead
         title="OPIS Blog - MSME ERP Tips, Inventory & Business Growth"
         description="Expert articles on ERP, inventory management, GST compliance, HR, and payroll for Indian MSMEs. Learn how to grow your business with OPIS."
-        canonical="https://erpx.lovable.app/blog"
+        canonical="https://opis.in/blog"
         keywords="MSME blog, ERP tips, inventory management blog, GST compliance, small business India"
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "Blog",
           "name": "OPIS Blog",
-          "url": "https://erpx.lovable.app/blog",
+          "url": "https://opis.in/blog",
           "description": "Expert articles on ERP, inventory management, and business growth for Indian MSMEs.",
           "publisher": { "@type": "Organization", "name": "Necrus Technologies" }
         }}
