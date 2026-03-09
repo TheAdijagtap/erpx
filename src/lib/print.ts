@@ -23,7 +23,7 @@ export function printElementById(id: string, title = "Document") {
       .totals .label { color: #64748b; }
       .totals .value { text-align: right; font-weight: 600; }
       .footer { margin-top: 16px; font-size: 12px; color: #64748b; }
-      .section { border: 1px solid #e2e8f0; margin: 6px 0; padding: 12px; border-radius: 4px; }
+      .section { border: 1px solid #94a3b8; margin: 6px 0; padding: 12px; border-radius: 4px; }
       .amount-words { font-style: italic; color: #64748b; margin-top: 4px; font-size: 12px; }
       .terms { margin-top: 8px; }
       .signature-section { margin-top: 12px; text-align: right; }
