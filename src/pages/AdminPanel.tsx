@@ -120,6 +120,8 @@ const AdminPanel = () => {
     }
   };
 
+  const mainUsers = users.filter(u => !u.isSubUser);
+
   const getUserGrowthStats = (): UserGrowthStats => {
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -127,9 +129,9 @@ const AdminPanel = () => {
     const monthStart = subDays(todayStart, 30);
 
     return {
-      today: users.filter(u => new Date(u.created_at) >= todayStart).length,
-      thisWeek: users.filter(u => new Date(u.created_at) >= weekStart).length,
-      thisMonth: users.filter(u => new Date(u.created_at) >= monthStart).length
+      today: mainUsers.filter(u => new Date(u.created_at) >= todayStart).length,
+      thisWeek: mainUsers.filter(u => new Date(u.created_at) >= weekStart).length,
+      thisMonth: mainUsers.filter(u => new Date(u.created_at) >= monthStart).length
     };
   };
 
@@ -229,18 +231,18 @@ const AdminPanel = () => {
   };
 
   const getConversionRate = () => {
-    if (users.length === 0) return 0;
-    const subscribed = users.filter(u => getStatus(u).type === "subscribed").length;
-    return ((subscribed / users.length) * 100).toFixed(1);
+    if (mainUsers.length === 0) return 0;
+    const subscribed = mainUsers.filter(u => getStatus(u).type === "subscribed").length;
+    return ((subscribed / mainUsers.length) * 100).toFixed(1);
   };
 
   const getActiveRate = () => {
-    if (users.length === 0) return 0;
-    const active = users.filter(u => {
+    if (mainUsers.length === 0) return 0;
+    const active = mainUsers.filter(u => {
       const status = getStatus(u);
       return status.type === "subscribed" || status.type === "trial";
     }).length;
-    return ((active / users.length) * 100).toFixed(1);
+    return ((active / mainUsers.length) * 100).toFixed(1);
   };
 
   if (adminLoading) {
@@ -277,7 +279,7 @@ const AdminPanel = () => {
           </Badge>
           <Badge variant="outline" className="px-3 py-1">
             <Users className="h-4 w-4 mr-2" />
-            {users.length} Users
+            {mainUsers.length} Users
           </Badge>
         </div>
       </div>
@@ -327,7 +329,7 @@ const AdminPanel = () => {
               Expired
             </div>
             <div className="text-2xl font-bold mt-1 text-destructive">
-              {users.filter((u) => getStatus(u).type === "expired").length}
+              {mainUsers.filter((u) => getStatus(u).type === "expired").length}
             </div>
           </Card>
           <Card className="p-4">
