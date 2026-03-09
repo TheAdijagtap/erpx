@@ -1124,7 +1124,33 @@ const CreateProformaDialog = ({ proformaProducts }: { proformaProducts?: Proform
     }]);
   };
 
-  const updateItem = (index: number, field: keyof ProformaInvoiceItem, value: any) => {
+  const quickAddRow = () => {
+    const quickId = `quick-${Date.now()}`;
+    const now = new Date();
+    setItems([...items, {
+      id: quickId,
+      itemId: quickId,
+      item: {
+        id: quickId,
+        name: "",
+        sku: "",
+        description: "",
+        category: "Quick Add",
+        currentStock: 0,
+        minStock: 0,
+        maxStock: 0,
+        unitPrice: 0,
+        unit: "PCS",
+        createdAt: now,
+        updatedAt: now,
+      },
+      quantity: 1,
+      unitPrice: 0,
+      total: 0,
+    }]);
+  };
+
+  const updateItem = (index: number, field: keyof ProformaInvoiceItem | 'itemName', value: any) => {
     const newItems = [...items];
     if (field === 'itemId') {
       const selectedProduct = proformaProducts?.find(product => product.id === value);
