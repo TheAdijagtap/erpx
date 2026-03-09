@@ -279,7 +279,7 @@ const AdminPanel = () => {
           </Badge>
           <Badge variant="outline" className="px-3 py-1">
             <Users className="h-4 w-4 mr-2" />
-            {users.length} Users
+            {mainUsers.length} Users
           </Badge>
         </div>
       </div>
