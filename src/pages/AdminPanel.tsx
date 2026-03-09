@@ -231,18 +231,18 @@ const AdminPanel = () => {
   };
 
   const getConversionRate = () => {
-    if (users.length === 0) return 0;
-    const subscribed = users.filter(u => getStatus(u).type === "subscribed").length;
-    return ((subscribed / users.length) * 100).toFixed(1);
+    if (mainUsers.length === 0) return 0;
+    const subscribed = mainUsers.filter(u => getStatus(u).type === "subscribed").length;
+    return ((subscribed / mainUsers.length) * 100).toFixed(1);
   };
 
   const getActiveRate = () => {
-    if (users.length === 0) return 0;
-    const active = users.filter(u => {
+    if (mainUsers.length === 0) return 0;
+    const active = mainUsers.filter(u => {
       const status = getStatus(u);
       return status.type === "subscribed" || status.type === "trial";
     }).length;
-    return ((active / users.length) * 100).toFixed(1);
+    return ((active / mainUsers.length) * 100).toFixed(1);
   };
 
   if (adminLoading) {
