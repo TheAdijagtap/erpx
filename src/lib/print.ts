@@ -8,7 +8,7 @@ export function printElementById(id: string, title = "Document") {
     <style>
       * { box-sizing: border-box; }
       body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; margin: 8px; color: #0f172a; font-size: 14px; line-height: 1.4; }
-      .doc { max-width: 100%; margin: 0 auto; border: 2px solid #0f172a; padding: 16px; border-radius: 8px; }
+      .doc { max-width: 100%; margin: 0 auto; border: 3px solid #000000; padding: 16px; border-radius: 8px; }
       .header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
       .brand { font-size: 20px; font-weight: 700; }
       .muted { color: #64748b; font-size: 13px; }
