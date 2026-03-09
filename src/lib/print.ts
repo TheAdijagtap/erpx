@@ -16,7 +16,7 @@ export function printElementById(id: string, title = "Document") {
       h2 { font-size: 18px; font-weight: 700; margin: 0; padding: 0; text-align: center; }
       strong { font-weight: 600; }
       table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-      th, td { border: 1px solid #e2e8f0; padding: 6px 8px; text-align: left; font-size: 13px; }
+      th, td { border: 1px solid #94a3b8; padding: 6px 8px; text-align: left; font-size: 13px; }
       th { background: #f8fafc; font-weight: 600; }
       .totals { margin-top: 8px; width: 100%; }
       .totals td { border: none; padding: 4px 8px; font-size: 14px; }
