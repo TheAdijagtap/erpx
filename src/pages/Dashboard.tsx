@@ -594,7 +594,7 @@ const Dashboard = () => {
                   <span className="text-muted-foreground text-sm"> / month</span>
                 </div>
                 <ul className="space-y-3 text-sm text-muted-foreground mb-8 text-left">
-                  {["Everything in Free Trial", "Unlimited data entries", "Payroll & Leave management", "Supplier management", "Priority WhatsApp support", "PDF & print exports"].map((f) => (
+                  {["Unlimited data entries", "Inventory & Stock management", "Purchase Orders & Goods Receipt", "Proforma Invoices & GST", "Employee, Attendance & Leaves", "Payroll & Payslip generation", "Supplier management", "Sub-user access control", "PDF & print exports", "Priority WhatsApp support"].map((f) => (
                     <li key={f} className="flex items-center gap-2.5">
                       <CheckCircle2 className="w-4 h-4 text-primary shrink-0" /> {f}
                     </li>
@@ -611,18 +611,18 @@ const Dashboard = () => {
             {/* Yearly */}
             <Card className="p-8 hover:shadow-md transition-shadow relative flex flex-col">
               <div className="absolute -top-3 right-4 bg-primary/10 text-primary text-xs font-semibold px-3 py-1 rounded-full">
-                Save 33%
+                Save 17%
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-foreground mb-1">Yearly</h3>
                 <p className="text-sm text-muted-foreground mb-6">Best value for committed teams</p>
                 <div className="mb-6">
-                  <span className="text-4xl font-bold text-foreground">₹3,999</span>
+                  <span className="text-4xl font-bold text-foreground">₹4,999</span>
                   <span className="text-muted-foreground text-sm"> / year</span>
                   <p className="text-xs text-muted-foreground line-through mt-1">₹5,988/year</p>
                 </div>
                 <ul className="space-y-3 text-sm text-muted-foreground mb-8 text-left">
-                  {["Everything in Monthly", "Unlimited everything", "Dedicated account manager", "Sub-user access control", "Data backup & export", "2 months free"].map((f) => (
+                  {["Unlimited data entries", "Inventory & Stock management", "Purchase Orders & Goods Receipt", "Proforma Invoices & GST", "Employee, Attendance & Leaves", "Payroll & Payslip generation", "Supplier management", "Sub-user access control", "PDF & print exports", "Priority WhatsApp support"].map((f) => (
                     <li key={f} className="flex items-center gap-2.5">
                       <CheckCircle2 className="w-4 h-4 text-muted-foreground/50 shrink-0" /> {f}
                     </li>
@@ -630,7 +630,7 @@ const Dashboard = () => {
                 </ul>
               </div>
               <Button asChild variant="outline" className="w-full" size="lg">
-                <a href={`https://wa.me/919373751128?text=${encodeURIComponent("Hi! I'd like to subscribe to the OPIS Yearly Plan (₹3,999/year). Please share the payment details.")}`} target="_blank" rel="noopener noreferrer">
+                <a href={`https://wa.me/919373751128?text=${encodeURIComponent("Hi! I'd like to subscribe to the OPIS Yearly Plan (₹4,999/year). Please share the payment details.")}`} target="_blank" rel="noopener noreferrer">
                   Subscribe via WhatsApp
                 </a>
               </Button>
