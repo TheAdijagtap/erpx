@@ -175,7 +175,9 @@ const Payroll = () => {
   };
 
   const otAmount = form.ot_hours * form.ot_pay;
-  const grossSalary = (form.basic_salary + form.allowances) * (form.days_worked / form.total_days) + otAmount;
+  const attendanceRatio = form.total_days > 0 ? Math.min(Math.max(form.days_worked / form.total_days, 0), 1) : 0;
+  const proratedBasic = form.basic_salary * attendanceRatio;
+  const grossSalary = proratedBasic + form.allowances + otAmount;
   const netSalary = grossSalary - form.deductions;
 
   const handleSubmit = async () => {
