@@ -215,8 +215,8 @@ const Payroll = () => {
     const inserts = await Promise.all(toGenerate.map(async (emp) => {
       const { daysWorked, leavesTaken, totalDays, totalOT } = await fetchAttendance(emp.id, selectedMonth, selectedYear);
       const { totalAllowances, totalDeductions } = calcRulesForEmployee(activeRules, emp.gender, emp.basic_salary);
-      const allowances = totalAllowances > 0 ? totalAllowances : Number(emp.allowances) || 0;
-      const deductions = totalDeductions > 0 ? totalDeductions : Number(emp.deductions) || 0;
+      const allowances = totalAllowances;
+      const deductions = totalDeductions;
       const basicSalary = Number(emp.basic_salary) || 0;
       const otAmount = totalOT * (Number(emp.ot_pay) || 0);
       const gross = (basicSalary + allowances) * (daysWorked / totalDays) + otAmount;
