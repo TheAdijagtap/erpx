@@ -220,8 +220,10 @@ const Payroll = () => {
       const allowances = totalAllowances;
       const deductions = totalDeductions;
       const basicSalary = Number(emp.basic_salary) || 0;
+      const attendanceRatio = totalDays > 0 ? Math.min(Math.max(daysWorked / totalDays, 0), 1) : 0;
+      const proratedBasic = basicSalary * attendanceRatio;
       const otAmount = totalOT * (Number(emp.ot_pay) || 0);
-      const gross = (basicSalary + allowances) * (daysWorked / totalDays) + otAmount;
+      const gross = proratedBasic + allowances + otAmount;
       const net = gross - deductions;
       return {
         user_id: user.id, employee_id: emp.id, month: selectedMonth, year: selectedYear,
