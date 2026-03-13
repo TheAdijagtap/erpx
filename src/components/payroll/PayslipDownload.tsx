@@ -152,19 +152,28 @@ export function generatePayslipHTML(payslip: PayslipData, business: BusinessData
     </div>
   </div>
 
-  <table class="earnings-table">
+  ${(() => {
+    const ratio = payslip.total_days > 0 ? payslip.days_worked / payslip.total_days : 1;
+    const proratedBasic = Math.round(payslip.basic_salary * ratio * 100) / 100;
+    const proratedAllowanceItems = (payslip.allowance_items || []).map(item => ({
+      name: item.name,
+      amount: Math.round(item.amount * ratio * 100) / 100,
+    }));
+    const proratedTotalAllowances = Math.round(payslip.allowances * ratio * 100) / 100;
+    return `<table class="earnings-table">
     <thead>
       <tr><th>Earnings</th><th class="amount">Amount (₹)</th></tr>
     </thead>
     <tbody>
-      <tr><td>Basic Salary</td><td class="amount">${formatINR(payslip.basic_salary)}</td></tr>
-      ${(payslip.allowance_items && payslip.allowance_items.length > 0)
-        ? payslip.allowance_items.map(item => `<tr><td>${escapeHtml(item.name)}</td><td class="amount">${formatINR(item.amount)}</td></tr>`).join('')
-        : `<tr><td>Allowances</td><td class="amount">${formatINR(payslip.allowances)}</td></tr>`}
+      <tr><td>Basic Salary${ratio < 1 ? ' (Pro-rated)' : ''}</td><td class="amount">${formatINR(proratedBasic)}</td></tr>
+      ${proratedAllowanceItems.length > 0
+        ? proratedAllowanceItems.map(item => `<tr><td>${escapeHtml(item.name)}${ratio < 1 ? ' (Pro-rated)' : ''}</td><td class="amount">${formatINR(item.amount)}</td></tr>`).join('')
+        : `<tr><td>Allowances${ratio < 1 ? ' (Pro-rated)' : ''}</td><td class="amount">${formatINR(proratedTotalAllowances)}</td></tr>`}
       ${(payslip.ot_hours && payslip.ot_hours > 0) ? `<tr><td>Overtime (${payslip.ot_hours} hrs)</td><td class="amount">${formatINR(payslip.ot_amount || 0)}</td></tr>` : ''}
       <tr class="summary-row"><td>Gross Salary</td><td class="amount">${formatINR(payslip.gross_salary)}</td></tr>
     </tbody>
-  </table>
+  </table>`;
+  })()}
 
   <table class="earnings-table">
     <thead>
