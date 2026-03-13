@@ -163,8 +163,8 @@ const Payroll = () => {
     if (emp) {
       const { daysWorked, leavesTaken, totalDays, totalOT } = await fetchAttendance(empId, selectedMonth, selectedYear);
       const { totalAllowances, totalDeductions } = calcRulesForEmployee(payrollRules, emp.gender, emp.basic_salary);
-      const allowances = totalAllowances > 0 ? totalAllowances : Number(emp.allowances) || 0;
-      const deductions = totalDeductions > 0 ? totalDeductions : Number(emp.deductions) || 0;
+      const allowances = totalAllowances;
+      const deductions = totalDeductions;
       setForm(f => ({
         ...f, employee_id: empId,
         basic_salary: Number(emp.basic_salary) || 0, allowances, deductions,
