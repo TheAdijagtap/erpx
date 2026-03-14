@@ -262,7 +262,7 @@ const Dashboard = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className="inline-block text-xs font-semibold tracking-widest uppercase text-primary bg-primary/10 px-4 py-1.5 rounded-full"
+              className="inline-block text-2xl font-handwriting text-primary"
             >
               Built for Indian MSMEs
             </motion.span>

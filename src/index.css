@@ -185,3 +185,8 @@
   font-weight: 700 !important;
   letter-spacing: 0.02em;
 }
+
+.font-handwriting {
+  font-family: 'Caveat', cursive !important;
+  font-weight: 700 !important;
+}
