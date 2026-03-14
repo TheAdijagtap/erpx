@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, ShoppingCart, FileText, Users, TrendingUp, AlertCircle, Plus, ArrowRight, Download, DollarSign, ArrowRightLeft, Layers } from "lucide-react";
+import { Package, ShoppingCart, FileText, TrendingUp, AlertCircle, Download, DollarSign, ArrowRightLeft, Layers, BarChart3, Archive } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
 import { useMemo, memo, useCallback, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -12,13 +12,6 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { supabase } from "@/integrations/supabase/client";
 import { useSubUser } from "@/hooks/useSubUser";
 
-const QUICK_ACTIONS = [
-  { label: "Add New Inventory Item", icon: Plus, route: "/inventory", color: "text-blue-600" },
-  { label: "Create Purchase Order", icon: ShoppingCart, route: "/purchase-orders", color: "text-orange-600" },
-  { label: "Record Goods Receipt", icon: FileText, route: "/goods-receipt", color: "text-purple-600" },
-  { label: "Generate Proforma Invoice", icon: FileText, route: "/proforma", color: "text-green-600" },
-  { label: "Manage Suppliers", icon: Users, route: "/suppliers", color: "text-cyan-600" },
-];
 
 const AppDashboard = memo(() => {
   const navigate = useNavigate();
@@ -45,6 +38,10 @@ const AppDashboard = memo(() => {
     const totalInventoryValue = items.reduce((sum, item) => sum + (item.currentStock * item.unitPrice), 0);
     const activePurchaseOrders = purchaseOrders.filter(po => po.status !== 'CANCELLED' && po.status !== 'RECEIVED').length;
     const lowStockItems = items.filter(item => item.currentStock <= item.minStock);
+    const totalStock = items.reduce((sum, item) => sum + item.currentStock, 0);
+    const categories = new Set(items.map(item => item.category).filter(Boolean));
+    const receivedGRs = goodsReceipts.filter(gr => gr.status === 'ACCEPTED' || gr.status === 'RECEIVED').length;
+    const sentInvoices = proformaInvoices.filter(pi => pi.status === 'SENT' || pi.status === 'ACCEPTED').length;
 
     return {
       totalItems,
@@ -52,8 +49,12 @@ const AppDashboard = memo(() => {
       activePurchaseOrders,
       lowStockCount: lowStockItems.length,
       lowStockItems: lowStockItems.slice(0, 10),
+      totalStock,
+      categoryCount: categories.size,
+      receivedGRs,
+      sentInvoices,
     };
-  }, [items, purchaseOrders]);
+  }, [items, purchaseOrders, goodsReceipts, proformaInvoices]);
 
   const chartData = useMemo(() => {
     const months: { [key: string]: { name: string; purchases: number; sales: number } } = {};
@@ -340,21 +341,54 @@ const AppDashboard = memo(() => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
+            <CardTitle>Inventory Overview</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {QUICK_ACTIONS.map((action) => (
-              <Button
-                key={action.route}
-                className="w-full justify-start"
-                variant="outline"
-                onClick={() => navigate(action.route)}
-              >
-                <action.icon className={`mr-2 h-4 w-4 ${action.color}`} />
-                {action.label}
-                <ArrowRight className="ml-auto h-4 w-4" />
-              </Button>
-            ))}
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between border-b pb-3">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                  <Archive className="h-4 w-4 text-blue-600" />
+                </div>
+                <span className="text-sm font-medium">Total Stock Units</span>
+              </div>
+              <span className="text-lg font-bold">{stats.totalStock.toLocaleString('en-IN')}</span>
+            </div>
+            <div className="flex items-center justify-between border-b pb-3">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
+                  <BarChart3 className="h-4 w-4 text-purple-600" />
+                </div>
+                <span className="text-sm font-medium">Categories</span>
+              </div>
+              <span className="text-lg font-bold">{stats.categoryCount}</span>
+            </div>
+            <div className="flex items-center justify-between border-b pb-3">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+                  <FileText className="h-4 w-4 text-green-600" />
+                </div>
+                <span className="text-sm font-medium">Goods Received</span>
+              </div>
+              <span className="text-lg font-bold">{stats.receivedGRs}</span>
+            </div>
+            <div className="flex items-center justify-between border-b pb-3">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center">
+                  <ShoppingCart className="h-4 w-4 text-orange-600" />
+                </div>
+                <span className="text-sm font-medium">Proforma Invoices Sent</span>
+              </div>
+              <span className="text-lg font-bold">{stats.sentInvoices}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center">
+                  <AlertCircle className="h-4 w-4 text-red-600" />
+                </div>
+                <span className="text-sm font-medium">Low Stock Alerts</span>
+              </div>
+              <Badge variant={stats.lowStockCount > 0 ? "destructive" : "secondary"}>{stats.lowStockCount}</Badge>
+            </div>
           </CardContent>
         </Card>
       </div>
