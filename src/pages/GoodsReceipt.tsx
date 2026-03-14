@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Package, Eye, Edit, Printer, CheckCircle, XCircle, Trash2 } from "lucide-react";
+import { Plus, Search, Package, Eye, Edit, Printer, CheckCircle, XCircle, Trash2, Tag } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
 import { formatDateIN, formatINR } from "@/lib/format";
 import { printElementById } from "@/lib/print";
@@ -102,7 +102,7 @@ const GoodsReceiptPage = () => {
                 <ViewGRDialog id={receipt.id} />
                 <EditGRDialog id={receipt.id} />
                 <PrintGRButton id={receipt.id} />
-                
+                <PrintStickersButton id={receipt.id} />
                 <DeleteGRDialog id={receipt.id} />
                 {receipt.status === 'QUALITY_CHECK' && (
                   <>
@@ -820,6 +820,87 @@ function PrintGRButton({ id }: { id: string }) {
   return (
     <Button variant="outline" size="sm" className="gap-1" onClick={handlePrint}>
       <Printer className="w-4 h-4" /> Print/PDF
+    </Button>
+  );
+}
+
+function PrintStickersButton({ id }: { id: string }) {
+  const { goodsReceipts, businessInfo } = useData();
+  const receipt = goodsReceipts.find(g => g.id === id)!;
+
+  const handlePrintStickers = () => {
+    // Sticker size: 75x50mm with ~3mm margin inside
+    const stickerWidthMM = 75;
+    const stickerHeightMM = 50;
+    const marginMM = 3;
+
+    const stickersHtml = receipt.items.map((it, idx) => `
+      <div class="sticker" style="
+        width: ${stickerWidthMM}mm;
+        height: ${stickerHeightMM}mm;
+        border: 1px dashed #999;
+        padding: ${marginMM}mm;
+        box-sizing: border-box;
+        page-break-inside: avoid;
+        display: inline-block;
+        vertical-align: top;
+        margin: 2mm;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+        font-size: 10px;
+        line-height: 1.3;
+        overflow: hidden;
+        position: relative;
+      ">
+        <div style="font-weight: 700; font-size: 12px; margin-bottom: 3px; border-bottom: 1px solid #333; padding-bottom: 2px;">
+          ${escapeHtml(businessInfo.name || 'Company')}
+        </div>
+        <div style="font-weight: 700; font-size: 11px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+          ${escapeHtml(it.item.name)}
+        </div>
+        ${it.item.description ? `<div style="font-size: 9px; color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;">${escapeHtml(it.item.description)}</div>` : ''}
+        <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
+          <tr>
+            <td style="padding: 1px 0;"><strong>GR#:</strong> ${escapeHtml(receipt.grNumber)}</td>
+            <td style="padding: 1px 0; text-align: right;"><strong>Date:</strong> ${formatDateIN(receipt.date)}</td>
+          </tr>
+          ${it.batchNumber ? `<tr><td colspan="2" style="padding: 1px 0;"><strong>Batch:</strong> ${escapeHtml(it.batchNumber)}</td></tr>` : ''}
+          <tr>
+            <td style="padding: 1px 0;"><strong>Qty:</strong> ${it.receivedQuantity} ${escapeHtml(it.item.unit)}</td>
+            ${it.item.sku ? `<td style="padding: 1px 0; text-align: right;"><strong>HSN:</strong> ${escapeHtml(it.item.sku)}</td>` : '<td></td>'}
+          </tr>
+          ${(it.item.make || it.item.mpn) ? `<tr>
+            <td colspan="2" style="padding: 1px 0; font-size: 8px; color: #555;">
+              ${it.item.make ? `Make: ${escapeHtml(it.item.make)}` : ''}${it.item.make && it.item.mpn ? ' | ' : ''}${it.item.mpn ? `MPN: ${escapeHtml(it.item.mpn)}` : ''}
+            </td>
+          </tr>` : ''}
+        </table>
+        <div style="position: absolute; bottom: ${marginMM}mm; right: ${marginMM}mm; font-size: 8px; color: #999;">
+          ${idx + 1}/${receipt.items.length}
+        </div>
+      </div>
+    `).join('');
+
+    const fullHtml = `<!doctype html><html><head><title>Stickers - ${escapeHtml(receipt.grNumber)}</title>
+      <style>
+        @page { margin: 5mm; }
+        body { margin: 0; padding: 5mm; }
+        @media print {
+          .sticker { border: none !important; margin: 1mm !important; }
+        }
+      </style>
+    </head><body>${stickersHtml}</body></html>`;
+
+    const win = window.open("", "_blank", "width=800,height=600");
+    if (!win) return;
+    win.document.open();
+    win.document.write(fullHtml);
+    win.document.close();
+    setTimeout(() => { win.focus(); win.print(); setTimeout(() => win.close(), 300); }, 200);
+  };
+
+  return (
+    <Button variant="outline" size="sm" className="gap-1" onClick={handlePrintStickers}>
+      <Tag className="w-4 h-4" /> Stickers
     </Button>
   );
 }
