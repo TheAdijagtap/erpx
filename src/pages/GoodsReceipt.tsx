@@ -566,15 +566,16 @@ function ViewGRDialog({ id }: { id: string }) {
                     <td>
                       <div style={{fontWeight: '600'}}>{it.item.name}</div>
                       {it.item.description && <div style={{fontSize: '12px', color: '#64748b', marginTop: '2px'}}>{it.item.description}</div>}
-                      {(it.item.itemCode || it.item.make || it.item.mpn || it.batchNumber) && (
+                      {it.item.itemCode && (
+                        <div style={{fontSize: '12px', color: '#64748b', marginTop: '2px'}}>Item Code: {it.item.itemCode}</div>
+                      )}
+                      {(it.item.make || it.item.mpn) && (
                         <div style={{fontSize: '12px', color: '#64748b', marginTop: '2px'}}>
-                          {[
-                            it.item.itemCode && `Item Code: ${it.item.itemCode}`,
-                            it.item.make && `Make: ${it.item.make}`,
-                            it.item.mpn && `MPN: ${it.item.mpn}`,
-                            it.batchNumber && `Batch: ${it.batchNumber}`,
-                          ].filter(Boolean).join(' | ')}
+                          {[it.item.make && `Make: ${it.item.make}`, it.item.mpn && `MPN: ${it.item.mpn}`].filter(Boolean).join(' | ')}
                         </div>
+                      )}
+                      {it.batchNumber && (
+                        <div style={{fontSize: '12px', color: '#64748b', marginTop: '2px'}}>Batch: {it.batchNumber}</div>
                       )}
                     </td>
                     {receipt.items.some(i => isValidHsn(i.item.sku)) && <td>{isValidHsn(it.item.sku) ? it.item.sku : '-'}</td>}
