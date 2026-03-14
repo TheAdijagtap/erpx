@@ -824,11 +824,14 @@ function PrintGRButton({ id }: { id: string }) {
   );
 }
 
+interface PackEntry { qty: number }
+interface ItemStickerConfig { itemIdx: number; selected: boolean; packs: PackEntry[] }
+
 function PrintStickersButton({ id }: { id: string }) {
   const { goodsReceipts, businessInfo } = useData();
   const receipt = goodsReceipts.find(g => g.id === id)!;
   const [open, setOpen] = useState(false);
-  const [stickerConfig, setStickerConfig] = useState<Array<{ itemIdx: number; selected: boolean; qty: number }>>([]);
+  const [stickerConfig, setStickerConfig] = useState<ItemStickerConfig[]>([]);
 
   const handleOpen = (isOpen: boolean) => {
     setOpen(isOpen);
@@ -836,7 +839,7 @@ function PrintStickersButton({ id }: { id: string }) {
       setStickerConfig(receipt.items.map((it, idx) => ({
         itemIdx: idx,
         selected: true,
-        qty: it.receivedQuantity,
+        packs: [{ qty: it.receivedQuantity }],
       })));
     }
   };
@@ -845,9 +848,29 @@ function PrintStickersButton({ id }: { id: string }) {
     setStickerConfig(prev => prev.map((c, i) => i === idx ? { ...c, selected: !c.selected } : c));
   };
 
-  const setQty = (idx: number, qty: number) => {
-    setStickerConfig(prev => prev.map((c, i) => i === idx ? { ...c, qty: Math.max(1, qty) } : c));
+  const addPack = (idx: number) => {
+    setStickerConfig(prev => prev.map((c, i) => {
+      if (i !== idx) return c;
+      const remaining = receipt.items[idx].receivedQuantity - c.packs.reduce((s, p) => s + p.qty, 0);
+      return { ...c, packs: [...c.packs, { qty: Math.max(1, remaining) }] };
+    }));
   };
+
+  const removePack = (itemIdx: number, packIdx: number) => {
+    setStickerConfig(prev => prev.map((c, i) => {
+      if (i !== itemIdx || c.packs.length <= 1) return c;
+      return { ...c, packs: c.packs.filter((_, pi) => pi !== packIdx) };
+    }));
+  };
+
+  const updatePackQty = (itemIdx: number, packIdx: number, qty: number) => {
+    setStickerConfig(prev => prev.map((c, i) => {
+      if (i !== itemIdx) return c;
+      return { ...c, packs: c.packs.map((p, pi) => pi === packIdx ? { qty: Math.max(1, qty) } : p) };
+    }));
+  };
+
+  const totalStickers = stickerConfig.filter(c => c.selected).reduce((s, c) => s + c.packs.length, 0);
 
   const handlePrint = () => {
     const stickerWidthMM = 75;
@@ -859,18 +882,12 @@ function PrintStickersButton({ id }: { id: string }) {
 
     let allStickers = '';
     let stickerNum = 0;
-    const totalStickers = selectedItems.reduce((s, c) => s + c.qty, 0);
 
     selectedItems.forEach(config => {
       const it = receipt.items[config.itemIdx];
-      for (let i = 0; i < config.qty; i++) {
+      config.packs.forEach(pack => {
         stickerNum++;
-        const qrData = [
-          it.item.itemCode || '',
-          it.item.name,
-          it.batchNumber || '',
-          receipt.date ? formatDateIN(receipt.date) : '',
-        ].join('|');
+        const qrData = it.item.itemCode || it.item.name;
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(qrData)}`;
 
         allStickers += `
@@ -902,6 +919,7 @@ function PrintStickersButton({ id }: { id: string }) {
                 ${it.item.description ? `<div style="font-size: 8px; color: #444; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 1px;">${escapeHtml(it.item.description)}</div>` : ''}
                 ${it.batchNumber ? `<div style="font-size: 9px;"><strong>Batch:</strong> ${escapeHtml(it.batchNumber)}</div>` : ''}
                 ${receipt.qcDate ? `<div style="font-size: 9px;"><strong>QC Date:</strong> ${formatDateIN(receipt.qcDate)}</div>` : `<div style="font-size: 9px;"><strong>Date:</strong> ${formatDateIN(receipt.date)}</div>`}
+                <div style="font-size: 10px; font-weight: 700; margin-top: 2px;"><strong>Qty:</strong> ${pack.qty} ${escapeHtml(it.item.unit)}</div>
               </div>
               <div style="flex-shrink: 0; display: flex; align-items: center;">
                 <img src="${qrUrl}" style="width: 22mm; height: 22mm;" />
@@ -911,16 +929,14 @@ function PrintStickersButton({ id }: { id: string }) {
               ${stickerNum}/${totalStickers}
             </div>
           </div>`;
-      }
+      });
     });
 
     const fullHtml = `<!doctype html><html><head><title>Stickers - ${escapeHtml(receipt.grNumber)}</title>
       <style>
         @page { margin: 5mm; }
         body { margin: 0; padding: 5mm; }
-        @media print {
-          .sticker { margin: 1mm !important; }
-        }
+        @media print { .sticker { margin: 1mm !important; } }
       </style>
     </head><body>${allStickers}</body></html>`;
 
@@ -944,48 +960,74 @@ function PrintStickersButton({ id }: { id: string }) {
           <Tag className="w-4 h-4" /> Stickers
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-lg max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>Print Stickers – {receipt.grNumber}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-2 max-h-[50vh] overflow-y-auto">
+        <div className="space-y-3 overflow-y-auto flex-1 pr-1">
           {receipt.items.map((it, idx) => {
             const config = stickerConfig[idx];
             if (!config) return null;
+            const totalPackQty = config.packs.reduce((s, p) => s + p.qty, 0);
             return (
-              <div key={idx} className="flex items-center gap-3 p-2 rounded border border-border">
-                <input
-                  type="checkbox"
-                  checked={config.selected}
-                  onChange={() => toggleItem(idx)}
-                  className="w-4 h-4 accent-primary"
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{it.item.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {it.item.itemCode ? `${it.item.itemCode} · ` : ''}Received: {it.receivedQuantity} {it.item.unit}
-                    {it.batchNumber ? ` · Batch: ${it.batchNumber}` : ''}
-                  </p>
-                </div>
-                <div className="flex items-center gap-1">
-                  <label className="text-xs text-muted-foreground">Qty:</label>
-                  <Input
-                    type="number"
-                    min={1}
-                    value={config.qty}
-                    onChange={e => setQty(idx, parseInt(e.target.value) || 1)}
-                    className="w-16 h-7 text-xs"
-                    disabled={!config.selected}
+              <div key={idx} className="rounded border border-border p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={config.selected}
+                    onChange={() => toggleItem(idx)}
+                    className="w-4 h-4 accent-primary"
                   />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{it.item.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {it.item.itemCode ? `${it.item.itemCode} · ` : ''}
+                      Total received: {it.receivedQuantity} {it.item.unit}
+                      {it.batchNumber ? ` · Batch: ${it.batchNumber}` : ''}
+                    </p>
+                  </div>
                 </div>
+                {config.selected && (
+                  <div className="ml-6 space-y-1.5">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Packs/Bundles ({config.packs.length} sticker{config.packs.length > 1 ? 's' : ''})
+                      {totalPackQty !== it.receivedQuantity && (
+                        <span className="text-destructive ml-1">
+                          · Sum: {totalPackQty}/{it.receivedQuantity}
+                        </span>
+                      )}
+                    </p>
+                    {config.packs.map((pack, pi) => (
+                      <div key={pi} className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground w-6">#{pi + 1}</span>
+                        <Input
+                          type="number"
+                          min={1}
+                          value={pack.qty}
+                          onChange={e => updatePackQty(idx, pi, parseInt(e.target.value) || 1)}
+                          className="w-24 h-7 text-xs"
+                        />
+                        <span className="text-xs text-muted-foreground">{it.item.unit}</span>
+                        {config.packs.length > 1 && (
+                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => removePack(idx, pi)}>
+                            <XCircle className="w-3.5 h-3.5 text-destructive" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    <Button variant="outline" size="sm" className="h-6 text-xs gap-1" onClick={() => addPack(idx)}>
+                      <Plus className="w-3 h-3" /> Add Pack
+                    </Button>
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={handlePrint} disabled={!stickerConfig.some(c => c.selected)} className="gap-1">
-            <Printer className="w-4 h-4" /> Print {stickerConfig.filter(c => c.selected).reduce((s, c) => s + c.qty, 0)} Stickers
+          <Button onClick={handlePrint} disabled={totalStickers === 0} className="gap-1">
+            <Printer className="w-4 h-4" /> Print {totalStickers} Sticker{totalStickers !== 1 ? 's' : ''}
           </Button>
         </DialogFooter>
       </DialogContent>
