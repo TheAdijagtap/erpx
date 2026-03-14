@@ -38,6 +38,10 @@ const AppDashboard = memo(() => {
     const totalInventoryValue = items.reduce((sum, item) => sum + (item.currentStock * item.unitPrice), 0);
     const activePurchaseOrders = purchaseOrders.filter(po => po.status !== 'CANCELLED' && po.status !== 'RECEIVED').length;
     const lowStockItems = items.filter(item => item.currentStock <= item.minStock);
+    const totalStock = items.reduce((sum, item) => sum + item.currentStock, 0);
+    const categories = new Set(items.map(item => item.category).filter(Boolean));
+    const receivedGRs = goodsReceipts.filter(gr => gr.status === 'ACCEPTED' || gr.status === 'RECEIVED').length;
+    const sentInvoices = proformaInvoices.filter(pi => pi.status === 'SENT' || pi.status === 'ACCEPTED').length;
 
     return {
       totalItems,
@@ -45,8 +49,12 @@ const AppDashboard = memo(() => {
       activePurchaseOrders,
       lowStockCount: lowStockItems.length,
       lowStockItems: lowStockItems.slice(0, 10),
+      totalStock,
+      categoryCount: categories.size,
+      receivedGRs,
+      sentInvoices,
     };
-  }, [items, purchaseOrders]);
+  }, [items, purchaseOrders, goodsReceipts, proformaInvoices]);
 
   const chartData = useMemo(() => {
     const months: { [key: string]: { name: string; purchases: number; sales: number } } = {};
