@@ -12,13 +12,6 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { supabase } from "@/integrations/supabase/client";
 import { useSubUser } from "@/hooks/useSubUser";
 
-const QUICK_ACTIONS = [
-  { label: "Add New Inventory Item", icon: Plus, route: "/inventory", color: "text-blue-600" },
-  { label: "Create Purchase Order", icon: ShoppingCart, route: "/purchase-orders", color: "text-orange-600" },
-  { label: "Record Goods Receipt", icon: FileText, route: "/goods-receipt", color: "text-purple-600" },
-  { label: "Generate Proforma Invoice", icon: FileText, route: "/proforma", color: "text-green-600" },
-  { label: "Manage Suppliers", icon: Users, route: "/suppliers", color: "text-cyan-600" },
-];
 
 const AppDashboard = memo(() => {
   const navigate = useNavigate();
