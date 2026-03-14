@@ -12,13 +12,22 @@ const About = () => {
         description="Learn about OPIS by Necrus Technologies — India's affordable ERP platform combining inventory, purchasing, HR, and payroll for MSMEs."
         canonical="https://opis.in/about"
         keywords="about OPIS, Necrus Technologies, MSME ERP India, affordable ERP, inventory management"
+        breadcrumbs={[
+          { name: "Home", url: "https://opis.in/" },
+          { name: "About", url: "https://opis.in/about" },
+        ]}
         jsonLd={{
           "@context": "https://schema.org",
-          "@type": "Organization",
-          "name": "Necrus Technologies",
-          "url": "https://opis.in",
-          "description": "Necrus Technologies builds OPIS, India's purpose-built ERP for MSMEs.",
-          "brand": { "@type": "Brand", "name": "OPIS" }
+          "@type": "AboutPage",
+          "name": "About OPIS",
+          "url": "https://opis.in/about",
+          "mainEntity": {
+            "@type": "Organization",
+            "name": "Necrus Technologies",
+            "url": "https://opis.in",
+            "description": "Necrus Technologies builds OPIS, India's purpose-built ERP for MSMEs.",
+            "brand": { "@type": "Brand", "name": "OPIS" }
+          }
         }}
       />
       {/* Header */}

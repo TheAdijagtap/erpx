@@ -14,6 +14,10 @@ const Contact = () => {
         description="Get in touch with the OPIS team via WhatsApp, email, or phone. We're here to help Indian MSMEs streamline their business operations."
         canonical="https://opis.in/contact"
         keywords="contact OPIS, MSME ERP support, business software help India"
+        breadcrumbs={[
+          { name: "Home", url: "https://opis.in/" },
+          { name: "Contact", url: "https://opis.in/contact" },
+        ]}
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "ContactPage",
@@ -23,7 +27,9 @@ const Contact = () => {
             "@type": "Organization",
             "name": "Necrus Technologies",
             "telephone": "+919373751128",
-            "contactType": "customer support"
+            "email": "necrus@yahoo.com",
+            "contactType": "customer support",
+            "areaServed": "IN"
           }
         }}
       />
