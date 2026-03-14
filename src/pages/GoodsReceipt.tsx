@@ -609,13 +609,6 @@ function ViewGRDialog({ id }: { id: string }) {
             </div>
           </div>
           
-          {businessInfo.signature && (
-            <div className="signature-section">
-              <div>Authorized Signatory</div>
-              <img src={businessInfo.signature} alt="Authorized Signature" className="signature-image" style={{ marginTop: '8px' }} />
-              <div className="muted">{businessInfo.name}</div>
-            </div>
-          )}
           
           {receipt.notes && <div className="footer">Notes: {receipt.notes}</div>}
         </div>
@@ -803,13 +796,6 @@ function PrintGRButton({ id }: { id: string }) {
           ${escapeHtml(businessInfo.defaultGrTerms || `1. All goods have been inspected upon receipt\n2. Quality check completed as per standards\n3. Quantities verified and confirmed\n4. Any discrepancies noted in remarks section\n5. Goods accepted in good condition`)}
         </div>
       </div>
-      ${businessInfo.signature ? `
-        <div class="signature-section">
-          <div>Authorized Signatory</div>
-          <img src="${escapeHtml(businessInfo.signature)}" alt="Authorized Signature" class="signature-image" style="margin-top: 8px" />
-          <div class="muted">${escapeHtml(businessInfo.name)}</div>
-        </div>
-      ` : ''}
       ${receipt.notes ? `<div class="footer">Notes: ${escapeHtml(receipt.notes)}</div>` : ''}
     `;
     
