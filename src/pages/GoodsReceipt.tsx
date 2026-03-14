@@ -566,15 +566,16 @@ function ViewGRDialog({ id }: { id: string }) {
                     <td>
                       <div style={{fontWeight: '600'}}>{it.item.name}</div>
                       {it.item.description && <div style={{fontSize: '12px', color: '#64748b', marginTop: '2px'}}>{it.item.description}</div>}
-                      {(it.item.itemCode || it.item.make || it.item.mpn || it.batchNumber) && (
+                      {it.item.itemCode && (
+                        <div style={{fontSize: '12px', color: '#64748b', marginTop: '2px'}}>Item Code: {it.item.itemCode}</div>
+                      )}
+                      {(it.item.make || it.item.mpn) && (
                         <div style={{fontSize: '12px', color: '#64748b', marginTop: '2px'}}>
-                          {[
-                            it.item.itemCode && `Item Code: ${it.item.itemCode}`,
-                            it.item.make && `Make: ${it.item.make}`,
-                            it.item.mpn && `MPN: ${it.item.mpn}`,
-                            it.batchNumber && `Batch: ${it.batchNumber}`,
-                          ].filter(Boolean).join(' | ')}
+                          {[it.item.make && `Make: ${it.item.make}`, it.item.mpn && `MPN: ${it.item.mpn}`].filter(Boolean).join(' | ')}
                         </div>
+                      )}
+                      {it.batchNumber && (
+                        <div style={{fontSize: '12px', color: '#64748b', marginTop: '2px'}}>Batch: {it.batchNumber}</div>
                       )}
                     </td>
                     {receipt.items.some(i => isValidHsn(i.item.sku)) && <td>{isValidHsn(it.item.sku) ? it.item.sku : '-'}</td>}
@@ -764,19 +765,19 @@ function PrintGRButton({ id }: { id: string }) {
           </thead>
           <tbody>
             ${receipt.items.map((it, idx) => {
-              const metaParts = [
-                it.item.itemCode ? `Item Code: ${escapeHtml(it.item.itemCode)}` : '',
-                it.item.make ? `Make: ${escapeHtml(it.item.make)}` : '',
-                it.item.mpn ? `MPN: ${escapeHtml(it.item.mpn)}` : '',
-                it.batchNumber ? `Batch: ${escapeHtml(it.batchNumber)}` : '',
-              ].filter(Boolean).join(' | ');
+              const itemCodeLine = it.item.itemCode ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">Item Code: ${escapeHtml(it.item.itemCode)}</div>` : '';
+              const makeMpnParts = [it.item.make ? `Make: ${escapeHtml(it.item.make)}` : '', it.item.mpn ? `MPN: ${escapeHtml(it.item.mpn)}` : ''].filter(Boolean).join(' | ');
+              const makeMpnLine = makeMpnParts ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${makeMpnParts}</div>` : '';
+              const batchLine = it.batchNumber ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">Batch: ${escapeHtml(it.batchNumber)}</div>` : '';
               return `
               <tr>
                 <td>${idx + 1}</td>
                 <td>
                   <div style="font-weight: 600">${escapeHtml(it.item.name)}</div>
                   ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${escapeHtml(it.item.description)}</div>` : ''}
-                  ${metaParts ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${metaParts}</div>` : ''}
+                  ${itemCodeLine}
+                  ${makeMpnLine}
+                  ${batchLine}
                 </td>
                 ${receipt.items.some(i => isValidHsn(i.item.sku)) ? `<td>${isValidHsn(it.item.sku) ? escapeHtml(it.item.sku) : '-'}</td>` : ''}
                 <td>${it.orderedQuantity || '-'}</td>
