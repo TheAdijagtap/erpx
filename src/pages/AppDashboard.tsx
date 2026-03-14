@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, ShoppingCart, FileText, Users, TrendingUp, AlertCircle, Plus, ArrowRight, Download, DollarSign, ArrowRightLeft, Layers } from "lucide-react";
+import { Package, ShoppingCart, FileText, TrendingUp, AlertCircle, Download, DollarSign, ArrowRightLeft, Layers, BarChart3, Archive } from "lucide-react";
 import { useData } from "@/store/SupabaseDataContext";
 import { useMemo, memo, useCallback, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
