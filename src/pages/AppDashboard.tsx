@@ -341,21 +341,54 @@ const AppDashboard = memo(() => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
+            <CardTitle>Inventory Overview</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {QUICK_ACTIONS.map((action) => (
-              <Button
-                key={action.route}
-                className="w-full justify-start"
-                variant="outline"
-                onClick={() => navigate(action.route)}
-              >
-                <action.icon className={`mr-2 h-4 w-4 ${action.color}`} />
-                {action.label}
-                <ArrowRight className="ml-auto h-4 w-4" />
-              </Button>
-            ))}
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between border-b pb-3">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                  <Archive className="h-4 w-4 text-blue-600" />
+                </div>
+                <span className="text-sm font-medium">Total Stock Units</span>
+              </div>
+              <span className="text-lg font-bold">{stats.totalStock.toLocaleString('en-IN')}</span>
+            </div>
+            <div className="flex items-center justify-between border-b pb-3">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
+                  <BarChart3 className="h-4 w-4 text-purple-600" />
+                </div>
+                <span className="text-sm font-medium">Categories</span>
+              </div>
+              <span className="text-lg font-bold">{stats.categoryCount}</span>
+            </div>
+            <div className="flex items-center justify-between border-b pb-3">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+                  <FileText className="h-4 w-4 text-green-600" />
+                </div>
+                <span className="text-sm font-medium">Goods Received</span>
+              </div>
+              <span className="text-lg font-bold">{stats.receivedGRs}</span>
+            </div>
+            <div className="flex items-center justify-between border-b pb-3">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center">
+                  <ShoppingCart className="h-4 w-4 text-orange-600" />
+                </div>
+                <span className="text-sm font-medium">Proforma Invoices Sent</span>
+              </div>
+              <span className="text-lg font-bold">{stats.sentInvoices}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center">
+                  <AlertCircle className="h-4 w-4 text-red-600" />
+                </div>
+                <span className="text-sm font-medium">Low Stock Alerts</span>
+              </div>
+              <Badge variant={stats.lowStockCount > 0 ? "destructive" : "secondary"}>{stats.lowStockCount}</Badge>
+            </div>
           </CardContent>
         </Card>
       </div>
