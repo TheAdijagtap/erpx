@@ -551,7 +551,6 @@ function ViewGRDialog({ id }: { id: string }) {
                 <tr>
                   <th>#</th>
                   <th>Description</th>
-                  {receipt.items.some(it => it.batchNumber) && <th>Batch/Lot</th>}
                   {receipt.items.some(it => isValidHsn(it.item.sku)) && <th>HSN</th>}
                   <th>Ordered</th>
                   <th>Received</th>
@@ -567,15 +566,17 @@ function ViewGRDialog({ id }: { id: string }) {
                     <td>
                       <div style={{fontWeight: '600'}}>{it.item.name}</div>
                       {it.item.description && <div style={{fontSize: '12px', color: '#64748b', marginTop: '2px'}}>{it.item.description}</div>}
-                      {(it.item.make || it.item.mpn) && (
+                      {(it.item.itemCode || it.item.make || it.item.mpn || it.batchNumber) && (
                         <div style={{fontSize: '12px', color: '#64748b', marginTop: '2px'}}>
-                          {it.item.make && <span>Make: {it.item.make}</span>}
-                          {it.item.make && it.item.mpn && <span> | </span>}
-                          {it.item.mpn && <span>MPN: {it.item.mpn}</span>}
+                          {[
+                            it.item.itemCode && `Item Code: ${it.item.itemCode}`,
+                            it.item.make && `Make: ${it.item.make}`,
+                            it.item.mpn && `MPN: ${it.item.mpn}`,
+                            it.batchNumber && `Batch: ${it.batchNumber}`,
+                          ].filter(Boolean).join(' | ')}
                         </div>
                       )}
                     </td>
-                    {receipt.items.some(i => i.batchNumber) && <td>{it.batchNumber || '-'}</td>}
                     {receipt.items.some(i => isValidHsn(i.item.sku)) && <td>{isValidHsn(it.item.sku) ? it.item.sku : '-'}</td>}
                     <td>{it.orderedQuantity || '-'}</td>
                     <td>{it.receivedQuantity}</td>
@@ -753,7 +754,6 @@ function PrintGRButton({ id }: { id: string }) {
             <tr>
               <th>#</th>
               <th>Description</th>
-              ${receipt.items.some(it => it.batchNumber) ? '<th>Batch/Lot</th>' : ''}
               ${receipt.items.some(it => isValidHsn(it.item.sku)) ? '<th>HSN</th>' : ''}
               <th>Ordered</th>
               <th>Received</th>
@@ -763,23 +763,29 @@ function PrintGRButton({ id }: { id: string }) {
             </tr>
           </thead>
           <tbody>
-            ${receipt.items.map((it, idx) => `
+            ${receipt.items.map((it, idx) => {
+              const metaParts = [
+                it.item.itemCode ? `Item Code: ${escapeHtml(it.item.itemCode)}` : '',
+                it.item.make ? `Make: ${escapeHtml(it.item.make)}` : '',
+                it.item.mpn ? `MPN: ${escapeHtml(it.item.mpn)}` : '',
+                it.batchNumber ? `Batch: ${escapeHtml(it.batchNumber)}` : '',
+              ].filter(Boolean).join(' | ');
+              return `
               <tr>
                 <td>${idx + 1}</td>
                 <td>
                   <div style="font-weight: 600">${escapeHtml(it.item.name)}</div>
                   ${it.item.description ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${escapeHtml(it.item.description)}</div>` : ''}
-                  ${(it.item.make || it.item.mpn) ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${it.item.make ? `Make: ${escapeHtml(it.item.make)}` : ''}${it.item.make && it.item.mpn ? ' | ' : ''}${it.item.mpn ? `MPN: ${escapeHtml(it.item.mpn)}` : ''}</div>` : ''}
+                  ${metaParts ? `<div style="font-size: 12px; color: #64748b; margin-top: 2px">${metaParts}</div>` : ''}
                 </td>
-                ${receipt.items.some(i => i.batchNumber) ? `<td>${it.batchNumber ? escapeHtml(it.batchNumber) : '-'}</td>` : ''}
                 ${receipt.items.some(i => isValidHsn(i.item.sku)) ? `<td>${isValidHsn(it.item.sku) ? escapeHtml(it.item.sku) : '-'}</td>` : ''}
                 <td>${it.orderedQuantity || '-'}</td>
                 <td>${it.receivedQuantity}</td>
                 <td>${escapeHtml(it.item.unit)}</td>
                 <td>${formatINR(it.unitPrice)}</td>
                 <td>${formatINR(it.total)}</td>
-              </tr>
-            `).join('')}
+              </tr>`;
+            }).join('')}
           </tbody>
         </table>
       </div>
