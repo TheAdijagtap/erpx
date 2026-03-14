@@ -102,7 +102,7 @@ const GoodsReceiptPage = () => {
                 <ViewGRDialog id={receipt.id} />
                 <EditGRDialog id={receipt.id} />
                 <PrintGRButton id={receipt.id} />
-                
+                <PrintStickersButton id={receipt.id} />
                 <DeleteGRDialog id={receipt.id} />
                 {receipt.status === 'QUALITY_CHECK' && (
                   <>
