@@ -891,22 +891,7 @@ function PrintStickersButton({ id }: { id: string }) {
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(qrData)}`;
 
         allStickers += `
-          <div class="sticker" style="
-            width: ${stickerWidthMM}mm;
-            height: ${stickerHeightMM}mm;
-            border: 1.5px solid #000;
-            padding: ${marginMM}mm;
-            box-sizing: border-box;
-            page-break-inside: avoid;
-            display: inline-block;
-            vertical-align: top;
-            margin: 1.5mm;
-            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-            font-size: 9px;
-            line-height: 1.3;
-            overflow: hidden;
-            position: relative;
-          ">
+          <div class="sticker">
             <div style="display: flex; gap: 3mm;">
               <div style="flex: 1; min-width: 0;">
                 <div style="font-weight: 700; font-size: 11px; margin-bottom: 2px; border-bottom: 1px solid #333; padding-bottom: 1px;">
@@ -934,9 +919,33 @@ function PrintStickersButton({ id }: { id: string }) {
 
     const fullHtml = `<!doctype html><html><head><title>Stickers - ${escapeHtml(receipt.grNumber)}</title>
       <style>
-        @page { margin: 5mm; }
-        body { margin: 0; padding: 5mm; }
-        @media print { .sticker { margin: 1mm !important; } }
+        @page {
+          size: ${stickerWidthMM}mm ${stickerHeightMM}mm;
+          margin: 0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { margin: 0; padding: 0; }
+        .sticker {
+          width: ${stickerWidthMM}mm;
+          height: ${stickerHeightMM}mm;
+          padding: ${marginMM}mm;
+          border: 1.5px solid #000;
+          box-sizing: border-box;
+          font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+          font-size: 9px;
+          line-height: 1.3;
+          overflow: hidden;
+          position: relative;
+          page-break-after: always;
+        }
+        .sticker:last-child { page-break-after: auto; }
+        @media print {
+          .sticker { border: none; }
+        }
+        @media screen {
+          body { padding: 10px; background: #eee; }
+          .sticker { background: #fff; margin-bottom: 10px; }
+        }
       </style>
     </head><body>${allStickers}</body></html>`;
 
