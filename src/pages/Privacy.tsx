@@ -10,6 +10,10 @@ const Privacy = () => {
         description="Read the OPIS privacy policy. Learn how we collect, use, and protect your data when using our ERP platform."
         canonical="https://opis.in/privacy"
         keywords="OPIS privacy policy, data protection, ERP privacy"
+        breadcrumbs={[
+          { name: "Home", url: "https://opis.in/" },
+          { name: "Privacy Policy", url: "https://opis.in/privacy" },
+        ]}
       />
       <header className="border-b border-border bg-background/95 backdrop-blur sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">

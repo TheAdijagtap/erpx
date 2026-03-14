@@ -1,5 +1,10 @@
 import { useEffect } from "react";
 
+interface BreadcrumbItem {
+  name: string;
+  url: string;
+}
+
 interface SEOHeadProps {
   title: string;
   description: string;
@@ -10,6 +15,7 @@ interface SEOHeadProps {
   author?: string;
   noindex?: boolean;
   jsonLd?: Record<string, unknown>;
+  breadcrumbs?: BreadcrumbItem[];
 }
 
 const BASE_URL = "https://opis.in";
@@ -24,6 +30,7 @@ const SEOHead = ({
   author = "OPIS by Necrus Technologies",
   noindex = false,
   jsonLd,
+  breadcrumbs,
 }: SEOHeadProps) => {
   const fullTitle = title.includes("OPIS") ? title : `${title} | OPIS - Order, Purchase & Inventory System`;
   const canonicalUrl = canonical || window.location.origin + window.location.pathname;
@@ -47,7 +54,7 @@ const SEOHead = ({
     if (keywords) setMeta("keywords", keywords);
     setMeta("author", author);
     if (noindex) setMeta("robots", "noindex, nofollow");
-    else setMeta("robots", "index, follow, max-image-preview:large, max-snippet:-1");
+    else setMeta("robots", "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1");
 
     // Open Graph
     setMeta("og:title", fullTitle, "property");
@@ -63,6 +70,7 @@ const SEOHead = ({
     setMeta("twitter:title", fullTitle);
     setMeta("twitter:description", description);
     setMeta("twitter:image", ogImage);
+    setMeta("twitter:image:alt", fullTitle);
 
     // Canonical
     let link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
@@ -73,7 +81,7 @@ const SEOHead = ({
     }
     link.setAttribute("href", canonicalUrl);
 
-    // JSON-LD
+    // JSON-LD (page-specific)
     const existingLd = document.querySelector('script[data-seo-jsonld]');
     if (existingLd) existingLd.remove();
 
@@ -85,11 +93,35 @@ const SEOHead = ({
       document.head.appendChild(script);
     }
 
+    // Breadcrumb JSON-LD
+    const existingBreadcrumb = document.querySelector('script[data-seo-breadcrumb]');
+    if (existingBreadcrumb) existingBreadcrumb.remove();
+
+    if (breadcrumbs && breadcrumbs.length > 0) {
+      const breadcrumbLd = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": breadcrumbs.map((item, index) => ({
+          "@type": "ListItem",
+          "position": index + 1,
+          "name": item.name,
+          "item": item.url,
+        })),
+      };
+      const script = document.createElement("script");
+      script.type = "application/ld+json";
+      script.setAttribute("data-seo-breadcrumb", "true");
+      script.textContent = JSON.stringify(breadcrumbLd);
+      document.head.appendChild(script);
+    }
+
     return () => {
       const ld = document.querySelector('script[data-seo-jsonld]');
       if (ld) ld.remove();
+      const bc = document.querySelector('script[data-seo-breadcrumb]');
+      if (bc) bc.remove();
     };
-  }, [fullTitle, description, canonicalUrl, ogImage, ogType, keywords, author, noindex, jsonLd]);
+  }, [fullTitle, description, canonicalUrl, ogImage, ogType, keywords, author, noindex, jsonLd, breadcrumbs]);
 
   return null;
 };

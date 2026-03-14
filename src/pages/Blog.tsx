@@ -68,14 +68,26 @@ const Blog = () => {
         title="OPIS Blog - MSME ERP Tips, Inventory & Business Growth"
         description="Expert articles on ERP, inventory management, GST compliance, HR, and payroll for Indian MSMEs. Learn how to grow your business with OPIS."
         canonical="https://opis.in/blog"
-        keywords="MSME blog, ERP tips, inventory management blog, GST compliance, small business India"
+        keywords="MSME blog, ERP tips, inventory management blog, GST compliance, small business India, purchase order guide, payroll tips"
+        breadcrumbs={[
+          { name: "Home", url: "https://opis.in/" },
+          { name: "Blog", url: "https://opis.in/blog" },
+        ]}
         jsonLd={{
           "@context": "https://schema.org",
           "@type": "Blog",
           "name": "OPIS Blog",
           "url": "https://opis.in/blog",
           "description": "Expert articles on ERP, inventory management, and business growth for Indian MSMEs.",
-          "publisher": { "@type": "Organization", "name": "Necrus Technologies" }
+          "publisher": { "@type": "Organization", "name": "Necrus Technologies" },
+          "blogPost": blogPosts.map(post => ({
+            "@type": "BlogPosting",
+            "headline": post.title,
+            "description": post.excerpt,
+            "url": `https://opis.in/blog/${post.slug}`,
+            "author": { "@type": "Person", "name": post.author },
+            "datePublished": post.date
+          }))
         }}
       />
       {/* Header */}
