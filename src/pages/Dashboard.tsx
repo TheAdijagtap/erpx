@@ -128,31 +128,21 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title="OPIS - Affordable ERP for Indian MSMEs | Inventory, HR & Payroll"
+        title="OPIS – Affordable ERP for Indian MSMEs | Inventory, HR & Payroll Software"
         description="OPIS is India's most affordable ERP system for MSMEs. Manage inventory, purchase orders, GST invoicing, HR, attendance, and payroll — all in one platform starting at ₹499/month."
         canonical="https://opis.in/"
-        keywords="ERP for MSME, inventory management India, purchase order software, GST billing software, HR payroll software, small business ERP, OPIS ERP, affordable ERP India"
+        keywords="ERP for MSME, inventory management India, purchase order software, GST billing software, HR payroll software, small business ERP, OPIS ERP, affordable ERP India, stock management software, MSME software India, GST invoice generator, employee management system"
         jsonLd={{
           "@context": "https://schema.org",
-          "@type": "SoftwareApplication",
-          "name": "OPIS - Order, Purchase & Inventory System",
-          "applicationCategory": "BusinessApplication",
-          "operatingSystem": "Web",
-          "description": "Affordable ERP system for Indian MSMEs with inventory management, purchase orders, GST invoicing, HR, attendance, and payroll.",
-          "url": "https://opis.in",
-          "author": { "@type": "Organization", "name": "Necrus Technologies" },
-          "offers": {
-            "@type": "Offer",
-            "price": "499",
-            "priceCurrency": "INR",
-            "priceValidUntil": "2027-12-31",
-            "availability": "https://schema.org/InStock"
-          },
-          "aggregateRating": {
-            "@type": "AggregateRating",
-            "ratingValue": "4.8",
-            "ratingCount": "150"
-          }
+          "@type": "FAQPage",
+          "mainEntity": faqs.map(faq => ({
+            "@type": "Question",
+            "name": faq.q,
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": faq.a
+            }
+          }))
         }}
       />
       {/* ── Header ── */}

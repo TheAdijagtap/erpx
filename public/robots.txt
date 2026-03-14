@@ -14,6 +14,13 @@ Allow: /
 
 User-agent: *
 Allow: /
+Allow: /about
+Allow: /contact
+Allow: /blog
+Allow: /blog/*
+Allow: /privacy
+Allow: /terms
+Allow: /auth
 
 Disallow: /dashboard
 Disallow: /inventory
@@ -29,5 +36,6 @@ Disallow: /leaves
 Disallow: /payroll
 Disallow: /stock-transfer
 Disallow: /bom
+Disallow: /leave-request/
 
 Sitemap: https://opis.in/sitemap.xml
