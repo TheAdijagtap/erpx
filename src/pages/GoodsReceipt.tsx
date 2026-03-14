@@ -801,6 +801,11 @@ function PrintGRButton({ id }: { id: string }) {
           ${escapeHtml(businessInfo.defaultGrTerms || `1. All goods have been inspected upon receipt\n2. Quality check completed as per standards\n3. Quantities verified and confirmed\n4. Any discrepancies noted in remarks section\n5. Goods accepted in good condition`)}
         </div>
       </div>
+      <div class="signature-section">
+        <div style="height: 40px"></div>
+        <div style="border-top: 1px solid #000; width: 180px; margin-top: 4px; padding-top: 4px">Authorized Signatory</div>
+        <div class="muted">${escapeHtml(businessInfo.name)}</div>
+      </div>
       ${receipt.notes ? `<div class="footer">Notes: ${escapeHtml(receipt.notes)}</div>` : ''}
     `;
     
