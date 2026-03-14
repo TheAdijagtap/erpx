@@ -827,81 +827,169 @@ function PrintGRButton({ id }: { id: string }) {
 function PrintStickersButton({ id }: { id: string }) {
   const { goodsReceipts, businessInfo } = useData();
   const receipt = goodsReceipts.find(g => g.id === id)!;
+  const [open, setOpen] = useState(false);
+  const [stickerConfig, setStickerConfig] = useState<Array<{ itemIdx: number; selected: boolean; qty: number }>>([]);
 
-  const handlePrintStickers = () => {
-    // Sticker size: 75x50mm with ~3mm margin inside
+  const handleOpen = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (isOpen) {
+      setStickerConfig(receipt.items.map((it, idx) => ({
+        itemIdx: idx,
+        selected: true,
+        qty: it.receivedQuantity,
+      })));
+    }
+  };
+
+  const toggleItem = (idx: number) => {
+    setStickerConfig(prev => prev.map((c, i) => i === idx ? { ...c, selected: !c.selected } : c));
+  };
+
+  const setQty = (idx: number, qty: number) => {
+    setStickerConfig(prev => prev.map((c, i) => i === idx ? { ...c, qty: Math.max(1, qty) } : c));
+  };
+
+  const handlePrint = () => {
     const stickerWidthMM = 75;
     const stickerHeightMM = 50;
     const marginMM = 3;
 
-    const stickersHtml = receipt.items.map((it, idx) => `
-      <div class="sticker" style="
-        width: ${stickerWidthMM}mm;
-        height: ${stickerHeightMM}mm;
-        border: 1px dashed #999;
-        padding: ${marginMM}mm;
-        box-sizing: border-box;
-        page-break-inside: avoid;
-        display: inline-block;
-        vertical-align: top;
-        margin: 2mm;
-        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-        font-size: 10px;
-        line-height: 1.3;
-        overflow: hidden;
-        position: relative;
-      ">
-        <div style="font-weight: 700; font-size: 12px; margin-bottom: 3px; border-bottom: 1px solid #333; padding-bottom: 2px;">
-          ${escapeHtml(businessInfo.name || 'Company')}
-        </div>
-        <div style="font-weight: 700; font-size: 11px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-          ${escapeHtml(it.item.name)}
-        </div>
-        ${it.item.description ? `<div style="font-size: 9px; color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;">${escapeHtml(it.item.description)}</div>` : ''}
-        <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
-          <tr>
-            <td style="padding: 1px 0;"><strong>GR#:</strong> ${escapeHtml(receipt.grNumber)}</td>
-            <td style="padding: 1px 0; text-align: right;"><strong>Date:</strong> ${formatDateIN(receipt.date)}</td>
-          </tr>
-          ${it.batchNumber ? `<tr><td colspan="2" style="padding: 1px 0;"><strong>Batch:</strong> ${escapeHtml(it.batchNumber)}</td></tr>` : ''}
-          <tr>
-            <td style="padding: 1px 0;"><strong>Qty:</strong> ${it.receivedQuantity} ${escapeHtml(it.item.unit)}</td>
-            ${it.item.sku ? `<td style="padding: 1px 0; text-align: right;"><strong>HSN:</strong> ${escapeHtml(it.item.sku)}</td>` : '<td></td>'}
-          </tr>
-          ${(it.item.make || it.item.mpn) ? `<tr>
-            <td colspan="2" style="padding: 1px 0; font-size: 8px; color: #555;">
-              ${it.item.make ? `Make: ${escapeHtml(it.item.make)}` : ''}${it.item.make && it.item.mpn ? ' | ' : ''}${it.item.mpn ? `MPN: ${escapeHtml(it.item.mpn)}` : ''}
-            </td>
-          </tr>` : ''}
-        </table>
-        <div style="position: absolute; bottom: ${marginMM}mm; right: ${marginMM}mm; font-size: 8px; color: #999;">
-          ${idx + 1}/${receipt.items.length}
-        </div>
-      </div>
-    `).join('');
+    const selectedItems = stickerConfig.filter(c => c.selected);
+    if (selectedItems.length === 0) return;
+
+    let allStickers = '';
+    let stickerNum = 0;
+    const totalStickers = selectedItems.reduce((s, c) => s + c.qty, 0);
+
+    selectedItems.forEach(config => {
+      const it = receipt.items[config.itemIdx];
+      for (let i = 0; i < config.qty; i++) {
+        stickerNum++;
+        const qrData = [
+          it.item.itemCode || '',
+          it.item.name,
+          it.batchNumber || '',
+          receipt.date ? formatDateIN(receipt.date) : '',
+        ].join('|');
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(qrData)}`;
+
+        allStickers += `
+          <div class="sticker" style="
+            width: ${stickerWidthMM}mm;
+            height: ${stickerHeightMM}mm;
+            border: 1.5px solid #000;
+            padding: ${marginMM}mm;
+            box-sizing: border-box;
+            page-break-inside: avoid;
+            display: inline-block;
+            vertical-align: top;
+            margin: 1.5mm;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+            font-size: 9px;
+            line-height: 1.3;
+            overflow: hidden;
+            position: relative;
+          ">
+            <div style="display: flex; gap: 3mm;">
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-weight: 700; font-size: 11px; margin-bottom: 2px; border-bottom: 1px solid #333; padding-bottom: 1px;">
+                  ${escapeHtml(businessInfo.name || 'Company')}
+                </div>
+                ${it.item.itemCode ? `<div style="font-size: 10px; font-weight: 700; margin-bottom: 1px;">Code: ${escapeHtml(it.item.itemCode)}</div>` : ''}
+                <div style="font-weight: 600; font-size: 10px; margin-bottom: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  ${escapeHtml(it.item.name)}
+                </div>
+                ${it.item.description ? `<div style="font-size: 8px; color: #444; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 1px;">${escapeHtml(it.item.description)}</div>` : ''}
+                ${it.batchNumber ? `<div style="font-size: 9px;"><strong>Batch:</strong> ${escapeHtml(it.batchNumber)}</div>` : ''}
+                ${receipt.qcDate ? `<div style="font-size: 9px;"><strong>QC Date:</strong> ${formatDateIN(receipt.qcDate)}</div>` : `<div style="font-size: 9px;"><strong>Date:</strong> ${formatDateIN(receipt.date)}</div>`}
+              </div>
+              <div style="flex-shrink: 0; display: flex; align-items: center;">
+                <img src="${qrUrl}" style="width: 22mm; height: 22mm;" />
+              </div>
+            </div>
+            <div style="position: absolute; bottom: ${marginMM}mm; right: ${marginMM + 1}mm; font-size: 7px; color: #888;">
+              ${stickerNum}/${totalStickers}
+            </div>
+          </div>`;
+      }
+    });
 
     const fullHtml = `<!doctype html><html><head><title>Stickers - ${escapeHtml(receipt.grNumber)}</title>
       <style>
         @page { margin: 5mm; }
         body { margin: 0; padding: 5mm; }
         @media print {
-          .sticker { border: none !important; margin: 1mm !important; }
+          .sticker { margin: 1mm !important; }
         }
       </style>
-    </head><body>${stickersHtml}</body></html>`;
+    </head><body>${allStickers}</body></html>`;
 
     const win = window.open("", "_blank", "width=800,height=600");
     if (!win) return;
     win.document.open();
     win.document.write(fullHtml);
     win.document.close();
-    setTimeout(() => { win.focus(); win.print(); setTimeout(() => win.close(), 300); }, 200);
+    const imgs = win.document.getElementsByTagName('img');
+    const promises = Array.from(imgs).map(img => new Promise(r => { if (img.complete) r(true); else { img.onload = () => r(true); img.onerror = () => r(true); setTimeout(() => r(true), 2000); } }));
+    Promise.all(promises).then(() => {
+      setTimeout(() => { win.focus(); win.print(); setTimeout(() => win.close(), 300); }, 300);
+    });
+    setOpen(false);
   };
 
   return (
-    <Button variant="outline" size="sm" className="gap-1" onClick={handlePrintStickers}>
-      <Tag className="w-4 h-4" /> Stickers
-    </Button>
+    <Dialog open={open} onOpenChange={handleOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm" className="gap-1">
+          <Tag className="w-4 h-4" /> Stickers
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Print Stickers – {receipt.grNumber}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-2 max-h-[50vh] overflow-y-auto">
+          {receipt.items.map((it, idx) => {
+            const config = stickerConfig[idx];
+            if (!config) return null;
+            return (
+              <div key={idx} className="flex items-center gap-3 p-2 rounded border border-border">
+                <input
+                  type="checkbox"
+                  checked={config.selected}
+                  onChange={() => toggleItem(idx)}
+                  className="w-4 h-4 accent-primary"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{it.item.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {it.item.itemCode ? `${it.item.itemCode} · ` : ''}Received: {it.receivedQuantity} {it.item.unit}
+                    {it.batchNumber ? ` · Batch: ${it.batchNumber}` : ''}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <label className="text-xs text-muted-foreground">Qty:</label>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={config.qty}
+                    onChange={e => setQty(idx, parseInt(e.target.value) || 1)}
+                    className="w-16 h-7 text-xs"
+                    disabled={!config.selected}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={handlePrint} disabled={!stickerConfig.some(c => c.selected)} className="gap-1">
+            <Printer className="w-4 h-4" /> Print {stickerConfig.filter(c => c.selected).reduce((s, c) => s + c.qty, 0)} Stickers
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
