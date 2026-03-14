@@ -609,6 +609,11 @@ function ViewGRDialog({ id }: { id: string }) {
             </div>
           </div>
           
+          <div className="signature-section">
+            <div style={{ height: '40px' }}></div>
+            <div style={{ borderTop: '1px solid #000', width: '180px', marginTop: '4px', paddingTop: '4px' }}>Authorized Signatory</div>
+            <div className="muted">{businessInfo.name}</div>
+          </div>
           
           {receipt.notes && <div className="footer">Notes: {receipt.notes}</div>}
         </div>
