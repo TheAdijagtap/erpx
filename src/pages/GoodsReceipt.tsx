@@ -609,13 +609,6 @@ function ViewGRDialog({ id }: { id: string }) {
             </div>
           </div>
           
-          {businessInfo.signature && (
-            <div className="signature-section">
-              <div>Authorized Signatory</div>
-              <img src={businessInfo.signature} alt="Authorized Signature" className="signature-image" style={{ marginTop: '8px' }} />
-              <div className="muted">{businessInfo.name}</div>
-            </div>
-          )}
           
           {receipt.notes && <div className="footer">Notes: {receipt.notes}</div>}
         </div>
